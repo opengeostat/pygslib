@@ -428,9 +428,21 @@ subroutine addcoord(nx, ny, nz, xmn, ymn, zmn, xsiz, ysiz, zsiz, xx, yy, zz)
 end subroutine addcoord
 
 
+
+
+
+
 !*********************************************************************************
+! 
+! 
 !     Subroutines for GSLIB gam/gamv (variograms)
+! 
+! 
 !*********************************************************************************
+
+!---------------------------------------------------------------------------
+!     Subroutine writeout for gamv
+!---------------------------------------------------------------------------
 subroutine writeout(nvarg, ndir, nlag, np, dis, gam, hm, tm, hv, tv, &
                     pdis, pgam, phm, ptm, phv, ptv, pnump)  
 
@@ -487,8 +499,9 @@ subroutine writeout(nvarg, ndir, nlag, np, dis, gam, hm, tm, hv, tv, &
 end subroutine writeout
 
 
-
-
+!---------------------------------------------------------------------------
+!     Subroutine gam
+!---------------------------------------------------------------------------
 subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data array and coordinares
                 tmin, tmax, nlag, xlag, xltol,  &                ! lag definition
                 ndir, azm, atol, bandwh, dip, dtol, bandwd,  &   ! directions and parameters
@@ -1103,4 +1116,408 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
 
 
  end subroutine gamv    
+
+!---------------------------------------------------------------------------
+!     Subroutine gamma (this is gam program, variogram for data in grid)
+!---------------------------------------------------------------------------
+
+subroutine gamma(nd, nx, ny, nz, bhid, nv, vr, &                   ! data array and coordinares
+                tmin, tmax, nlag,   &                            ! lag definition
+                ndir, ixd, iyd, izd,&                              ! directions and parameters
+                isill, sills, nvarg, ivtail, ivhead,ivtype,  &   ! variograms types and parameters
+                np, gam, hm, tm, hv, tv)                           ! output
+
+
+!-----------------------------------------------------------------------
+
+!                Variogram of Data on a Regular Grid
+!                ***********************************
+
+! This subroutine computes any of eight different measures of spatial
+! continuity for regular spaced 3-D data.  Missing values are allowed
+! and the grid need not be cubic.
+
+
+
+! INPUT VARIABLES:
+
+!   nlag             Maximum number of lags to be calculated
+!   nx               Number of units in x (number of columns)
+!   ny               Number of units in y (number of lines)
+!   nz               Number of units in z (number of levels)
+!   ndir             Number of directions to consider
+!   ixd(ndir)        X (column) indicator of direction - number of grid
+!                      columns that must be shifted to move from a node
+!                      on the grid to the next nearest node on the grid
+!                      which lies on the directional vector
+!   iyd(ndir)        Y (line) indicator of direction - similar to ixd,
+!                      number of grid lines that must be shifted to
+!                      nearest node which lies on the directional vector
+!   izd(ndir)        Z (level) indicator of direction - similar to ixd,
+!                      number of grid levels that must be shifted to
+!                      nearest node of directional vector
+!   nv               The number of variables
+!   vr(nx*ny*nz*nv)  Array of data
+!   tmin,tmax        Trimming limits
+!   isill            1=attempt to standardize, 0=do not
+!   sills            the sills (variances) to standardize with
+!   nvarg            Number of variograms to compute
+!   ivtail(nvarg)    Variable for the tail of the variogram
+!   ivhead(nvarg)    Variable for the head of the variogram
+!   ivtype(nvarg)    Type of variogram to compute:
+!                      1. semivariogram
+!                      2. cross-semivariogram
+!                      3. covariance
+!                      4. correlogram
+!                      5. general relative semivariogram
+!                      6. pairwise relative semivariogram
+!                      7. semivariogram of logarithms
+!                      8. madogram
+!                      9. indicator semivariogram: an indicator variable
+!                         is constructed in the main program.
+
+! OUTPUT VARIABLES:  The following arrays are ordered by direction,
+!                    then variogram, and finally lag, i.e.,
+!                      iloc = (id-1)*nvarg*nlag+(iv-1)*nlag+il
+
+!   np()             Number of pairs
+!   gam()            Semivariogram, covariance, correlogram,... value
+!   hm()             Mean of the tail data
+!   tm()             Mean of the head data
+!   hv()             Variance of the tail data
+!   tv()             Variance of the head data
+
+
+
+! Original:  A.G. Journel                                           1978
+! Revisions: B.E. Buxton                                       Apr. 1982
+!-----------------------------------------------------------------------
+
+
+    !for safety reason we don't want undeclared variables
+    IMPLICIT NONE    
+
+    integer, intent(in)                   :: nd, nx, ny, nz,  nv, ndir, nvarg, nlag, isill
+    integer, intent(in), dimension(nvarg) :: ivtail, ivhead,ivtype
+    integer, intent(in), dimension(nvarg) :: ixd, iyd, izd
+    
+    real, intent(in), dimension(nx*ny*nz*nv) :: vr
+    real, intent(in), dimension(nv)       :: sills
+    real, intent(in)                      :: tmin, tmax
+    real*8, intent(out), dimension(ndir*(nlag+2)*nvarg)  :: np, gam, hm, tm, hv, tv
+
+    ! TODO: np is real here, see if we may declare this as integer
+
+    !new variables
+    integer, intent(in), dimension(nd)         :: bhid
+
+               
+    ! some general declarations
+    real :: PI, EPSLON
+    parameter(PI=3.14159265, EPSLON=1.0e-20)
+    
+    real, dimension(ndir) :: uvxazm, uvyazm, uvzdec, uvhdec, csatol, csdtol
+    logical               :: omni
+
+
+    !Extra Variables not declared in the original library
+    real  ::  htave, variance, vrh, vrhpr, vrt,  vrtpr
+    integer :: i, id, ii, iii, il, it, iv, nsiz, rnum
+    real :: ixinc, iyinc, izinc, tempvar
+    integer :: ix1, iy1, iz1, ix, iy, iz, index, nxy,nxyz
+
+
+!moved from line 154, original file gam.f 
+    nxy  = nx * ny
+    nxyz = nx * ny * nz
+
+               
+! Initialize the summation arrays for each direction, variogram, and lag
+
+    nsiz = ndir*nvarg*nlag
+    do i=1,nsiz
+        np(i)  = 0.
+        gam(i) = 0.0
+        hm(i)  = 0.0
+        tm(i)  = 0.0
+        hv(i)  = 0.0
+        tv(i)  = 0.0
+    end do
+
+! First fix the location of a seed point on the grid (ix,iy,iz):
+
+    do ix=1,nx
+        do iy=1,ny
+            do iz=1,nz
+            
+            ! For the fixed seed point, loop through all directions:
+            
+                do id=1,ndir
+                    ixinc = ixd(id)
+                    iyinc = iyd(id)
+                    izinc = izd(id)
+                    ix1   = ix
+                    iy1   = iy
+                    iz1   = iz
+                
+                ! For this direction, loop over all the lags:
+                
+                    do il=1,nlag
+                    
+                    ! Check to be sure that the point being considered is still in the
+                    ! grid - if not, then finished with this direction:
+                    
+                        ix1 = ix1 + ixinc
+                        if(ix1 < 1 .OR. ix1 > nx) go to 3
+                        iy1 = iy1 + iyinc
+                        if(iy1 < 1 .OR. iy1 > ny) go to 3
+                        iz1 = iz1 + izinc
+                        if(iz1 < 1 .OR. iz1 > nz) go to 3
+                    
+                    ! For this direction and lag, loop over all variograms:
+                    
+                        do iv=1,nvarg
+                            it = ivtype(iv)
+                        
+                        ! Get the head value, skip this value if missing:
+                        
+                            i     = ivhead(iv)
+                            index = ix+(iy-1)*nx+(iz-1)*nxy+(i-1)*nxyz
+                            vrt   = vr(index)
+                            if(vrt < tmin .OR. vrt >= tmax) go to 5
+                        
+                        ! Get the tail value, skip this value if missing:
+                        
+                            i     = ivtail(iv)
+                            index = ix1+(iy1-1)*nx+(iz1-1)*nxy+(i-1)*nxyz
+                            vrh   = vr(index)
+                            if(vrh < tmin .OR. vrh >= tmax) go to 5
+                        
+                        ! Need increment for the cross semivariogram only:
+                        
+                            if(it == 2) then
+                                i     = ivtail(iv)
+                                index = ix+(iy-1)*nx+(iz-1)*nxy+(i-1)*nxyz
+                                vrhpr = vr(index)
+                                if(vrhpr < tmin .OR. vrhpr >= tmax) go to 5
+                                i     = ivhead(iv)
+                                index = ix1+(iy1-1)*nx+(iz1-1)*nxy+(i-1)*nxyz
+                                vrtpr = vr(index)
+                                if(vrtpr < tmin .OR. vrtpr >= tmax) go to 5
+                            endif
+                        
+                        ! We have an acceptable pair, therefore accumulate all the statistics
+                        ! that are required for the variogram:
+                        
+                            i      = (id-1)*nvarg*nlag+(iv-1)*nlag+il
+                            np(i)  = np(i) + 1.
+                            tm(i)  = tm(i) + dble(vrt)
+                            hm(i)  = hm(i) + dble(vrh)
+                        
+                        ! Choose the correct variogram type and keep relevant sums:
+                        
+                            if(it == 1 .OR. it >= 9) then
+                                gam(i) = gam(i) + dble((vrh-vrt)*(vrh-vrt))
+                            else if(it == 2) then
+                                gam(i) = gam(i) + dble((vrhpr-vrh)*(vrt-vrtpr))
+                            else if(abs(it) == 3) then
+                                gam(i) = gam(i) +  dble(vrh*vrt)
+                            else if(it == 4) then
+                                gam(i) = gam(i) +  dble(vrh*vrt)
+                                hv(i)  = hv(i)  +  dble(vrh*vrh)
+                                tv(i)  = tv(i)  +  dble(vrt*vrt)
+                            else if(it == 5) then
+                                gam(i) = gam(i) + dble((vrh-vrt)*(vrh-vrt))
+                            else if(it == 6) then
+                                if((vrt+vrh) < EPSLON) then
+                                    np(i)  = np(i) - 1.
+                                    tm(i)  = tm(i) - dble(vrt)
+                                    hm(i)  = hm(i) - dble(vrh)
+                                else
+                                    tempvar= 2.0*(vrt-vrh)/(vrt+vrh)
+                                    gam(i) = gam(i) + dble(tempvar*tempvar)
+                                endif
+                            else if(it == 7) then
+                                if(vrt < EPSLON .OR. vrh < EPSLON) then
+                                    np(i)  = np(i) - 1.
+                                    tm(i)  = tm(i) - dble(vrt)
+                                    hm(i)  = hm(i) - dble(vrh)
+                                else
+                                    tempvar= alog(vrt)-alog(vrh)
+                                    gam(i) = gam(i) + dble(tempvar*tempvar)
+                                endif
+                            else if(it == 8) then
+                                gam(i) = gam(i) + dble(abs(vrt-vrh))
+                            endif
+                            5 continue
+                        end do
+                        4 continue
+                    end do
+                    3 continue
+                end do
+            end do
+        end do
+    end do
+
+! Get average values for gam, hm, tm, hv, and tv, then compute
+! the correct "variogram" measure:
+
+    do id=1,ndir
+        do iv=1,nvarg
+            do il=1,nlag
+                i = (id-1)*nvarg*nlag+(iv-1)*nlag+il
+                if(np(i) == 0.) go to 6
+                rnum   = np(i)
+                gam(i) = gam(i) / dble(rnum)
+                hm(i)  = hm(i)  / dble(rnum)
+                tm(i)  = tm(i)  / dble(rnum)
+                hv(i)  = hv(i)  / dble(rnum)
+                tv(i)  = tv(i)  / dble(rnum)
+                it     = ivtype(iv)
+            
+            ! Attempt to standardize:
+            
+                if(isill == 1) then
+                    if(ivtail(iv) == ivhead(iv)) then
+                        iii = ivtail(iv)
+                        if((it == 1 .OR. it >= 9) .AND. sills(iii) > 0.0) &
+                        gam(i) = gam(i) / sills(iii)
+                    end if
+                end if
+            
+            ! 1. report the semivariogram rather than variogram
+            ! 2. report the cross-semivariogram rather than variogram
+            ! 3. the covariance requires "centering"
+            ! 4. the correlogram requires centering and normalizing
+            ! 5. general relative requires division by lag mean
+            ! 6. report the semi(pairwise relative variogram)
+            ! 7. report the semi(log variogram)
+            ! 8. report the semi(madogram)
+            
+                if(it == 1 .OR. it == 2) then
+                    gam(i) = 0.5 * gam(i)
+                else if(abs(it) == 3) then
+                    gam(i) = gam(i) - hm(i)*tm(i)
+                    if(it < 0) then
+                        if(sills(ivtail(iv)) < 0.0 .OR. &
+                        sills(ivhead(iv)) < 0.0) then
+                            gam(i) = -999.0
+                        else
+                            variance = ( sqrt(sills(ivtail(iv))) &
+                            *   sqrt(sills(ivhead(iv))) )
+                            gam(i) = variance - gam(i)
+                        end if
+                    end if
+                else if(it == 4) then
+                    hv(i)  = hv(i)-hm(i)*hm(i)
+                    if(hv(i) <= 0.0) hv(i) = 0.0
+                    hv(i)  = sqrt(hv(i))
+                    tv(i)  = tv(i)-tm(i)*tm(i)
+                    if(tv(i) <= 0.0) tv(i) = 0.0
+                    tv(i)  = sqrt(tv(i))
+                    if((hv(i)*tv(i)) < EPSLON) then
+                        gam(i) = 0.0
+                    else
+                        gam(i) =(gam(i)-hm(i)*tm(i))/(hv(i)*tv(i))
+                    endif
+                
+                ! Square "hv" and "tv" so that we return the variance:
+                
+                    hv(i)  = hv(i)*hv(i)
+                    tv(i)  = tv(i)*tv(i)
+                else if(it == 5) then
+                    htave  = 0.5*(hm(i)+tm(i))
+                    htave  = htave   *   htave
+                    if(htave < EPSLON) then
+                        gam(i) = 0.0
+                    else
+                        gam(i) = gam(i)/dble(htave)
+                    endif
+                else if(it >= 6) then
+                    gam(i) = 0.5 * gam(i)
+                endif
+                6 continue
+            end do
+        end do
+    end do
+    return
+end subroutine gamma
+
+
+!---------------------------------------------------------------------------
+!     Subroutine write out for gam
+!---------------------------------------------------------------------------
+subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
+                         izd, zsiz, np, gam, hm, tm, hv, tv, & 
+                         pdis, pgam, phm, ptm, phv, ptv, pnump)
+
+!-----------------------------------------------------------------------
+
+!                  Write Out the Results of GAM
+!                  ****************************
+
+! An output file will be written which contains each directional
+! variogram ordered by direction and then variogram (the directions
+! cycle fastest then the variogram number).  For each variogram there
+! will be a one line description and then "nlag" lines with:
+
+!        a) lag number (increasing from 1 to nlag)
+!        b) separation distance
+!        c) the "variogram" value
+!        d) the number of pairs for the lag
+!        e) the mean of the data contributing to the tail
+!        f) the mean of the data contributing to the head
+!        g) IF the correlogram - variance of tail values
+!        h) IF the correlogram - variance of head values
+
+!-----------------------------------------------------------------------
+
+
+    real*8, intent(in), dimension(ndir*(nlag+2)*nvarg)  :: np,  gam, hm, tm, hv, tv
+    real*8, intent(in)  :: xsiz, ysiz, zsiz
+    integer, intent(in) :: nvarg, ndir, nlag 
+    integer, intent(in), dimension(ndir) :: ixd, iyd, izd
+    real,    intent(out), dimension(nvarg, ndir, nlag+2) :: pdis,pgam, phm,ptm,phv,ptv
+    integer, intent(out), dimension(nvarg, ndir, nlag+2) :: pnump
+    
+
+    integer :: iv, id, il, i
+    real :: dis
+
+! Loop over all the variograms that have been computed:
+
+    do iv=1,nvarg
+       
+    ! Loop over all the directions (note the direction in the title):
+    
+        do id=1,ndir
+        
+        ! Compute the unit lag distance along the directional vector:
+        
+            dis = sqrt( max(((ixd(id)*xsiz)**2 + (iyd(id)*ysiz)**2 + &
+            (izd(id)*zsiz)**2),0.0) )
+        
+        ! Write out all the lags:
+        
+            do il=1,nlag+2
+                i = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
+                pdis(iv,id,il) = real(il)*dis
+                pgam(iv,id,il)=gam(i)
+                phm(iv,id,il)=hm(i)
+                ptm(iv,id,il)=tm(i)
+                phv(iv,id,il)=hv(i)
+                ptv(iv,id,il)=tv(i)
+                pnump(iv,id,il)=int(np(i))
+
+            end do
+        end do
+    end do
+
+    return
+ end subroutine writeout_gam
+
+
+
+
+
 
