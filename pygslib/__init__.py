@@ -489,7 +489,7 @@ def check_gamv_par(parameters):
 
     return 1
 
-
+'''
 
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -629,4 +629,7 @@ def gamv_alg_directional_1V(X,Y,Z,BHID,V1, tmin, tmax,
 
         
     return pdis[v, d, 1:], pgam [v, d, 1:], phm [v, d, 1:], ptm [v, d, 1:], pnump[v, d, 1:], fig
+
+'''
+
 
