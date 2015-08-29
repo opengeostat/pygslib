@@ -54,7 +54,7 @@ if __name__ == '__main__':
 		  keywords='geostatistics kriging variogram estimation simulation', 
 		  author='Adrian Martinez Vargas',
 		  author_email='adriangeologo@yahoo.es',
-		  url='http://opengeostat.com',
+		  url='https://opengeostat@bitbucket.org/opengeostat/pygslib.git',
 		  license='MIT',
 		  packages=find_packages(exclude=['examples', 'tests']),
 		  include_package_data=True,
