@@ -378,6 +378,54 @@ subroutine read_data(datafl, nvar, maxdat, table, error)
 end subroutine read_data
 
 
+!*********************************************************************************
+!     Subroutines auxiliary program
+!*********************************************************************************
+subroutine addcoord(nx, ny, nz, xmn, ymn, zmn, xsiz, ysiz, zsiz, xx, yy, zz) 
+
+
+    !
+    !              Calculate coordinates of an ordered grid 
+    !              ****************************************
+    ! INPUT VARIABLES:
+    !
+    !   nx, ny, nz           Number nodes in the grid
+    !   xmn, ymn, zmn        Coordinate of the centroid (lower left corner)
+    !   xsiz, ysiz, zsiz     Sizes of the cell/block 
+    !
+    ! OUTPUT VARIABLES:
+    !
+    !   xx(n), yy(n), zz(n)  coordinate arrays with size n= nx*ny*nz
+    !-----------------------------------------------------------------------
+    
+    real*8,  intent(in) :: xmn, ymn, zmn, xsiz, ysiz, zsiz
+    integer, intent(in) :: nx, ny, nz
+    real,    intent(out), dimension(nx*ny*nz) :: xx, yy, zz
+    
+    real*8 :: x, y, z
+    integer :: i
+
+    !
+    ! Loop over grid
+    !
+    i=0
+    do iz=1,nz
+          z = zmn + real(iz-1)*zsiz
+          do iy=1,ny
+                y = ymn + real(iy-1)*ysiz
+                do ix=1,nx
+                      x = xmn + real(ix-1)*xsiz
+                      i=i+1
+                      xx(i)=x
+                      yy(i)=y
+                      zz(i)=z
+                end do
+          end do
+    end do
+
+    return
+
+end subroutine addcoord
 
 
 !*********************************************************************************

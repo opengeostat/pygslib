@@ -59,7 +59,7 @@ if __name__ == '__main__':
 		  packages=find_packages(exclude=['examples', 'tests']),
 		  include_package_data=True,
 		  zip_safe=False,
-		  tests_require=['numpy', 'pandas', 'matplotlib'],
+		  tests_require=['numpy', 'pandas', 'matplotlib', 'nose'],
 		  cmdclass={'test': PyTest},   
 		  install_requires=['numpy', 'pandas', 'matplotlib'],
 		  ext_modules = [fgslib])
