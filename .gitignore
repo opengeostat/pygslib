@@ -1,0 +1,22 @@
+#setuptools distribution folders
+/build
+/dist
+
+#python metadata 
+/*.egg
+/*.egg-info
+
+#compiled python modeules
+*.pyc
+*.so
+
+#temporary files
+*~
+
+#Ipython check points
+/.ipynb_checkpoints
+
+#spyder project
+.spyderproject
+.spyderworkspace
+
