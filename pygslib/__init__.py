@@ -309,10 +309,6 @@ def gamv(parameters):
     
     """
 
-    # ERROR (multivariate vr need to be extended in 1D array)
-    # TODO: fix this 
-
-
     np,dis, gam, hm, tm, hv, tv, cldi, cldj, cldg, cldh, l = __fgslib.gamv(**parameters)
     
     if l==parameters['maxclp']:
@@ -566,7 +562,7 @@ def gam(parameters):
                     'ysiz'   :  1,                      # size of the cell in y direction
                     'zsiz'   :  1,                      # size of the cell in z direction
                     'bhid'   :  bhid,                   # bhid for downhole variogram, array('i') with bounds (nd)    
-                    'vr'     :  VR,                     # Variables, array('f') with bounds (nd,nv), nv is number of variables
+                    'vr'     :  VR,                     # Variables, array('f') with bounds (nd*nv), nv is number of variables
                     'tmin'   : -1.0e21,                 # trimming limits, float
                     'tmax'   :  1.0e21,                 # trimming limits, float
                     'nlag'   :  10,                     # number of lags, int
@@ -622,6 +618,13 @@ def gam(parameters):
       
     Notes
     -----
+
+    For two variables use flatten array with order C, for example, if mydata is a Pandas DataFrame use 
+    
+	>> vr=mydata[['U', 'V']].values.flatten(order='FORTRAN')
+    >> parameters['vr']=vr
+
+
     The output is a tuple of numpy 3D ndarrays (pdis,pgam, phm,ptm,phv,ptv,pnump) with dimensions 
     (nvarg, ndir, nlag+2), representing the  experimental variograms output
 
@@ -630,8 +633,6 @@ def gam(parameters):
     the GSLIB standalone program `gam`.
     """
 
-    # ERROR (multivariate vr need to be extended in 1D array)
-    # TODO: fix this 
     np, gam, hm, tm, hv, tv = __fgslib.gamma(**parameters)
     
 
