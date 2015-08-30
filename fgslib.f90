@@ -1500,8 +1500,8 @@ subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
         
         ! Write out all the lags:
         
-            do il=1,nlag+2
-                i = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
+            do il=1,nlag
+                i = (id-1)*nvarg*nlag+(iv-1)*nlag+il
                 pdis(iv,id,il) = real(il)*dis
                 pgam(iv,id,il)=gam(i)
                 phm(iv,id,il)=hm(i)
