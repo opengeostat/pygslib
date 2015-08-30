@@ -1121,95 +1121,96 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
 !     Subroutine gamma (this is gam program, variogram for data in grid)
 !---------------------------------------------------------------------------
 
-subroutine gamma(nd, nx, ny, nz, bhid, nv, vr, &                   ! data array and coordinares
+subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and coordinares
                 tmin, tmax, nlag,   &                            ! lag definition
                 ndir, ixd, iyd, izd,&                              ! directions and parameters
                 isill, sills, nvarg, ivtail, ivhead,ivtype,  &   ! variograms types and parameters
+                xsiz,ysiz,zsiz, &                                !dummy variable not used here
                 np, gam, hm, tm, hv, tv)                           ! output
 
 
-!-----------------------------------------------------------------------
+	!-----------------------------------------------------------------------
 
-!                Variogram of Data on a Regular Grid
-!                ***********************************
+	!                Variogram of Data on a Regular Grid
+	!                ***********************************
 
-! This subroutine computes any of eight different measures of spatial
-! continuity for regular spaced 3-D data.  Missing values are allowed
-! and the grid need not be cubic.
-
-
-
-! INPUT VARIABLES:
-
-!   nlag             Maximum number of lags to be calculated
-!   nx               Number of units in x (number of columns)
-!   ny               Number of units in y (number of lines)
-!   nz               Number of units in z (number of levels)
-!   ndir             Number of directions to consider
-!   ixd(ndir)        X (column) indicator of direction - number of grid
-!                      columns that must be shifted to move from a node
-!                      on the grid to the next nearest node on the grid
-!                      which lies on the directional vector
-!   iyd(ndir)        Y (line) indicator of direction - similar to ixd,
-!                      number of grid lines that must be shifted to
-!                      nearest node which lies on the directional vector
-!   izd(ndir)        Z (level) indicator of direction - similar to ixd,
-!                      number of grid levels that must be shifted to
-!                      nearest node of directional vector
-!   nv               The number of variables
-!   vr(nx*ny*nz*nv)  Array of data
-!   tmin,tmax        Trimming limits
-!   isill            1=attempt to standardize, 0=do not
-!   sills            the sills (variances) to standardize with
-!   nvarg            Number of variograms to compute
-!   ivtail(nvarg)    Variable for the tail of the variogram
-!   ivhead(nvarg)    Variable for the head of the variogram
-!   ivtype(nvarg)    Type of variogram to compute:
-!                      1. semivariogram
-!                      2. cross-semivariogram
-!                      3. covariance
-!                      4. correlogram
-!                      5. general relative semivariogram
-!                      6. pairwise relative semivariogram
-!                      7. semivariogram of logarithms
-!                      8. madogram
-!                      9. indicator semivariogram: an indicator variable
-!                         is constructed in the main program.
-
-! OUTPUT VARIABLES:  The following arrays are ordered by direction,
-!                    then variogram, and finally lag, i.e.,
-!                      iloc = (id-1)*nvarg*nlag+(iv-1)*nlag+il
-
-!   np()             Number of pairs
-!   gam()            Semivariogram, covariance, correlogram,... value
-!   hm()             Mean of the tail data
-!   tm()             Mean of the head data
-!   hv()             Variance of the tail data
-!   tv()             Variance of the head data
+	! This subroutine computes any of eight different measures of spatial
+	! continuity for regular spaced 3-D data.  Missing values are allowed
+	! and the grid need not be cubic.
 
 
 
-! Original:  A.G. Journel                                           1978
-! Revisions: B.E. Buxton                                       Apr. 1982
-!-----------------------------------------------------------------------
+	! INPUT VARIABLES:
+
+	!   nlag             Maximum number of lags to be calculated
+	!   nx               Number of units in x (number of columns)
+	!   ny               Number of units in y (number of lines)
+	!   nz               Number of units in z (number of levels)
+	!   ndir             Number of directions to consider
+	!   ixd(ndir)        X (column) indicator of direction - number of grid
+	!                      columns that must be shifted to move from a node
+	!                      on the grid to the next nearest node on the grid
+	!                      which lies on the directional vector
+	!   iyd(ndir)        Y (line) indicator of direction - similar to ixd,
+	!                      number of grid lines that must be shifted to
+	!                      nearest node which lies on the directional vector
+	!   izd(ndir)        Z (level) indicator of direction - similar to ixd,
+	!                      number of grid levels that must be shifted to
+	!                      nearest node of directional vector
+	!   nv               The number of variables
+	!   vr(nx*ny*nz*nv)  Array of data
+	!   tmin,tmax        Trimming limits
+	!   isill            1=attempt to standardize, 0=do not
+	!   sills            the sills (variances) to standardize with
+	!   nvarg            Number of variograms to compute
+	!   ivtail(nvarg)    Variable for the tail of the variogram
+	!   ivhead(nvarg)    Variable for the head of the variogram
+	!   ivtype(nvarg)    Type of variogram to compute:
+	!                      1. semivariogram
+	!                      2. cross-semivariogram
+	!                      3. covariance
+	!                      4. correlogram
+	!                      5. general relative semivariogram
+	!                      6. pairwise relative semivariogram
+	!                      7. semivariogram of logarithms
+	!                      8. madogram
+	!                      9. indicator semivariogram: an indicator variable
+	!                         is constructed in the main program.
+
+	! OUTPUT VARIABLES:  The following arrays are ordered by direction,
+	!                    then variogram, and finally lag, i.e.,
+	!                      iloc = (id-1)*nvarg*nlag+(iv-1)*nlag+il
+
+	!   np()             Number of pairs
+	!   gam()            Semivariogram, covariance, correlogram,... value
+	!   hm()             Mean of the tail data
+	!   tm()             Mean of the head data
+	!   hv()             Variance of the tail data
+	!   tv()             Variance of the head data
+
+
+
+	! Original:  A.G. Journel                                           1978
+	! Revisions: B.E. Buxton                                       Apr. 1982
+	!-----------------------------------------------------------------------
 
 
     !for safety reason we don't want undeclared variables
     IMPLICIT NONE    
 
-    integer, intent(in)                   :: nd, nx, ny, nz,  nv, ndir, nvarg, nlag, isill
+    integer, intent(in)                   :: nx, ny, nz,  nv, ndir, nvarg, nlag, isill
     integer, intent(in), dimension(nvarg) :: ivtail, ivhead,ivtype
-    integer, intent(in), dimension(nvarg) :: ixd, iyd, izd
+    integer, intent(in), dimension(ndir)  :: ixd, iyd, izd
     
     real, intent(in), dimension(nx*ny*nz*nv) :: vr
     real, intent(in), dimension(nv)       :: sills
-    real, intent(in)                      :: tmin, tmax
+    real, intent(in)                      :: tmin, tmax, xsiz,ysiz,zsiz	
     real*8, intent(out), dimension(ndir*(nlag+2)*nvarg)  :: np, gam, hm, tm, hv, tv
 
     ! TODO: np is real here, see if we may declare this as integer
 
     !new variables
-    integer, intent(in), dimension(nd)         :: bhid
+    integer, intent(in), dimension(nx*ny*nz)         :: bhid
 
                
     ! some general declarations
@@ -1514,6 +1515,7 @@ subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
     end do
 
     return
+
  end subroutine writeout_gam
 
 

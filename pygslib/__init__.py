@@ -82,8 +82,6 @@ def version():
             'platform': osplatform }
 
 
-
-
 #read GSLIB file
 def read_gslib_file(fname, maxnvar=500):
     """ Read a gslib file
@@ -133,6 +131,55 @@ def read_gslib_file(fname, maxnvar=500):
     assert error==0, "there was an error= %r importing the data" % error
     
     return pd.DataFrame(table, columns=vnames)
+
+
+#generate coordinates for gridded files
+def addcoord(nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz, grid):
+    """ Insert X, Y, Z coordinates to a grid file 
+    
+    The code use modified function addcoord from gslib
+
+    Parameters
+    ----------    
+    nx,ny,nz : int 
+        number of rows
+
+    xmn,ymn,zmn : double 
+        origin of coordinates (block centroid)
+
+    xsiz,ysiz,zsiz : double 
+        block sizes
+
+    grid : DataFrame 
+        Pandas dataframe containing variables
+    
+    Returns
+    -------
+    data : DataFrame 
+        Pandas dataframe (drid) with tree extra columns x, y, z
+
+    Notes 
+    -------
+    Grid is expected to have xmn*ymn*zmn rows with geoeas grid format order
+
+    """
+
+    assert  type(grid)==pd.DataFrame , 'the parameter grid is not a Pandas Dataframe, incorrect data type (it is %s)' % type(grid)
+    assert  len(grid) ==  nx*ny*nz , 'len(grid) !=  nx*ny*nz, unexpected grid number of raws'
+    #make sure you don't overwrite x,y,z
+    assert  'x' not in  grid, 'x already exist in grid, use grid.drop("x", axis=1, inplace=True) to remove x' 
+    assert  'y' not in  grid, 'y already exist in grid, use grid.drop("y", axis=1, inplace=True) to remove y'
+    assert  'z' not in  grid, 'z already exist in grid, use grid.drop("z", axis=1, inplace=True) to remove z'
+
+
+    #adding columns (not inplace)
+    x,y,z = __fgslib.addcoord(nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz)   
+    tmpgrid= grid.copy(deep=True)
+    tmpgrid.insert(loc=0, column='z', value=z, allow_duplicates=False)
+    tmpgrid.insert(loc=0, column='y', value=y, allow_duplicates=False)
+    tmpgrid.insert(loc=0, column='x', value=x, allow_duplicates=False)
+    
+    return pd.DataFrame(tmpgrid)
 
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -261,6 +308,9 @@ def gamv(parameters):
         semimadogram(8)
     
     """
+
+    # ERROR (multivariate vr need to be extended in 1D array)
+    # TODO: fix this 
 
 
     np,dis, gam, hm, tm, hv, tv, cldi, cldj, cldg, cldh, l = __fgslib.gamv(**parameters)
@@ -489,147 +539,118 @@ def check_gamv_par(parameters):
 
     return 1
 
-'''
+
 
 
 #-----------------------------------------------------------------------------------------------------------------
 #
-#    Variograms GAMV algorithms
+#    Variograms GAM, for gridded data
 #
 #-----------------------------------------------------------------------------------------------------------------
-
-#TODO: move this to a different file/folder
-
-def gamv_alg_directional_1V(X,Y,Z,BHID,V1, tmin, tmax,
-                            nlag,xlag,xltol,azm,atol,
-                            bandwh,dip,dtol,bandwd,
-                            isill,sills,ivtype):
-    """Algorith to calculate univariate variogram in a given direction
+def gam(parameters):
+    """Calculate variograms with the modified GSLIB gam function (for gridded data)
+       
+    The parameter file here is a dictionary with the following keys.
     
-    This function is to simplify the use of gamv for univariate variograms
-
     Parameters
     ----------
-        X, Y , Z  :  1D array[float], 1D array[float], 1D array[float]
-          Coordinate of in a cartesian space 
-        BHID  :  1D array[int]
-           Drillhole ID or Zone ID
-        V1  :  1D array[float]
-           Variable values to calculate the variogram
-        tmin, tmax:  float, float
-           trimming limits, float... default inf
-        nlag,xlag,xltol: int, float, float
-           number of lags, lag separation and lag tolerance 
-           The default of xltol is xlag/2
-        azm,atol,bandwh: float, float, float
-           azimuth direction, azimuth tolerance and bandwith 'horizontal' 
-           The default of bandwh is inf
-        dip,dtol,bandwd: float, float, float
-           dip, dip tolerance and bandwith 'vertical'
-           The default of bandwd is inf
-        isill, sills:  boolean, float  
-           standarize sills?, variance used to std sills... 
-           The default of sills is the variance of V1
-       ivtype: int
-           variogram type code
+        parameters  :  dict
+            This is a dictionary with key parameter (case sensitive) and values, for example:
 
+
+            parameters = { 
+                    'nx'     :  50,                     # number of rows in the gridded data
+                    'ny'     :  50,                     # number of columns in the gridded data
+                    'nz'     :  1,                      # number of levels in the gridded data
+                    'xsiz'   :  1,                      # size of the cell in x direction 
+                    'ysiz'   :  1,                      # size of the cell in y direction
+                    'zsiz'   :  1,                      # size of the cell in z direction
+                    'bhid'   :  bhid,                   # bhid for downhole variogram, array('i') with bounds (nd)    
+                    'vr'     :  VR,                     # Variables, array('f') with bounds (nd,nv), nv is number of variables
+                    'tmin'   : -1.0e21,                 # trimming limits, float
+                    'tmax'   :  1.0e21,                 # trimming limits, float
+                    'nlag'   :  10,                     # number of lags, int
+                    'ixd'    : [1,0],                   # directiom x 
+                    'iyd'    : [1,0],                   # directiom y 
+                    'izd'    : [1,0],                   # directiom z 
+                    'isill'  : 0,                       # standardize sills? (0=no, 1=yes), int
+                    'sills'  : [100, 200],              # variance used to std the sills, array('f') with bounds (nv)
+                    'ivtail' : [1,1,2,2],               # tail var., array('i') with bounds (nvarg), nvarg is number of variograms
+                    'ivhead' : [1,1,2,2],               # head var., array('i') with bounds (nvarg)
+                    'ivtype' : [1,3,1,3]}               # variogram type, array('i') with bounds (nvarg)
+
+                    
+                  
+    the equivalent GSLIB parameter file may be something like this:
+
+                                      Parameters for GAM
+                                      ******************
+
+                    START OF PARAMETERS:
+                    ../data/true.dat      -file with data
+                    2   1   2             -   number of variables, column numbers
+                    -1.0e21     1.0e21    -   trimming limits
+                    gam.out               -file for variogram output
+                    1                     -grid or realization number
+                    50   0.5   1.0        -nx, xmn, xsiz
+                    50   0.5   1.0        -ny, ymn, ysiz
+                     1   0.5   1.0        -nz, zmn, zsiz
+                    2  10                 -number of directions, number of lags
+                     1  0  0              -ixd(1),iyd(1),izd(1)
+                     0  1  0              -ixd(2),iyd(2),izd(2)
+                    1                     -standardize sill? (0=no, 1=yes)
+                    4                     -number of variograms
+                    1   1   1             -tail variable, head variable, variogram type
+                    1   1   3             -tail variable, head variable, variogram type
+                    2   2   1             -tail variable, head variable, variogram type
+                    2   2   3             -tail variable, head variable, variogram type
+
+    
     Returns
     -------   
-    out : ndarray, ndarray, ndarray,  ndarray, ndarray, matplotlib.fig
-      The output is a set of 1D numpy arrays:
+    out : (ndarray,ndarray, ndarray,ndarray,ndarray,ndarray,ndarray, ndarray, ndarray, ndarray, ndarray)
+
+      for directional variograms we have:
        pdis   Distance of pairs falling into this lag 
        pgam   Semivariogram, covariance, correlogram,... value
        phm    Mean of the tail data
        ptm    Mean of the head data
+       phv    Variance of the tail data
+       ptv    Variance of the head data
        pnump  Number of pairs
-       fig    a matplotlib figure 
 
+      
     Notes
     -----
-    The output variogram type code are: 
-    ivtype 1 = traditional semivariogram
-           2 = traditional cross semivariogram
-           3 = covariance
-           4 = correlogram
-           5 = general relative semivariogram
-           6 = pairwise relative semivariogram
-           7 = semivariogram of logarithms
-           8 = semimadogram
-    
+    The output is a tuple of numpy 3D ndarrays (pdis,pgam, phm,ptm,phv,ptv,pnump) with dimensions 
+    (nvarg, ndir, nlag+2), representing the  experimental variograms output
+
+    The variables with prefix `p` are for directional variogram and are generated 
+    by GSLIB fortran function  `__fgslib.writeout`. This is similar to the output of 
+    the GSLIB standalone program `gam`.
     """
-    
-    #validate parameters and asign default values if necessary
-    
-    assert len(X)==len(Y)==len(Z)==len(BHID)==len(V1), "invalid array lengths"
-    
-    if xltol == None: 
-        xltol= xlag/2.
-    
-    if bandwh == None:
-        bandwh=np.inf
-    
-    if bandwd == None:
-        bandwd=np.inf
 
-    if isill==True and sills==None:
-        sills=np.var(V1)
-
-    if tmin == None:
-        tmin=-np.inf
+    # ERROR (multivariate vr need to be extended in 1D array)
+    # TODO: fix this 
+    np, gam, hm, tm, hv, tv = __fgslib.gamma(**parameters)
     
-    if tmax == None:
-        tmax=np.inf
+
+    # get output like in gslib 
+    nvarg = len(parameters['ivtype']) 
+    nlag = parameters['nlag']
+    ixd = parameters['ixd']
+    xsiz = parameters['xsiz']
+    iyd = parameters['iyd']
+    ysiz = parameters['ysiz']
+    izd = parameters['izd']
+    zsiz = parameters['zsiz']
 
     
-    parameters = { 
-    'x'      :  X,         # X coordinates, array('f') with bounds (nd), nd is number of data points
-    'y'      :  Y,         # Y coordinates, array('f') with bounds (nd)
-    'z'      :  Z,         # Z coordinates, array('f') with bounds (nd)
-    'bhid'   :  BHID,      # bhid for downhole variogram, array('i') with bounds (nd)    
-    'vr'     :  V1,        # Variables, array('f') with bounds (nd,nv), nv is number of variables
-    'tmin'   :  tmin,      # trimming limits, float
-    'tmax'   :  tmax,      # trimming limits, float
-    'nlag'   :  nlag,      # number of lags, int
-    'xlag'   :  xlag,      # lag separation distance, float                
-    'xltol'  :  xltol,     # lag tolerance, float
-    'azm'    :  [azm],       # azimut, array('f') with bounds (ndir)
-    'atol'   :  [atol],      # azimut tolerance, array('f') with bounds (ndir)
-    'bandwh' :  [bandwh],    # bandwith h, array('f') with bounds (ndir)
-    'dip'    :  [dip],       # dip, array('f') with bounds (ndir)
-    'dtol'   :  [dtol],      # dip tolerance, array('f') with bounds (ndir)
-    'bandwd' :  [bandwd],    # bandwith dit, array('f') with bounds (ndir)
-    'isill'  :  isill,     # standardize sills? (0=no, 1=yes), int
-    'sills'  :  [sills],     # variance used to std the sills, array('f') with bounds (nv)
-    'ivtail' :  [1],       # tail var., array('i') with bounds (nvarg), nvarg is number of variograms
-    'ivhead' :  [1],       # head var., array('i') with bounds (nvarg)
-    'ivtype' :  [ivtype],  # variogram type, array('i') with bounds (nvarg)
-    'maxclp' :  1}         # maximum numver of variogram point cloud to use, input int
-        
+    pdis,pgam,phm,ptm,phv,ptv,pnump = __fgslib.writeout_gam(nvarg,nlag,ixd,xsiz,iyd,ysiz,izd,zsiz,np,gam,hm,tm,hv,tv)
+      
     
-    #test parameter files
-    assert (check_gamv_par(parameters))
     
-    #calculate the variogram
-    pdis,pgam, phm,ptm,phv,ptv,pnump, cldi, cldj, cldg, cldh=gamv(parameters)
-    
-    #create plot
-    v=0
-    d=0
-    width=xlag/2.
-    
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()    
-    ax2.bar(pdis[v, d, 1:]-width/2., pnump[v, d, 1:], width, zorder=-1)  
-    ax2.set_ylabel('npoints', color='b') 
-    ax2.set_zorder(-1)
-    
-    ax1.plot (pdis[v, d, 1:], pgam[v, d, 1:], '-o', label=str(dip) + '-->' + str(azm), color='r')
-    ax1.set_xlabel('distance (h)')
-    ax1.set_ylabel('gamma', color='r')
+    return pdis,pgam, phm,ptm,phv,ptv,pnump 
 
-        
-    return pdis[v, d, 1:], pgam [v, d, 1:], phm [v, d, 1:], ptm [v, d, 1:], pnump[v, d, 1:], fig
-
-'''
 
 
