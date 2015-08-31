@@ -46,11 +46,13 @@ Usage
 See the Ipython noteebooks provided in the folder `pygslib/Ipython_templates`. 
 
 
-Supported by [Opengeostat Consulting](http://opengeostat.com/)
 
-
+License 
+-------
 Copyright 2015, Adrian Martinez Vargas
-                                                                        
+Supported by <a href="http://opengeostat.com/">Opengeostat Consulting</a>       
+
+                                                                 
 This software may be modified and distributed under the terms  of the MIT license.  See the LICENSE.txt file for details.  
 
-Friday, 28. August 2015 03:32PM 
+Monday 31 August 2015 
