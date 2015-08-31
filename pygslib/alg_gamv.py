@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
-"""put comments here
+"""Algorithms for gamv
 
 
 Copyright 2015, Adrian Martinez Vargas
@@ -27,8 +27,6 @@ import pygslib
 #    Variograms GAMV algorithms
 #
 #-----------------------------------------------------------------------------------------------------------------
-
-#TODO: move this to a different file/folder
 
 def vdirectional_1V(X,Y,Z,BHID,V1, tmin, tmax,
                             nlag,xlag,xltol,azm,atol,
@@ -127,13 +125,13 @@ def vdirectional_1V(X,Y,Z,BHID,V1, tmin, tmax,
     'bandwh' :  [bandwh],    # bandwith h, array('f') with bounds (ndir)
     'dip'    :  [dip],       # dip, array('f') with bounds (ndir)
     'dtol'   :  [dtol],      # dip tolerance, array('f') with bounds (ndir)
-    'bandwd' :  [bandwd],    # bandwith dit, array('f') with bounds (ndir)
+    'bandwd' :  [bandwd],    # bandwith d, array('f') with bounds (ndir)
     'isill'  :  isill,     # standardize sills? (0=no, 1=yes), int
     'sills'  :  [sills],     # variance used to std the sills, array('f') with bounds (nv)
     'ivtail' :  [1],       # tail var., array('i') with bounds (nvarg), nvarg is number of variograms
     'ivhead' :  [1],       # head var., array('i') with bounds (nvarg)
     'ivtype' :  [ivtype],  # variogram type, array('i') with bounds (nvarg)
-    'maxclp' :  1}         # maximum numver of variogram point cloud to use, input int
+    'maxclp' :  1}         # maximum number of variogram point cloud to use, input int
         
     
     #test parameter files

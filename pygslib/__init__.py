@@ -6,20 +6,6 @@
 This module provides an interface to FGSLIB (a python module 
 generated automatically with f2p and modified gslib fortran code)
 
-
-Notes
------
-    The module is organized in raw functions, linked directly directly 
-    to `FGSLIB`, and algorithm functions. For example, the function 
-    `gamv` call directly the gslib gamv function but the output is 
-    a complicated set of variables. To simplify the work we implemented 
-    `gamv_alg_directional_1V` for directional variogram of a single 
-    variable.
-
-    Algorithm functions are named with the following convention. 
-    `{parentfunction}_alg_{algoritm explanation}`. 
-
-
 Copyright 2015, Adrian Martinez Vargas
                                                                         
 This software may be modified and distributed under the terms        
@@ -164,8 +150,8 @@ def addcoord(nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz, grid):
 
     """
 
-    assert  type(grid)==pd.DataFrame , 'the parameter grid is not a Pandas Dataframe, incorrect data type (it is %s)' % type(grid)
-    assert  len(grid) ==  nx*ny*nz , 'len(grid) !=  nx*ny*nz, unexpected grid number of raws'
+    assert  type(grid)==pd.DataFrame , 'the parameter grid is not a pandas DataFrame, incorrect data type (it is %s)' % type(grid)
+    assert  len(grid) ==  nx*ny*nz , 'len(grid) !=  nx*ny*nz, unexpected grid number of rows'
     #make sure you don't overwrite x,y,z
     assert  'x' not in  grid, 'x already exist in grid, use grid.drop("x", axis=1, inplace=True) to remove x' 
     assert  'y' not in  grid, 'y already exist in grid, use grid.drop("y", axis=1, inplace=True) to remove y'
@@ -227,16 +213,16 @@ def gamv(parameters):
                     'xltol'  :  2,                      # lag tolerance, float
                     'azm'    : [0,0,90],                # azimut, array('f') with bounds (ndir)
                     'atol'   : [90,22.5,22.5],          # azimut tolerance, array('f') with bounds (ndir)
-                    'bandwh' : [50,10,10],              # bandwith h, array('f') with bounds (ndir)
+                    'bandwh' : [50,10,10],              # bandwith 'horizontal', array('f') with bounds (ndir)
                     'dip'    : [0,0,0],                 # dip, array('f') with bounds (ndir)
                     'dtol'   : [10,10,10],              # dip tolerance, array('f') with bounds (ndir)
-                    'bandwd' : [10,10,10],              # bandwith dit, array('f') with bounds (ndir)
+                    'bandwd' : [10,10,10],              # bandwith 'vertical', array('f') with bounds (ndir)
                     'isill'  : 0,                       # standardize sills? (0=no, 1=yes), int
                     'sills'  : [100],                   # variance used to std the sills, array('f') with bounds (nv)
                     'ivtail' : [1,1,1,1,1,1,1],         # tail var., array('i') with bounds (nvarg), nvarg is number of variograms
                     'ivhead' : [1,1,1,1,1,1,1],         # head var., array('i') with bounds (nvarg)
                     'ivtype' : [1,3,4,5,6,7,8],         # variogram type, array('i') with bounds (nvarg)
-                    'maxclp' : 50000}                   # maximum numver of variogram point cloud to use, input int
+                    'maxclp' : 50000}                   # maximum number of variogram point cloud to use, input int
                     
                    
 
@@ -352,13 +338,13 @@ gamv_parameter_template = {
                     'bandwh' : [50],                    # bandwith h, array('f') with bounds (ndir)
                     'dip'    : [0],                     # dip, array('f') with bounds (ndir)
                     'dtol'   : [22.5],                  # dip tolerance, array('f') with bounds (ndir)
-                    'bandwd' : [50],                    # bandwith dit, array('f') with bounds (ndir)
+                    'bandwd' : [50],                    # bandwith d, array('f') with bounds (ndir)
                     'isill'  : 0,                       # standardize sills? (0=no, 1=yes), int
                     'sills'  : [100],                   # variance used to std the sills, array('f') with bounds (nv)
                     'ivtail' : [1],                     # tail var., array('i') with bounds (nvarg), nvarg is number of variograms
                     'ivhead' : [1],                     # head var., array('i') with bounds (nvarg)
                     'ivtype' : [1],                     # variogram type, array('i') with bounds (nvarg)
-                    'maxclp' : 50000}                   # maximum numver of variogram point cloud to use, input int
+                    'maxclp' : 50000}                   # maximum number of variogram point cloud to use, input int
 """
 This is a dummy gamv parameter dict. 
 { 'x'      :  [1,2,3,4,5,6,7,8,9],    # X coordinates, array('f') with bounds (nd), nd is number of data points
@@ -376,19 +362,19 @@ This is a dummy gamv parameter dict.
   'bandwh' : [50],                    # bandwith h, array('f') with bounds (ndir)
   'dip'    : [0],                     # dip, array('f') with bounds (ndir)
   'dtol'   : [22.5],                  # dip tolerance, array('f') with bounds (ndir)
-  'bandwd' : [50],                    # bandwith dit, array('f') with bounds (ndir)
+  'bandwd' : [50],                    # bandwith d, array('f') with bounds (ndir)
   'isill'  : 0,                       # standardize sills? (0=no, 1=yes), int
   'sills'  : [100],                   # variance used to std the sills, array('f') with bounds (nv)
   'ivtail' : [1],                     # tail var., array('i') with bounds (nvarg), nvarg is number of variograms
   'ivhead' : [1],                     # head var., array('i') with bounds (nvarg)
   'ivtype' : [1],                     # variogram type, array('i') with bounds (nvarg)
-  'maxclp' : 50000}                   # maximum numver of variogram point cloud to use, input int
+  'maxclp' : 50000}                   # maximum number of variogram point cloud to use, input int
 }
 
 Notes
 -----
 Note that data are passed as array like (and not as file path, like in the standalone gslib function gamv).
-Any numpy or list may work as input data but make sure that `x,y,z,bhid,vr` have the same dimentions. 
+Any numpy or list may work as input data but make sure that `x,y,z,bhid,vr` have the same dimensions. 
 For multivariate data use ndarray/lists to define `vr`. 
 
 """
@@ -485,13 +471,13 @@ def check_gamv_par(parameters):
                     'bandwh' : [50,10,10],              # bandwith h, array('f') with bounds (ndir)
                     'dip'    : [0,0,0],                 # dip, array('f') with bounds (ndir)
                     'dtol'   : [10,10,10],              # dip tolerance, array('f') with bounds (ndir)
-                    'bandwd' : [10,10,10],              # bandwith dit, array('f') with bounds (ndir)
+                    'bandwd' : [10,10,10],              # bandwith d, array('f') with bounds (ndir)
                     'isill'  : 0,                       # standardize sills? (0=no, 1=yes), int
                     'sills'  : [100],                   # variance used to std the sills, array('f') with bounds (nv)
                     'ivtail' : [1,1,1,1,1,1,1],         # tail var., array('i') with bounds (nvarg), nvarg is number of variograms
                     'ivhead' : [1,1,1,1,1,1,1],         # head var., array('i') with bounds (nvarg)
                     'ivtype' : [1,3,4,5,6,7,8],         # variogram type, array('i') with bounds (nvarg)
-                    'maxclp' : 50000}                   # maximum numver of variogram point cloud to use, input int
+                    'maxclp' : 50000}                   # maximum number of variogram point cloud to use, input int
 
 
     Returns
