@@ -48,7 +48,7 @@ Install dependencies:
 
 
 
-Install PyGSLIB with  `<easy_install>` or `<pip>`:
+Install PyGSLIB with  `easy_install` or `pip`:
 
 
 
@@ -67,7 +67,7 @@ Install dependencies, including mingw which comes with gfortran:
     C:\>conda install mingw numpy pandas matplotlib 
 
 
-Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 32 bits compiler:
+Install PyGSLIB with  `easy_install` or `pip` using gfortran 32 bits compiler:
 
 
     C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib
@@ -92,7 +92,7 @@ Install mingw with 64 bit compiler
 
 
 
-Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 64 bits compiler:
+Install PyGSLIB with  `easy_install` or `pip` using gfortran 64 bits compiler:
 
 
     C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib
