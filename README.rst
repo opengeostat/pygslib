@@ -67,7 +67,7 @@ Install dependencies, including mingw which comes with gfortran:
 ``C:\>conda install mingw numpy pandas matplotlib``
 
 
-Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 32 bits compiler:
+Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 32 bits compiler
 
 
 ``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
@@ -97,14 +97,12 @@ Install PyGSLIB with  `easy_install` or `pip` using gfortran 64 bits compiler:
 
 ``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
 
-If you get an error like this 
+If you get an error like this::
 
+    File "C:\Users\Your_Path_Here\Anaconda\envs\test3\lib\site-packages\numpy\distutils\fcompiler\gnu.py", 
+    line 337, in get_libraries raise NotImplementedError("Only MS compiler supported with gfortran on win64")
+    NotImplementedError: Only MS compiler supported with gfortran on win64
 
-```
- File "C:\Users\Your_Path_Here\Anaconda\envs\test3\lib\site-packages\numpy\distutils\fcompiler\gnu.py", 
- line 337, in get_libraries raise NotImplementedError("Only MS compiler supported with gfortran on win64")
- NotImplementedError: Only MS compiler supported with gfortran on win64
-```
 
 
 Don't worry, this is a known issue in numpys distutils. Go to the file 
