@@ -89,7 +89,7 @@ Install mingw with 64 bit compiler
 
 
 ``` 
-C:\>conda install -c https://conda.binstar.org/omnia mingwpy 
+ C:\>conda install -c https://conda.binstar.org/omnia mingwpy 
 ```
 
 
