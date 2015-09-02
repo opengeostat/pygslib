@@ -44,7 +44,7 @@ Installation in Anaconda 32/64 bits distribution   (Linux)
 Install dependencies: 
 
 
- ``$ conda install numpy pandas matplotlib ``
+$ conda install numpy pandas matplotlib
 
 
 Install PyGSLIB with  ``easy_install`` or ``pip``:
