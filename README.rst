@@ -100,9 +100,9 @@ Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 64 bits compile
 If you get an error like this 
 
  
->File "C:\Users\Your_Path_Here\Anaconda\envs\test3\lib\site-packages\numpy\distutils\fcompiler\gnu.py", 
-            line 337, in get_libraries raise NotImplementedError("Only MS compiler supported with gfortran on win64")
-            NotImplementedError: Only MS compiler supported with gfortran on win64
+     File "C:\Users\Your_Path_Here\Anaconda\envs\test3\lib\site-packages\numpy\distutils\fcompiler\gnu.py", 
+     line 337, in get_libraries raise NotImplementedError("Only MS compiler supported with gfortran on win64")
+     NotImplementedError: Only MS compiler supported with gfortran on win64
 
 
 
@@ -127,12 +127,6 @@ around the line 337 you will see
 ```
 
 rewrite the code like this
-
-```
-x = 0
-x = 2 + 2
-what is x
-```
 
 
 ```ruby
