@@ -52,7 +52,7 @@ Install PyGSLIB with  ``easy_install`` or ``pip``:
 
 
 
-``$ pip install opengeostat``
+``$ pip install pygslib``
 
 
 
