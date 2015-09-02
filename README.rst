@@ -109,15 +109,14 @@ If you get an error like this
 
 Don't worry, this is a known issue in numpys distutils. Go to the file 
 
-    C:\Users\YYOUR_USER_NAME\Anaconda\lib\site-packages\numpy\distutils\fcompiler\gnu.py
+``C:\Users\YYOUR_USER_NAME\Anaconda\lib\site-packages\numpy\distutils\fcompiler\gnu.py``
 
 or this file, if you are installing PyGSLIB in an environment
 
-    C:\Users\YYOUR_USER_NAME\Anaconda\envs\YOUR_ENVIRONMENT\lib\site-packages\numpy\distutils\fcompiler\gnu.py
+``C:\Users\YYOUR_USER_NAME\Anaconda\envs\YOUR_ENVIRONMENT\lib\site-packages\numpy\distutils\fcompiler\gnu.py``
 
-around the line 337 you will see 
+around the line 337 you will see::
 
-```python
     if is_win64():
         c_compiler = self.c_compiler
         if c_compiler and c_compiler.compiler_type == "msvc":
@@ -125,19 +124,17 @@ around the line 337 you will see
         else:
             raise NotImplementedError("Only MS compiler supported with gfortran on win64")
 
-``` 
-
-rewrite the code like this
 
 
-```python
+rewrite the code like this::
+
 	if is_win64():
 		c_compiler = self.c_compiler
 		if c_compiler and c_compiler.compiler_type == "msvc":
 		    return []
 		else:
 		    return [] #raise NotImplementedError("Only MS compiler supported with gfortran on win64")
-```
+
 
 
 and rerun
@@ -162,7 +159,7 @@ Copyright 2015, Adrian Martinez Vargas
 Supported by Opengeostat Consulting @ http://opengeostat.com/
 
                                                                  
-This software may be modified and distributed under the terms  of the MIT license.  See the LICENSE.txt file for details.  
+This software may be modified and distributed under the terms  of the MIT license.  See the LICENSE.txt file for details.
 
 Wed 02 Sep 2015 
 
