@@ -128,6 +128,13 @@ around the line 337 you will see
 
 rewrite the code like this
 
+```
+x = 0
+x = 2 + 2
+what is x
+```
+
+
 ```ruby
             # XXX: fix this mess, does not work for mingw
             if is_win64():
