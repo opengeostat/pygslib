@@ -28,7 +28,7 @@ If you are planning to use or modify this library you may understand the code or
 
 1. A "**low level**" python module(s) generated automatically from FORTRAN 90 code (modified from the original FORTRAN 77 code and some non standard GSLIB programs). To compile the fortran code into python module we use f2py. This modules are "hided" (named __f*module name*.so) 
 2. The python module(s) interfacing the module auto-generated with f2py and FORTRAN code. These are for high end users only and to develop algorithms. The examples (Ipython notebooks) that use this code are named with prefix *_raw*.
-3. The algorithms modules, which are intended to simplify the use of pygslib.  
+3. The algorithms modules, which are intended to simplify the use of pygslib.
 
 Installation in Anaconda distribution (Linux/Window/OS)
 ------------
@@ -44,15 +44,15 @@ Installation in Anaconda 32/64 bits distribution   (Linux)
 Install dependencies: 
 
  
-    $ conda install numpy pandas matplotlib 
+``$ conda install numpy pandas matplotlib``
 
 
 
-Install PyGSLIB with  `easy_install` or `pip`:
+Install PyGSLIB with  ``easy_install`` or ``pip``:
 
 
 
-    $ pip install opengeostat 
+``$ pip install opengeostat``
 
 
 
@@ -64,13 +64,13 @@ Installation in Anaconda 32 bits distribution (Windows)
 Install dependencies, including mingw which comes with gfortran: 
 
 
-    C:\>conda install mingw numpy pandas matplotlib 
+``C:\>conda install mingw numpy pandas matplotlib``
 
 
-Install PyGSLIB with  `easy_install` or `pip` using gfortran 32 bits compiler:
+Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 32 bits compiler:
 
 
-    C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib
+``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
 
 
 
@@ -80,7 +80,7 @@ Install dependencies:
 
  
 
-    C:\>conda install numpy pandas matplotlib 
+``C:\>conda install numpy pandas matplotlib`` 
 
 
 
@@ -88,22 +88,23 @@ Install mingw with 64 bit compiler
 
 
 
-    C:\>conda install -c https://conda.binstar.org/omnia mingwpy 
+``C:\>conda install -c https://conda.binstar.org/omnia mingwpy ``
 
 
 
 Install PyGSLIB with  `easy_install` or `pip` using gfortran 64 bits compiler:
 
 
-    C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib
+``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
 
 If you get an error like this 
 
- 
-     File "C:\Users\Your_Path_Here\Anaconda\envs\test3\lib\site-packages\numpy\distutils\fcompiler\gnu.py", 
-     line 337, in get_libraries raise NotImplementedError("Only MS compiler supported with gfortran on win64")
-     NotImplementedError: Only MS compiler supported with gfortran on win64
 
+```
+ File "C:\Users\Your_Path_Here\Anaconda\envs\test3\lib\site-packages\numpy\distutils\fcompiler\gnu.py", 
+ line 337, in get_libraries raise NotImplementedError("Only MS compiler supported with gfortran on win64")
+ NotImplementedError: Only MS compiler supported with gfortran on win64
+```
 
 
 Don't worry, this is a known issue in numpys distutils. Go to the file 
@@ -116,27 +117,26 @@ or this file, if you are installing PyGSLIB in an environment
 
 around the line 337 you will see 
 
-``` 
-    # XXX: fix this mess, does not work for mingw
+```python
     if is_win64():
         c_compiler = self.c_compiler
         if c_compiler and c_compiler.compiler_type == "msvc":
             return []
         else:
             raise NotImplementedError("Only MS compiler supported with gfortran on win64")
+
 ``` 
 
 rewrite the code like this
 
 
-```
-    # XXX: fix this mess, does not work for mingw
-    if is_win64():
-        c_compiler = self.c_compiler
-        if c_compiler and c_compiler.compiler_type == "msvc":
-            return []
-        else:
-            return [] #raise NotImplementedError("Only MS compiler supported with gfortran on win64")
+```python
+	if is_win64():
+		c_compiler = self.c_compiler
+		if c_compiler and c_compiler.compiler_type == "msvc":
+		    return []
+		else:
+		    return [] #raise NotImplementedError("Only MS compiler supported with gfortran on win64")
 ```
 
 
@@ -151,7 +151,7 @@ This may fix the problem
 
 Usage
 -----
-See the Ipython noteebooks provided in the folder `pygslib/Ipython_templates`. 
+See the Ipython noteebooks provided in the folder ``pygslib/Ipython_templates``. 
 
 
 
