@@ -34,7 +34,7 @@ class PyTest(TestCommand):
 	2 for release candidate
 	3 for (final) release
 """
-version = '0.0.0.1'
+version = '0.0.0.2'
 
 if __name__ == '__main__':
      

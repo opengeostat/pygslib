@@ -58,8 +58,8 @@ def version():
                'minor':0 , 
                'maintenance':0, 
                'build':2, 
-               'month':7, 
-               'year':2016}
+               'month':9, 
+               'year':2015}
 
     osplatform=platform.platform()
 
