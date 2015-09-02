@@ -44,13 +44,17 @@ Installation in Anaconda 32/64 bits distribution   (Linux)
 Install dependencies: 
 
 
-$ conda install numpy pandas matplotlib
+``` 
+ $ conda install numpy pandas matplotlib 
+```
 
 
 Install PyGSLIB with  ``easy_install`` or ``pip``:
 
 
- ``$ pip install opengeostat ``
+```
+$ pip install opengeostat 
+```
 
 
 You may need access to gfortran compiler to compile the FORTRAN code. This is usually available in Linux most linux distributions. 
@@ -60,11 +64,15 @@ Installation in Anaconda 32 bits distribution (Windows)
 ------------
 Install dependencies, including mingw which comes with gfortran: 
 
- ```C:\>conda install mingw numpy pandas matplotlib ```
+```
+C:\>conda install mingw numpy pandas matplotlib 
+```
 
 Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 32 bits compiler:
 
- ```C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib ```
+```
+C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib
+```
 
 
 Installation in Anaconda 64 bits distribution  (Windows)
@@ -72,13 +80,17 @@ Installation in Anaconda 64 bits distribution  (Windows)
 Install dependencies: 
 
  
- ```C:\>conda install numpy pandas matplotlib ```
+```
+C:\>conda install numpy pandas matplotlib 
+```
 
 
 Install mingw with 64 bit compiler
 
 
- ``` C:\>conda install -c https://conda.binstar.org/omnia mingwpy ```
+``` 
+C:\>conda install -c https://conda.binstar.org/omnia mingwpy 
+```
 
 
 Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 64 bits compiler:
@@ -130,7 +142,9 @@ rewrite the code like this
 
 and rerun
 
- ```C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib ```
+```
+C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib 
+```
 
 This may fix the problem
 
