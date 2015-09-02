@@ -116,7 +116,7 @@ or this file, if you are installing PyGSLIB in an environment
 
 around the line 337 you will see 
 
-```python
+``` python
             # XXX: fix this mess, does not work for mingw
             if is_win64():
                 c_compiler = self.c_compiler
@@ -128,7 +128,7 @@ around the line 337 you will see
 
 rewrite the code like this
 
-```python
+```ruby
             # XXX: fix this mess, does not work for mingw
             if is_win64():
                 c_compiler = self.c_compiler
