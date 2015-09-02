@@ -116,34 +116,34 @@ or this file, if you are installing PyGSLIB in an environment
 
 around the line 337 you will see 
 
-```
-            # XXX: fix this mess, does not work for mingw
-            if is_win64():
-                c_compiler = self.c_compiler
-                if c_compiler and c_compiler.compiler_type == "msvc":
-                    return []
-                else:
-                    raise NotImplementedError("Only MS compiler supported with gfortran on win64")
-```
+``` 
+    # XXX: fix this mess, does not work for mingw
+    if is_win64():
+        c_compiler = self.c_compiler
+        if c_compiler and c_compiler.compiler_type == "msvc":
+            return []
+        else:
+            raise NotImplementedError("Only MS compiler supported with gfortran on win64")
+``` 
 
 rewrite the code like this
 
 
 ```
-            # XXX: fix this mess, does not work for mingw
-            if is_win64():
-                c_compiler = self.c_compiler
-                if c_compiler and c_compiler.compiler_type == "msvc":
-                    return []
-                else:
-                    return [] #raise NotImplementedError("Only MS compiler supported with gfortran on win64")
+    # XXX: fix this mess, does not work for mingw
+    if is_win64():
+        c_compiler = self.c_compiler
+        if c_compiler and c_compiler.compiler_type == "msvc":
+            return []
+        else:
+            return [] #raise NotImplementedError("Only MS compiler supported with gfortran on win64")
 ```
 
 
 and rerun
 
 
-    C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib 
+``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
 
 
 This may fix the problem
