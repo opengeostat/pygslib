@@ -35,6 +35,7 @@ requirements:
     - matplotlib
     - mock
     - nose
+    - mingwpy
 
   run:
     - python
