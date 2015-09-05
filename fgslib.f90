@@ -176,6 +176,250 @@ end subroutine version
 end subroutine setrot
 
 
+real*8 function sqdist(x1,y1,z1,x2,y2,z2,ind,maxrot,rotmat)
+    !-----------------------------------------------------------------------
+    !
+    !    Squared Anisotropic Distance Calculation Given Matrix Indicator
+    !    ***************************************************************
+    !
+    ! This routine calculates the anisotropic distance between two points
+    !  given the coordinates of each point and a definition of the
+    !  anisotropy.
+    !
+    !
+    ! INPUT VARIABLES:
+    !
+    !   x1,y1,z1         Coordinates of first point
+    !   x2,y2,z2         Coordinates of second point
+    !   ind              The rotation matrix to use
+    !   maxrot           The maximum number of rotation matrices dimensioned
+    !   rotmat           The rotation matrices
+    !
+    !
+    !
+    ! OUTPUT VARIABLES:
+    !
+    !   sqdis           The squared distance accounting for the anisotropy
+    !                      and the rotation of coordinates (if any).
+    !
+    !
+    ! NO EXTERNAL REFERENCES
+    !
+    !
+    !-----------------------------------------------------------------------
+     
+    implicit none
+
+    ! input
+    integer, intent(in) ::  maxrot, ind
+    real*8, intent(in):: x1,y1,z1,x2,y2,z2
+    real*8, intent(in), dimension(maxrot,3,3) ::  rotmat
+
+    
+    ! output
+    ! real*8 :: sqdis
+
+    ! Internal 
+    real*8 :: cont,dx,dy,dz
+    integer  :: i
+
+    !
+    ! Compute component distance vectors and the squared distance:
+    !
+      dx = dble(x1 - x2)
+      dy = dble(y1 - y2)
+      dz = dble(z1 - z2)
+      sqdist = 0.0
+      do i=1,3
+            cont   = rotmat(ind,i,1) * dx &
+                   + rotmat(ind,i,2) * dy &
+                   + rotmat(ind,i,3) * dz
+            sqdist = sqdist + cont * cont
+      end do
+    return
+end function sqdist
+
+! TODO delete this
+! *** test funtion for ind in rotmatrix
+subroutine testind(ind,maxrot,rotmat, mtout)
+    ! delete this      
+    implicit none
+
+    ! input
+    integer, intent(in) ::  maxrot, ind
+    real*8, intent(in), dimension(maxrot,3,3) ::  rotmat
+    real*8, intent(out), dimension(3,3) ::  mtout
+
+	integer :: i, j
+
+    do i=1,3
+        do j=1,3
+           mtout(i,j)=rotmat(ind,i,j)
+        end do
+    end do
+  
+    ! return
+end subroutine testind
+
+
+
+
+subroutine cova3(x1,y1,z1,x2,y2,z2,ivarg,nst,c0,it,cc,aa, &
+    irot,maxrot,rotmat,cmax,cova)
+    !-----------------------------------------------------------------------
+
+    !                    Covariance Between Two Points
+    !                    *****************************
+
+    ! This subroutine calculated the covariance associated with a variogram
+    ! model specified by a nugget effect and nested varigoram structures.
+    ! The anisotropy definition can be different for each nested structure.
+
+
+
+    ! INPUT VARIABLES:
+
+    !   x1,y1,z1         coordinates of first point
+    !   x2,y2,z2         coordinates of second point
+    !   nst(ivarg)       number of nested structures (maximum of 4)
+    !   ivarg            variogram number (set to 1 unless doing cokriging
+    !                       or indicator kriging and in this case use same number of structures in all variograms)
+    !   c0(ivarg)        isotropic nugget constant
+    !   it(i)            type of each nested structure:
+    !                      1. spherical model of range a;
+    !                      2. exponential model of parameter a;
+    !                           i.e. practical range is 3a
+    !                      3. gaussian model of parameter a;
+    !                           i.e. practical range is a*sqrt(3)
+    !                      4. power model of power a (a must be gt. 0  and
+    !                           lt. 2).  if linear model, a=1,c=slope.
+    !                      5. hole effect model
+    !   cc(i)            multiplicative factor of each nested structure.
+    !                      (sill-c0) for spherical, exponential,and gaussian
+    !                      slope for linear model.
+    !   aa(i)            parameter "a" of each nested structure.
+    !   irot             index of the rotation matrix for the first nested
+    !                    structure (the second nested structure will use
+    !                    irot+1, the third irot+2, and so on)
+    !   maxrot           size of rotation matrix arrays
+    !   rotmat           rotation matrices
+    ! 
+    !  Note that aa, it and cc are 1D arrays with size (MXVARG*MAXNST).     
+    !  MAXNST was removed from this code and recalculated as MAXROT=MAXNST+1
+    !  MXVARG is equal to ivarg
+    ! 
+    ! OUTPUT VARIABLES:
+
+    !   cmax             maximum covariance
+    !   cova             covariance between (x1,y1,z1) and (x2,y2,z2)
+
+
+
+    ! EXTERNAL REFERENCES: sqdist    computes anisotropic squared distance
+    !                      rotmat    computes rotation matrix for distance
+    !-----------------------------------------------------------------------
+
+    implicit none
+
+    ! input
+    real*8, intent(in) :: x1,y1,z1,x2,y2,z2
+    integer, intent(in) :: ivarg, irot,maxrot
+    integer, intent(in), dimension(ivarg) :: nst, it
+    real*8, intent(in), dimension(ivarg) :: c0
+    real*8, intent(in), dimension((maxrot-1)*ivarg) :: cc, aa
+    real*8, intent(in), dimension(maxrot,3,3) :: rotmat
+
+    ! output
+    real*8, intent(out) :: cmax, cova
+
+    ! internal variables
+    real*8 ::    hsqd,sqdist, maxnst, h, hr
+    integer :: ir, is, ist, istart
+    
+    !parameters
+    real*8 :: DEG2RAD,EPSLON,PI,PMX
+ 
+    DEG2RAD=3.141592654/180.0
+    EPSLON=1.e-20
+    PI=3.14159265
+    PMX=999.
+    EPSLON=1.e-10
+
+
+ 
+    ! Calculate the maximum covariance value (used for zero distances and
+    ! for power model covariance):
+
+    maxnst=maxrot-1
+    istart = 1 + (ivarg-1)*maxnst
+    cmax   = c0(ivarg)
+    do is=1,nst(ivarg)
+        ist = istart + is - 1
+        if(it(ist) == 4) then
+            cmax = cmax + PMX
+        else
+            cmax = cmax + cc(ist)
+        endif
+    end do
+
+    ! Check for "zero" distance, return with cmax if so:
+
+    hsqd = sqdist(x1,y1,z1,x2,y2,z2,irot,maxrot,rotmat)
+    if(real(hsqd) < EPSLON) then
+        cova = cmax
+        return
+    endif
+
+    ! Loop over all the structures:
+
+    cova = 0.0
+    do is=1,nst(ivarg)
+        ist = istart + is - 1
+    
+    ! Compute the appropriate distance:
+    
+        if(ist /= 1) then
+            ir = min((irot+is-1),maxrot)
+            hsqd=sqdist(x1,y1,z1,x2,y2,z2,ir,maxrot,rotmat)
+        end if
+        h = real(dsqrt(hsqd))
+    
+    ! Spherical Variogram Model?
+    
+        if(it(ist) == 1) then
+            hr = h/aa(ist)
+            if(hr < 1.) cova=cova+cc(ist)*(1.-hr*(1.5-.5*hr*hr))
+        
+        ! Exponential Variogram Model?
+        
+        else if(it(ist) == 2) then
+            cova = cova + cc(ist)*exp(-3.0*h/aa(ist))
+        
+        ! Gaussian Variogram Model?
+        
+        else if(it(ist) == 3) then
+            cova = cova + cc(ist)*exp(-(3.0*h/aa(ist)) &
+            *(3.0*h/aa(ist)))
+        
+        ! Power Variogram Model?
+        
+        else if(it(ist) == 4) then
+            cova = cova + cmax - cc(ist)*(h**aa(ist))
+        
+        ! Hole Effect Model?
+        
+        else if(it(ist) == 5) then
+        !                 d = 10.0 * aa(ist)
+        !                 cova = cova + cc(ist)*exp(-3.0*h/d)*cos(h/aa(ist)*PI)
+            cova = cova + cc(ist)*cos(h/aa(ist)*PI)
+        endif
+    end do
+
+    ! Finished:
+
+    return
+
+end subroutine cova3
 
 
 !*********************************************************************************
@@ -1129,70 +1373,70 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
                 np, gam, hm, tm, hv, tv)                           ! output
 
 
-	!-----------------------------------------------------------------------
+    !-----------------------------------------------------------------------
 
-	!                Variogram of Data on a Regular Grid
-	!                ***********************************
+    !                Variogram of Data on a Regular Grid
+    !                ***********************************
 
-	! This subroutine computes any of eight different measures of spatial
-	! continuity for regular spaced 3-D data.  Missing values are allowed
-	! and the grid need not be cubic.
-
-
-
-	! INPUT VARIABLES:
-
-	!   nlag             Maximum number of lags to be calculated
-	!   nx               Number of units in x (number of columns)
-	!   ny               Number of units in y (number of lines)
-	!   nz               Number of units in z (number of levels)
-	!   ndir             Number of directions to consider
-	!   ixd(ndir)        X (column) indicator of direction - number of grid
-	!                      columns that must be shifted to move from a node
-	!                      on the grid to the next nearest node on the grid
-	!                      which lies on the directional vector
-	!   iyd(ndir)        Y (line) indicator of direction - similar to ixd,
-	!                      number of grid lines that must be shifted to
-	!                      nearest node which lies on the directional vector
-	!   izd(ndir)        Z (level) indicator of direction - similar to ixd,
-	!                      number of grid levels that must be shifted to
-	!                      nearest node of directional vector
-	!   nv               The number of variables
-	!   vr(nx*ny*nz*nv)  Array of data
-	!   tmin,tmax        Trimming limits
-	!   isill            1=attempt to standardize, 0=do not
-	!   sills            the sills (variances) to standardize with
-	!   nvarg            Number of variograms to compute
-	!   ivtail(nvarg)    Variable for the tail of the variogram
-	!   ivhead(nvarg)    Variable for the head of the variogram
-	!   ivtype(nvarg)    Type of variogram to compute:
-	!                      1. semivariogram
-	!                      2. cross-semivariogram
-	!                      3. covariance
-	!                      4. correlogram
-	!                      5. general relative semivariogram
-	!                      6. pairwise relative semivariogram
-	!                      7. semivariogram of logarithms
-	!                      8. madogram
-	!                      9. indicator semivariogram: an indicator variable
-	!                         is constructed in the main program.
-
-	! OUTPUT VARIABLES:  The following arrays are ordered by direction,
-	!                    then variogram, and finally lag, i.e.,
-	!                      iloc = (id-1)*nvarg*nlag+(iv-1)*nlag+il
-
-	!   np()             Number of pairs
-	!   gam()            Semivariogram, covariance, correlogram,... value
-	!   hm()             Mean of the tail data
-	!   tm()             Mean of the head data
-	!   hv()             Variance of the tail data
-	!   tv()             Variance of the head data
+    ! This subroutine computes any of eight different measures of spatial
+    ! continuity for regular spaced 3-D data.  Missing values are allowed
+    ! and the grid need not be cubic.
 
 
 
-	! Original:  A.G. Journel                                           1978
-	! Revisions: B.E. Buxton                                       Apr. 1982
-	!-----------------------------------------------------------------------
+    ! INPUT VARIABLES:
+
+    !   nlag             Maximum number of lags to be calculated
+    !   nx               Number of units in x (number of columns)
+    !   ny               Number of units in y (number of lines)
+    !   nz               Number of units in z (number of levels)
+    !   ndir             Number of directions to consider
+    !   ixd(ndir)        X (column) indicator of direction - number of grid
+    !                      columns that must be shifted to move from a node
+    !                      on the grid to the next nearest node on the grid
+    !                      which lies on the directional vector
+    !   iyd(ndir)        Y (line) indicator of direction - similar to ixd,
+    !                      number of grid lines that must be shifted to
+    !                      nearest node which lies on the directional vector
+    !   izd(ndir)        Z (level) indicator of direction - similar to ixd,
+    !                      number of grid levels that must be shifted to
+    !                      nearest node of directional vector
+    !   nv               The number of variables
+    !   vr(nx*ny*nz*nv)  Array of data
+    !   tmin,tmax        Trimming limits
+    !   isill            1=attempt to standardize, 0=do not
+    !   sills            the sills (variances) to standardize with
+    !   nvarg            Number of variograms to compute
+    !   ivtail(nvarg)    Variable for the tail of the variogram
+    !   ivhead(nvarg)    Variable for the head of the variogram
+    !   ivtype(nvarg)    Type of variogram to compute:
+    !                      1. semivariogram
+    !                      2. cross-semivariogram
+    !                      3. covariance
+    !                      4. correlogram
+    !                      5. general relative semivariogram
+    !                      6. pairwise relative semivariogram
+    !                      7. semivariogram of logarithms
+    !                      8. madogram
+    !                      9. indicator semivariogram: an indicator variable
+    !                         is constructed in the main program.
+
+    ! OUTPUT VARIABLES:  The following arrays are ordered by direction,
+    !                    then variogram, and finally lag, i.e.,
+    !                      iloc = (id-1)*nvarg*nlag+(iv-1)*nlag+il
+
+    !   np()             Number of pairs
+    !   gam()            Semivariogram, covariance, correlogram,... value
+    !   hm()             Mean of the tail data
+    !   tm()             Mean of the head data
+    !   hv()             Variance of the tail data
+    !   tv()             Variance of the head data
+
+
+
+    ! Original:  A.G. Journel                                           1978
+    ! Revisions: B.E. Buxton                                       Apr. 1982
+    !-----------------------------------------------------------------------
 
 
     !for safety reason we don't want undeclared variables
@@ -1204,7 +1448,7 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
     
     real, intent(in), dimension(nx*ny*nz*nv) :: vr
     real, intent(in), dimension(nv)       :: sills
-    real, intent(in)                      :: tmin, tmax, xsiz,ysiz,zsiz	
+    real, intent(in)                      :: tmin, tmax, xsiz,ysiz,zsiz    
     real*8, intent(out), dimension(ndir*(nlag+2)*nvarg)  :: np, gam, hm, tm, hv, tv
 
     ! TODO: np is real here, see if we may declare this as integer
