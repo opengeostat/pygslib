@@ -2711,6 +2711,14 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     !-----------------------------------------------------------------------
 
 
+    ! TODO: simplify this function as mush as possible
+    !      - split search in to external function (use kdtree for speed)
+    !      - remove unnecessary variables output an options  
+    !      - store the debugging info in the last estimate (to test use a single block estimate)
+    
+    ! TODO: consider rewriting this as a single block estimate and iterate in Python 
+    !       use Cython, Numba and parallel computing as way to speed the process 
+
     !for safety reason we don't want undeclared variables
     IMPLICIT NONE 
 
@@ -2750,9 +2758,11 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     ! drift
     real*8, intent(out) ::  bv(9)
     ! the samples around the block (last block) we may use this to test estimate in a single block
+    ! TODO: fix this, the samples are shift, remove from output and use single block to test. 
     real*8, intent(out), dimension(nd) :: close
     integer, intent(out) :: nclose, infoct, na
     real*8, intent(out), dimension(ndmax)  ::  xa,ya,za,vra, vea
+    ! TODO: add here variables with estimate
     
   
     ! internal 
@@ -3007,6 +3017,10 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
             resce  = covmax / max(extest,0.0001)
         endif
         
+        
+        ! FROM AAAAAAA  Put this in a separate function to isolate and add more options (use kdtree for speed, see example scipy)
+        ! ----------------------------------------------------------------------------------------------------------------        
+        
         ! Find the nearest samples:
     
         call srchsupr(xloc,yloc,zloc,radsqd,isrot,MAXROT,rotmat,nsbtosr, &
@@ -3058,6 +3072,12 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
         ! ' enough data for OK or SK.   KT3D currently leaves ',/, &
         ! ' these locations unestimated.',/, &
         ! ' This message is only written once - the first time.',/)
+    
+    
+        ! To AAAAAAA -> Put this in a separate function to isolate and add more options (use kdtree for speed, see example scipy)
+        ! ----------------------------------------------------------------------------------------------------------------
+    
+    
     
         ! There are enough samples - proceed with estimation.
         
