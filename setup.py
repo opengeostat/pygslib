@@ -12,7 +12,11 @@ from setuptools.command.test import test as TestCommand
 from numpy.distutils.core import Extension
 
 fgslib = Extension(name = 'pygslib.__fgslib',
-                 sources = ['fgslib.f90'])
+                 sources = ['fgslib.f90'] )
+
+# gere use f2py_options=['skip:']+['myfoo']+[':']
+# or       f2py_options=['only:']+['myfoo']+[':'] 
+# or       f2py_options=['only:', 'myfoo1', 'myfoo2', ':']
 
 # This is a plug-in for setuptools that will invoke py.test
 # when you run python setup.py test
