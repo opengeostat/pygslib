@@ -339,8 +339,8 @@ subroutine cova3(x1,y1,z1,x2,y2,z2,ivarg,nst,c0,it,cc,aa, &
     real*8, intent(out) :: cmax, cova
 
     ! internal variables
-    real*8 ::    hsqd, maxnst, h, hr
-    integer :: ir, is, ist, istart
+    real*8 ::    hsqd, h, hr
+    integer :: ir, is, ist, istart, maxnst
     
     !parameters
     real*8 :: DEG2RAD,EPSLON,PI,PMX
@@ -503,7 +503,7 @@ subroutine block_covariance(xdb,ydb,zdb, ndb, &
     real*8, dimension(nst) :: anis1, anis2
     real*8, dimension(nst,3,3) :: rotmat
     real*8 ::  EPSLON=1.e-20, PMX=999.
-    integer :: i, is, j, MAXROT
+    integer :: i, is, j
     
     
     
@@ -621,8 +621,8 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
     implicit none
 
 
-	!external references
-	real*8,external :: sqdist
+    !external references
+    real*8,external :: sqdist
 
     !input
     integer, intent(in) :: nxsup, nysup, nzsup
@@ -634,7 +634,7 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
     integer, intent(in), dimension (nxsup*nysup*nzsup) :: nisb
     real*8, intent(in) :: xmnsup,xsizsup,ymnsup, ysizsup, zmnsup, zsizsup
 
-	!inout
+    !inout
     real*8, intent(inout), dimension(nd) :: tmp
 
     !out
@@ -1118,9 +1118,13 @@ subroutine sortem(ib,ie,a,iperm,b,c,d,e,f,g,h)
     real*8 :: a,b,c,d,e,f,g,h
     dimension a(*),b(*),c(*),d(*),e(*),f(*),g(*),h(*)
 
+    real*8 :: ta,tb,tc,td,te,tf,tg,th
+    real*8 :: xa,xb,xc,xd,xe,xf,xg,xh
+
     ! The dimensions for lt and ut have to be at least log (base 2) n
 
     integer ::   lt(64),ut(64),i,j,k,m,p,q
+ 
 
     ! Initialize:
 
@@ -2241,7 +2245,7 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
                 tmin, tmax, nlag,   &                            ! lag definition
                 ndir, ixd, iyd, izd,&                              ! directions and parameters
                 isill, sills, nvarg, ivtail, ivhead,ivtype,  &   ! variograms types and parameters
-                xsiz,ysiz,zsiz, &                                !dummy variable not used here
+                xsiz,ysiz,zsiz, &                                ! WARNING TODO dummy variable not used here, remove? 
                 np, gam, hm, tm, hv, tv)                           ! output
 
 
@@ -2326,21 +2330,18 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
     ! TODO: np is real here, see if we may declare this as integer
 
     !new variables
-    integer, intent(in), dimension(nx*ny*nz)         :: bhid
+    integer, intent(in), dimension(nx*ny*nz)         :: bhid             ! not implemented (use similar to gamv)
 
                
     ! some general declarations
     real*8 :: PI, EPSLON
     parameter(PI=3.14159265, EPSLON=1.0e-20)
     
-    real*8, dimension(ndir) :: uvxazm, uvyazm, uvzdec, uvhdec, csatol, csdtol
-    logical               :: omni
-
 
     !Extra Variables not declared in the original library
-    real*8  ::  htave, variance, vrh, vrhpr, vrt,  vrtpr
-    integer :: i, id, ii, iii, il, it, iv, nsiz, rnum
-    real*8 :: ixinc, iyinc, izinc, tempvar
+    real*8  ::  htave, variance, vrh, vrhpr, vrt,  vrtpr, tempvar
+    integer :: i, id, iii, il, it, iv, nsiz, rnum
+    integer :: ixinc, iyinc, izinc
     integer :: ix1, iy1, iz1, ix, iy, iz, index, nxy,nxyz
 
 
@@ -2484,7 +2485,7 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
             do il=1,nlag
                 i = (id-1)*nvarg*nlag+(iv-1)*nlag+il
                 if(np(i) == 0.) go to 6
-                rnum   = np(i)
+                rnum   = int(np(i))
                 gam(i) = gam(i) / dble(rnum)
                 hm(i)  = hm(i)  / dble(rnum)
                 tm(i)  = tm(i)  / dble(rnum)
@@ -2652,7 +2653,7 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
                 ktype, skmean,  koption, itrend, nxdis,nydis,nzdis,xdb,ydb,zdb, &
                 bv,ndmax, ndmin, xa,ya,za,vra, vea, na, &
                 ndjak, xlj, ylj, zlj, vrlj, extvj, &
-                UNEST)
+                UNEST, idrift )
     !-----------------------------------------------------------------------
 
     !                Krige a 3-D Grid of Rectangular Blocks
@@ -2662,54 +2663,82 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     ! simple, ordinary, or kriging with a trend model.  It is also possible
     ! to estimate the trend directly.
 
-
-
-    ! PROGRAM NOTES:
-
-    !   1. The data and parameters are passed in common blocks defined
-    !      in kt3d.inc.  Local storage is allocated in the subroutine
-    !      for kriging matrices, i.e.,
-    !         - xa,ya,za,vra   arrays for data within search neighborhood
-    !         - a,r,rr,s       kriging arrays
-    !         - xdb,ydb,zdb    relative position of discretization points
-    !         - cbb            block covariance
-    !   2. The kriged value and the kriging variance is written to Fortran
-    !      unit number "lout".
-
-
-
-
     ! Original:  A.G. Journel and C. Lemmer                             1981
     ! Revisions: A.G. Journel and C. Kostov                             1984
+
     
     ! 2015 changes
-    ! This is a funtion to be used from python... 
+    ! This is a function to be used from python... 
     ! TODO: add comments 
-    
-    ! input variables
-    !   - AXSAM    maximum number of data points to use in one kriging system
-    !   - MAXDT     maximum number of drift terms
-    !   - MAXEQ    maximum numb of equations
-    !   - MAXDIS maximum number of discretization points per block
-    !   - MAXNST (using nst)  maximum number of nested structures
-    !   - MAXDAT    maximum number of data points
-    !   - MAXSBX    maximum super block nodes in X direction
-    !   - MAXSBY    maximum super block nodes in Y direction    
-    !   - MAXSBZ    maximum super block nodes in Z direction
-    !   - 
-            
-  
-    
-    
-    ! output 
-    !   - cbb block covariance
-    !   - xa,ya,za,vra (MAXSAM) array with data used last block estimated
-    !   - a,r,rr,s              kriging arrays
-    !   - xdb,ydb,zdb           relative position of discretization points  (last block?)
-    !   - bv(9)                 mean drift value 
-    
-    !-----------------------------------------------------------------------
 
+
+    ! PARAMETERS:
+    ! Input: 
+    !  *Data points for estimation
+    !     nd                    - integer:  number of rows in the data
+    !     x(nd),y(nd),z(nd)     - [double]: coordinates 
+    !     vr(nd),ve(nd)         - [double]: variable and external drift
+    !      **add here BHID**
+    !     tmin,tmax             - double:   trimming limits
+    !     koption               - integer:  
+    !                                 0 kriging on grid 
+    !                                 1 cross validation with input data
+    !                                 2 jackknife in a separate file
+    !  *Jacknife (can be used to estimate in arbitrary block locations)
+    !     ndjak                 - integer:  number of rows in the jacknife file
+    !     xlj,ylj,zlj(ndjak)    - [double]: coordinates
+    !     vrlj,extvj(ndjak)     - [double]: variable and external drift
+    !  *Grid parameters (no rotation allowed)
+    !     nx,ny,nz              - integer: number of rows, columns and levels
+    !     xmn,ymn,zmn           - double:  block origin of coordinate
+    !     xsiz,ysiz,zsiz        - double:  block sizes
+    !     nxdis,nydis,nzdis     - integer: number of discretization points
+    !     extve(nx*ny*nz)       - external drift on grid    
+    !  *Search parameters                      
+    !     ndmax, ndmin          - integer: nmin, max data for estimate
+    !     radius, radius1, radius2 - double: ellipse radius
+    !     sang1, sang2, sang3      - double: ellipse rotation angles
+    !     noct                     - integer: maximum per octant
+    !     MAXSBX, MAXSBY, MAXSBZ   - integer: super-block definition
+    !                                    ** make sure the search ellipse    
+    !                                       fits in it. 
+    !  *Variogram 
+    !     nst(1)                   - [integer]: number of structures 
+    !     c0(1)                    - [double]: nugget effect    
+    !     it(nst)                  - [integer]: structure type 
+    !                                  1. spherical (range a)
+    !                                  2. exponential (p'range 3a)
+    !                                  3. gaussian (p'range a*sqrt(3))
+    !                                  4. power (0<a<2), if linear model, a=1,c=slope.
+    !                                  5. hole effect
+    !     cc(nst)                  - [double]: structure variance
+    !     aa, aa1, aa2(nst)        - [double]: structure ranges
+    !                                 ** aa is used to calculate anisotroy
+    !     ang1,ang2,ang3(nst)      - [double]: structure rotation angles
+    !                                 ** variable angles per structure allowed    
+    !  *Kriging parameters
+    !     ktype                    - integer: 0=SK,1=OK,2=non-st SK,3=exdrift
+    !     itrend                   - integer: 0, variable; 1, estimate trend
+    !     UNEST                    - double: non estimated values (ex. numpy.nan)
+    !     skmean                   - double: constant used for simple kriging mean
+    !                                      *warning this is an inout parameter*
+    !  *drift
+    !     idrift(9)                 - [logical]: if true will use or ignore
+    !                                           the following drift terms: 
+    !                                           x,y,z,xx,yy,zz,xy,xz,zy 
+    ! Output: 
+    !
+    !
+    !
+    !
+    !
+    !
+    ! Notes: 
+    ! The debugging levels were excluded and reported for the las block 
+    ! estimated
+
+    ! TODO: add masked grid support (example index where we whant to estimate)
+    ! TODO: consider a different array size for external drif to implement sparse grid (use index size)
 
     ! TODO: simplify this function as mush as possible
     !      - split search in to external function (use kdtree for speed)
@@ -2719,37 +2748,46 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     ! TODO: consider rewriting this as a single block estimate and iterate in Python 
     !       use Cython, Numba and parallel computing as way to speed the process 
 
+
+    
+    !-----------------------------------------------------------------------
+
+
+
+
     !for safety reason we don't want undeclared variables
     IMPLICIT NONE 
 
 
     ! in 
+    ! data 
+    integer, intent(in)               :: nd
+    real*8, intent(in), dimension(nd) :: x,y,z,vr, ve                   !vr->variable, ve->external drift
+    real*8, intent(in) :: tmin, tmax
+    integer, intent(in) :: koption
+    !Jacknife
+    integer, intent(in)               :: ndjak
+    real*8, intent(in), dimension(nd) :: xlj, ylj, zlj, vrlj, extvj
+    ! grid 
+    integer, intent(in) :: nx,ny,nz
+    real*8 , intent(in) :: xmn,ymn,zmn,xsiz,ysiz,zsiz
+    real*8 , intent(in), dimension(nx*ny*nz) :: extve
+    integer, intent(inout) :: nxdis,nydis,nzdis   
+    ! search
+    integer, intent(in) :: ndmax, ndmin
+    real*8, intent(in) :: radius, radius1, radius2, sang1, sang2, sang3
+        integer, intent(in) :: noct
+    integer, intent(in) :: MAXSBX, MAXSBY, MAXSBZ                        ! Don't like this, remove and use kdtree
     ! variogram
     integer, intent(in)  :: nst
     integer, intent(in), dimension(1)     :: it
     real*8, intent(in), dimension(1)      :: c0
     real*8, intent(in), dimension(nst) :: cc,aa, aa1, aa2,ang1,ang2,ang3
-    ! search
-    real*8, intent(in) :: radius, radius1, radius2, sang1, sang2, sang3
-    integer, intent(in) :: MAXSBX, MAXSBY, MAXSBZ
-    integer, intent(in) :: ndmax, ndmin
-    ! grid 
-    integer, intent(in) :: nx,ny,nz
-    real*8 , intent(in) :: xmn,ymn,zmn,xsiz,ysiz,zsiz
-    real*8 , intent(in), dimension(nx*ny*nz) :: extve
-    !Jacknife
-    integer, intent(in)               :: ndjak
-    real*8, intent(in), dimension(nd) :: xlj, ylj, zlj, vrlj, extvj
-    ! data 
-    integer, intent(in)               :: nd
-    real*8, intent(in), dimension(nd) :: x,y,z,vr, ve                   !vr->variable, ve->external drift
-    real*8, intent(in) :: tmin, tmax
     !kriging parameters     
-    integer, intent(in) :: ktype, koption, noct, itrend
-    integer, intent(inout) :: nxdis,nydis,nzdis                      
+    integer, intent(in) :: ktype,  itrend
     real*8, intent(in) :: UNEST
     real*8, intent(inout) :: skmean
-    
+    logical, intent(in), dimension(9) :: idrift                           !MAXDT=9     maximum number of drift terms
 
     ! out
     ! kriging parameters
@@ -2766,6 +2804,9 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     
   
     ! internal 
+    integer, dimension (9) :: idrif
+    
+    
     ! constants
     real*8 :: EPSLON=0.000001,PMX = 999.0
     integer :: MAXROT
@@ -2785,7 +2826,6 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     real*8, dimension(nd) :: tmp, sec2, sec3                            !required in supper-block functions
     ! drift 
     integer :: mdt
-    real*8, dimension(9) :: idrif                                       !MAXDT=9     maximum number of drift terms
     ! kriging parameters
     real*8 :: xdis, ydis, zdis, xloc, yloc, zloc
     real*8 :: true, secj, extest
@@ -2795,12 +2835,18 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     ! other
     integer :: i, j, is, nsec, ix, iy, iz, index, ind, neq, im, k, &
                kadim, ksdim, nrhs, nv, maxeq, ising
-    integer :: nxy, nxyz, nloop, irepo, nk, xkmae, xkmse        !some variables to iterate in main 
+    integer :: nxy, nxyz, nloop, irepo, nk                    !some variables to iterate in main 
+    real*8 :: xkmae, xkmse
     real*8 :: est, estv, resce, cb, cb1, cmax, cov, dx, dy, dz, err, xk, vk
     logical :: accept
  
     MAXROT = nst + 1
     maxeq = ndmax+9+2
+    
+    !fix drift value
+    do i=1,9
+        idrif(i)=idrift(i)
+    end do 
     
     ! calculate anisotropy
     do i=1,nst
@@ -2884,10 +2930,6 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     mdt = 1
     do i=1,9
         if(ktype == 0 .OR. ktype == 2) idrif(i) = 0
-        if(idrif(i) < 0 .OR. idrif(i) > 1) then
-            write(*,*) 'ERROR KT3D: invalid drift term',idrif(i)
-            stop
-        endif
         mdt = mdt + idrif(i)
     end do
     if(ktype == 3) mdt = mdt + 1
