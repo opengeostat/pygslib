@@ -2727,10 +2727,13 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     !                                           the following drift terms: 
     !                                           x,y,z,xx,yy,zz,xy,xz,zy 
     ! Output: 
-    !
-    !
-    !
-    !
+    !  *Data points for estimation
+    !  *Jacknife (can be used to estimate in arbitrary block locations)
+    !  *Grid parameters (no rotation allowed)
+    !  *Search parameters                      
+    !  *Variogram 
+    !  *Kriging parameters
+    !  *Drift
     !
     !
     ! Notes: 
@@ -2788,6 +2791,12 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     real*8, intent(in) :: UNEST
     real*8, intent(inout) :: skmean
     logical, intent(in), dimension(9) :: idrift                           !MAXDT=9     maximum number of drift terms
+
+
+
+
+
+
 
     ! out
     ! kriging parameters
