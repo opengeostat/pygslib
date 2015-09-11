@@ -41,8 +41,8 @@ To install PyGSLIB in the root environment of your anaconda distribution follow 
 
 Binary Installation in Anaconda 64 bits distribution   (Linux)
 ------------
-There is a binary distribution at binstar.org. First install conda or anaconda distribution 
-if you don't have one and run the command. 
+There is a binary distribution at binstar.org. First install conda or anaconda distribution, 
+if you don't have one, and run the command: 
 
 ``conda install -c https://conda.binstar.org/opengeostat pygslib``
 
@@ -64,11 +64,12 @@ Install PyGSLIB with  ``easy_install`` or ``pip``:
 
 
 
-You may need access to gfortran compiler to compile the FORTRAN code. This is usually available in Linux most linux distributions. 
+You may need access to gfortran compiler to compile the FORTRAN code. This is usually available
+in most Linux distributions. 
 
 
 Installation from sources (pypi.python.org) in Anaconda 32 bits distribution (Windows)
-______________________________
+------------
 Install dependencies, including mingw which comes with gfortran: 
 
 
@@ -83,7 +84,7 @@ Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 32 bits compile
 
 
 Installation from sources (pypi.python.org) in Anaconda 64 bits distribution  (Windows)
-______________________________
+------------
 Install dependencies: 
 
  
@@ -155,7 +156,7 @@ This may fix the problem
 Installation from source (from github.com)
 --------------------
 This is the most update but unstable development version. You may install all the dependencies 
-manually and make sure you have a gfortran available. 
+manually and make sure you have a gfortran available:: 
 
 
 	git clone https://github.com/opengeostat/pygslib.git
