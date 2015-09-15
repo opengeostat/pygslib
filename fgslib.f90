@@ -559,8 +559,8 @@ end subroutine block_covariance
 
 
 subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
-    nsbtosr,ixsbtosr,iysbtosr,izsbtosr,noct,nd, &
-    x,y,z,tmp,nisb,nxsup,xmnsup,xsizsup, &
+    nsbtosr,ixsbtosr,iysbtosr,izsbtosr,noct,maxbhid,nd, &
+    x,y,z, bhid,tmp,nisb,nxsup,xmnsup,xsizsup, &
     nysup,ymnsup,ysizsup,nzsup,zmnsup,zsizsup, &
     nclose,close,infoct)
     !-----------------------------------------------------------------------
@@ -587,10 +587,12 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
     !   iysbtosr         Y offsets for super blocks to search
     !   izsbtosr         Z offsets for super blocks to search
     !   noct             If >0 then data will be partitioned into octants
+    !   maxbhid          Maximum number of samples per BHID
     !   nd               Number of data
     !   x(nd)            X coordinates of the data
     !   y(nd)            Y coordinates of the data
     !   z(nd)            Z coordinates of the data
+    !   bhid(nd)         BHID 
     !   tmp(nd)          Temporary storage to keep track of the squared
     !                      distance associated with each data
     !   nisb()                Array with cumulative number of data in each
@@ -626,11 +628,12 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
 
     !input
     integer, intent(in) :: nxsup, nysup, nzsup
-    integer, intent(in) :: irot, MAXROT, nsbtosr, noct, nd
+    integer, intent(in) :: irot, MAXROT, nsbtosr, noct, maxbhid, nd
     real*8, intent(in), dimension (MAXROT,3,3) :: rotmat
     real*8, intent(in) ::  xloc,yloc,zloc,radsqd 
     integer, intent(in), dimension(nsbtosr) ::ixsbtosr, iysbtosr, izsbtosr
-    real*8, intent(in), dimension(nd) :: x, y, z
+    integer, intent(in), dimension(nd) :: bhid
+    real*8, intent(in), dimension(nd) :: x, y, z 
     integer, intent(in), dimension (nxsup*nysup*nzsup) :: nisb
     real*8, intent(in) :: xmnsup,xsizsup,ymnsup, ysizsup, zmnsup, zsizsup
 
@@ -2650,7 +2653,7 @@ subroutine kt3d( &
                  nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz, extve,  &         ! input grid parameters (no rotation allowed)
                  nxdis,nydis,nzdis,                          &
                  radius,radius1,radius2,sang1,sang2,sang3, &            ! input search parameters
-                 ndmax, ndmin, noct, bhidmax, MAXSBX, MAXSBY, MAXSBZ,  &
+                 ndmax, ndmin, noct, maxbhid, MAXSBX, MAXSBY, MAXSBZ,  &
                  nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,   &            ! input variogram
                  ktype, skmean, itrend, UNEST, &                        ! input kriging parameters 
                  idrift, &                                              ! input drift parameters                         
@@ -2704,7 +2707,7 @@ subroutine kt3d( &
     !     radius, radius1, radius2 - double: ellipse radius
     !     sang1, sang2, sang3      - double: ellipse rotation angles
     !     noct                     - integer: maximum per octant
-    !     bhidmax                  - integer: maximum per drillhole
+    !     maxbhid                  - integer: maximum per drillhole
     !     MAXSBX, MAXSBY, MAXSBZ   - integer: super-block definition
     !                                    ** make sure the search ellipse    
     !                                       fits in it. 
@@ -2794,7 +2797,7 @@ subroutine kt3d( &
     ! search
     integer, intent(in) :: ndmax, ndmin
     real*8, intent(in) :: radius, radius1, radius2, sang1, sang2, sang3
-    integer, intent(in) :: noct, bhidmax
+    integer, intent(in) :: noct, maxbhid
     integer, intent(in) :: MAXSBX, MAXSBY, MAXSBZ                        ! Don't like this, remove and use kdtree
     ! variogram
     integer, intent(in)  :: nst
@@ -3096,7 +3099,7 @@ subroutine kt3d( &
         ! Find the nearest samples:
     
         call srchsupr(xloc,yloc,zloc,radsqd,isrot,MAXROT,rotmat,nsbtosr, &
-        ixsbtosr,iysbtosr,izsbtosr,noct,nd,x,y,z,tmp, &
+        ixsbtosr,iysbtosr,izsbtosr,noct, maxbhid,nd,x,y,z,bhid,tmp, &
         nisb,nxsup,xmnsup,xsizsup,nysup,ymnsup,ysizsup, &
         nzsup,zmnsup,zsizsup,nclose,close,infoct)
 
