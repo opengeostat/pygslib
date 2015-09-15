@@ -653,6 +653,7 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
 
     ! TODO: this is for sortem, see if this can be modified and avoid declaring non used arrays (e, f, g, hh)
     real*8, dimension(nd) :: c, d, e, f, g, hh
+    integer, dimension(nd) :: bhidinx
 
 
     ! Determine the super block location of point being estimated:
@@ -710,6 +711,10 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
     call sortem(1,nclose,tmp,1,close,c,d,e,f,g,hh)
 
     ! If we aren't doing an octant search then just return:
+
+    ! if (maxbhid>0)
+     ! TODO
+    ! endif
 
     if(noct <= 0) return
 
