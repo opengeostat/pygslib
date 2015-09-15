@@ -156,7 +156,7 @@ This may fix the problem
 Installation from source (from github.com)
 --------------------
 This is the most update but unstable development version. You may manually 
-install all the dependencies and make sure you have a gfortran available:: 
+install all the dependencies and make sure you have gfortran available:: 
 
 
 	git clone https://github.com/opengeostat/pygslib.git

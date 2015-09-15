@@ -2644,16 +2644,21 @@ subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
 ! 
 !***********************************************************************
 
-subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &  
-                nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,   &
-                nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz, extve,  &
-                nd,x,y,z,vr, ve, &
-                nclose, close, infoct, noct, &
-                MAXSBX, MAXSBY, MAXSBZ, tmin, tmax,  &
-                ktype, skmean,  koption, itrend, nxdis,nydis,nzdis,xdb,ydb,zdb, &
-                bv,ndmax, ndmin, xa,ya,za,vra, vea, na, &
-                ndjak, xlj, ylj, zlj, vrlj, extvj, &
-                UNEST, idrift )
+subroutine kt3d( &   
+                 nd,x,y,z,vr, ve, bhid, tmin, tmax, koption, &          ! input parameters (Data)
+                 ndjak, xlj, ylj, zlj, vrlj, extvj, &                   ! input parameters (Jacknife)
+                 nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz, extve,  &         ! input grid parameters (no rotation allowed)
+                 nxdis,nydis,nzdis,                          &
+                 radius,radius1,radius2,sang1,sang2,sang3, &            ! input search parameters
+                 ndmax, ndmin, noct, bhidmax, MAXSBX, MAXSBY, MAXSBZ,  &
+                 nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,   &            ! input variogram
+                 ktype, skmean, itrend, UNEST, &                        ! input kriging parameters 
+                 idrift, &                                              ! input drift parameters                         
+                 na, na_index, esta,estva, &                            ! output data used in last estimate
+                 estj,estvj, &                                          ! output jacknife
+                 estg,estvg, &                                          ! output grid
+                 a,r,s, &                                               ! output kriging equations
+                 cbb, lagrange)                                         ! output extra (block covariance and lagrange multiplier) 
     !-----------------------------------------------------------------------
 
     !                Krige a 3-D Grid of Rectangular Blocks
@@ -2678,7 +2683,7 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     !     nd                    - integer:  number of rows in the data
     !     x(nd),y(nd),z(nd)     - [double]: coordinates 
     !     vr(nd),ve(nd)         - [double]: variable and external drift
-    !      **add here BHID**
+    !     bhid(nd)              - [integer]: dhole ID
     !     tmin,tmax             - double:   trimming limits
     !     koption               - integer:  
     !                                 0 kriging on grid 
@@ -2699,6 +2704,7 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     !     radius, radius1, radius2 - double: ellipse radius
     !     sang1, sang2, sang3      - double: ellipse rotation angles
     !     noct                     - integer: maximum per octant
+    !     bhidmax                  - integer: maximum per drillhole
     !     MAXSBX, MAXSBY, MAXSBZ   - integer: super-block definition
     !                                    ** make sure the search ellipse    
     !                                       fits in it. 
@@ -2728,14 +2734,22 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     !                                           x,y,z,xx,yy,zz,xy,xz,zy 
     ! Output: 
     !  *Data points for estimation
+    !     na                         - integer: number of datapoint retained
+    !     na_index(ndmax)            - [integer]: index of data used in last estimate     
+    !     esta,estva(ndjak)          - [double] : kriging estimate and estimate variance
     !  *Jacknife (can be used to estimate in arbitrary block locations)
+    !     estj,estvj(ndjak)          - [double] : kriging estimate and estimate variance
     !  *Grid parameters (no rotation allowed)
+    !     estg,estvg(nx*ny*nz)       - [double] : kriging estimate and estimate variance
     !  *Search parameters                      
     !  *Variogram 
     !  *Kriging parameters
+    !     a((ndmax+9+2)*(ndmax+9+2))  - [double] : kriging matrix
+    !     r,s (ndmax+9)               - [double] : kriging vector and solution vector
+
     !  *Drift
-    !
-    !
+    !  *Extra parameters
+    !     cbb                        - double : block covariance
     ! Notes: 
     ! The debugging levels were excluded and reported for the las block 
     ! estimated
@@ -2765,12 +2779,13 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     ! in 
     ! data 
     integer, intent(in)               :: nd
+    integer, intent(in), dimension(nd) :: bhid                          !dhole ID for search 
     real*8, intent(in), dimension(nd) :: x,y,z,vr, ve                   !vr->variable, ve->external drift
     real*8, intent(in) :: tmin, tmax
     integer, intent(in) :: koption
     !Jacknife
     integer, intent(in)               :: ndjak
-    real*8, intent(in), dimension(nd) :: xlj, ylj, zlj, vrlj, extvj
+    real*8, intent(in), dimension(ndjak) :: xlj, ylj, zlj, vrlj, extvj
     ! grid 
     integer, intent(in) :: nx,ny,nz
     real*8 , intent(in) :: xmn,ymn,zmn,xsiz,ysiz,zsiz
@@ -2779,7 +2794,7 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     ! search
     integer, intent(in) :: ndmax, ndmin
     real*8, intent(in) :: radius, radius1, radius2, sang1, sang2, sang3
-        integer, intent(in) :: noct
+    integer, intent(in) :: noct, bhidmax
     integer, intent(in) :: MAXSBX, MAXSBY, MAXSBZ                        ! Don't like this, remove and use kdtree
     ! variogram
     integer, intent(in)  :: nst
@@ -2790,29 +2805,36 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     integer, intent(in) :: ktype,  itrend
     real*8, intent(in) :: UNEST
     real*8, intent(inout) :: skmean
-    logical, intent(in), dimension(9) :: idrift                           !MAXDT=9     maximum number of drift terms
-
-
-
-
-
+    logical, intent(in), dimension(9) :: idrift                         !MAXDT=9     maximum number of drift terms
 
 
     ! out
+    ! Data points for estimation
+    integer, intent(out) :: na                                          ! number of points used in the last estimate
+    real*8, intent (out), dimension(ndmax) :: na_index 
+    real*8, intent (out), dimension(nd) :: esta,estva
+    ! Jacknife
+    real*8, intent (out), dimension(ndjak) :: estj,estvj
+    ! Grid
+    real*8, intent (out), dimension(nx*ny*nz) :: estg,estvg
+    ! some extra parameters 
+    !block covariance
+    real*8, intent(out) :: cbb, lagrange
+    !kriging equations of the last block estimated
+    real*8,  intent(out), dimension((ndmax+9+2)*(ndmax+9+2)) :: a       ! this is MAXDT=9 and MAXEQ=MAXSAM+MAXDT+2
+    real*8,  intent(out), dimension(ndmax+9) :: r, s
+
+    ! internal
     ! kriging parameters
-    ! discretization points of the last block
-    real*8, intent (out), dimension(nxdis*nydis*nzdis) :: xdb,ydb,zdb      ! MAXDIS=nxdis*nydis*nzdis number of discretization points (variable)
+    ! discretization points
+    real*8, dimension(nxdis*nydis*nzdis) :: xdb,ydb,zdb                 ! MAXDIS=nxdis*nydis*nzdis number of discretization points (variable)
     ! drift
-    real*8, intent(out) ::  bv(9)
+    real*8 ::  bv(9)
     ! the samples around the block (last block) we may use this to test estimate in a single block
     ! TODO: fix this, the samples are shift, remove from output and use single block to test. 
-    real*8, intent(out), dimension(nd) :: close
-    integer, intent(out) :: nclose, infoct, na
-    real*8, intent(out), dimension(ndmax)  ::  xa,ya,za,vra, vea
-    ! TODO: add here variables with estimate
-    
-  
-    ! internal 
+    real*8, dimension(nd) :: close
+    integer :: nclose, infoct
+    real*8,  dimension(ndmax)  ::  xa,ya,za,vra, vea
     integer, dimension (9) :: idrif
     
     
@@ -2828,7 +2850,7 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     integer, dimension (8*MAXSBX*MAXSBY*MAXSBZ) ::ixsbtosr,iysbtosr,izsbtosr  ! X offsets for super blocks to search
     integer :: nsbtosr                                                        ! Number of super blocks to search
     ! variogram 
-    real*8 :: covmax, unbias, cbb
+    real*8 :: covmax, unbias
     real*8, dimension(nst) :: anis1 , anis2
     integer :: isrot 
     ! data
@@ -2838,13 +2860,12 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     ! kriging parameters
     real*8 :: xdis, ydis, zdis, xloc, yloc, zloc
     real*8 :: true, secj, extest
-    real*8,  dimension((ndmax+9+2)*(ndmax+9+2))  ::  a                  ! this is MAXDT=9 and MAXEQ=MAXSAM+MAXDT+2
-    real*8,  dimension(ndmax+9)  ::  r, rr, s
+    real*8, dimension(ndmax+9) :: rr
     integer :: ndb, iktype = 0                                          ! I'm removing this part from the code IK with KT3D
     ! other
     integer :: i, j, is, nsec, ix, iy, iz, index, ind, neq, im, k, &
                kadim, ksdim, nrhs, nv, maxeq, ising
-    integer :: nxy, nxyz, nloop, irepo, nk                    !some variables to iterate in main 
+    integer :: nxy, nxyz, nloop, irepo, nk                              !some variables to iterate in main 
     real*8 :: xkmae, xkmse
     real*8 :: est, estv, resce, cb, cb1, cmax, cov, dx, dy, dz, err, xk, vk
     logical :: accept
@@ -3098,6 +3119,7 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
                     za(na)  = z(ind) - zloc + 0.5*zsiz
                     vra(na) = vr(ind)
                     vea(na) = ve(ind)
+                    na_index(na) = ind
                 end if
             end if
         end do
@@ -3395,7 +3417,9 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
             nk   = nk + 1
             xk   = xk + est
             vk   = vk + est*est
-        
+            
+            lagrange = s(na+1)*unbias
+            
             ! Write the kriging weights and data if debugging level is above 2:
         
 !~             if(idbg >= 2) then
@@ -3423,6 +3447,8 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
         if(iktype == 0) then
             if(koption == 0) then
 !~                 write(lout,'(f9.3,1x,f9.3)') est,estv
+                estg(index)= est
+                estvg(index)= estv
             else
                 err = UNEST
                 if(true /= UNEST .AND. est /= UNEST)err=est-true
@@ -3430,6 +3456,16 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
 !~                 est,estv,err
                 xkmae = xkmae + abs(err)
                 xkmse = xkmse + err*err
+                
+                if (koption == 1) then
+                    esta(index)= est
+                    estva(index)= estv                    
+                end if 
+                if (koption == 2) then
+                    estj(index)= est
+                    estvj(index)= estv
+                end if
+                
             end if
 !~         else
 !~         
@@ -3500,7 +3536,7 @@ subroutine kt3d(radius,radius1,radius2,sang1,sang2,sang3, &
     
 end subroutine kt3d
 
-subroutine ktsol(n,ns,nv,a,b,x,ktilt,maxeq)
+subroutine ktsol(n  ,ns  ,nv,a,b,x,ktilt,maxeq)
     !-----------------------------------------------------------------------
 
     ! Solution of a system of linear equations by gaussian elimination with
