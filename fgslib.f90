@@ -710,11 +710,13 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
 
     call sortem(1,nclose,tmp,1,close,c,d,e,f,g,hh)
 
-    ! If we aren't doing an octant search then just return:
-
+    
+    ! bhidinx(1:nclose)=1
     ! if (maxbhid>0)
-     ! TODO
-    ! endif
+     ! TODO: search 
+    ! end if
+
+    ! If we aren't doing an octant search then just return:
 
     if(noct <= 0) return
 
