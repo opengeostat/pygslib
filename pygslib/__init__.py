@@ -641,3 +641,133 @@ def gam(parameters):
 
 
 
+# TODO: ----------------------------------------------------------------------------------------------------------
+#
+#    Variograms rotmat
+#
+#-----------------------------------------------------------------------------------------------------------------
+def setrot(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,maxrot=1):
+    """
+    to do: add stringdoc
+    """
+    return __fgslib.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
+
+# TODO: ----------------------------------------------------------------------------------------------------------
+#
+#    Variograms cova3
+#
+#-----------------------------------------------------------------------------------------------------------------
+def cova3(parameters):
+    """Calculate variogram values given a variogram function and direction
+       
+    The parameters here is a dictionary with the following keys.
+    
+    Parameters
+    ----------
+        parameters  :  dict
+            This is a dictionary with key parameter (case sensitive) and values, for example:
+
+
+             parameters = { 
+                'x1'     :  0,            # X coordinates, point 1
+                'y1'     :  0,            # Y coordinates, point 1
+                'z1'     :  0,            # Z coordinates, point 1
+                'x2'     :  0,            # X coordinates, point 2
+                'y2'     :  0,            # Y coordinates, point 2
+                'z2'     :  0,            # Z coordinates, point 2
+                'nst'    :  2,            # number of nested structures, array('i') with bounds (ivarg), 
+                                          # ivarg is variogram number
+                'it'     :  [3],          # structure type,  array('i') with bounds (ivarg)        
+                'c0'     :  [0.1],        # nugget,  array('f') with bounds (ivarg)        
+                'cc'     :  [0.4, 0.5],   # variance, array('f') with bounds (nvarg*nst[0])
+                'aa'     :  [8, 16],       # parameter a (or range), array('f') with bounds (nvarg*nst[0])
+                'irot'   :  0,            # index of the rotation matrix for the first nested structure
+                                          # the second nested structure will use irot+1, the third irot+2, and so on
+                'rotmat' :  rotmat}       # rotation matrices (output of the funtion setrot)
+                               
+    
+    Returns
+    -------   
+    out : (cmax,cova)
+       
+       cmax is the maximum covariance value (required to invert the variogram into covariance function)
+       cova is the actual covariance value. 
+       
+       Note: The variogram can be calculated as v= cmax - cova
+       
+      
+    Notes
+    -----
+       rotmat may be optained with setrot
+
+    """
+      
+    # calculate this:  rotmat = gslib.__fgslib.setrot(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,maxrot=1)
+      
+    cmax,cova = __fgslib.cova3(**parameters)
+    
+    return cmax,cova
+
+
+
+# TODO: ----------------------------------------------------------------------------------------------------------
+#
+#    Variograms block_covariance
+#
+#-----------------------------------------------------------------------------------------------------------------
+def block_covariance(parameters): 
+    """Calculate the block covariance
+       
+    The parameters here is a dictionary with the following keys.
+    
+    Parameters
+    ----------
+        parameters  :  dict
+            This is a dictionary with key parameter (case sensitive) and values, for example:
+
+
+             parameters = { 
+                'xdb'  :  [0 , 0, 1, 1],  # X coordinates of discretazation points
+                'ydb'  :  [1 , 0, 1, 0],  # Y coordinates of discretazation points
+                'zdb'  :  [0 , 0, 0, 0],  # Z coordinates of discretazation points
+                'it'     :  [3, 2],        # structure type,  array('i') with bounds (ivarg)        
+                'c0'     :  [0.1],        # nugget,  array('f') with bounds (ivarg)        
+                'cc'     :  [0.4, 0.5],   # variance, array('f') with bounds (nvarg*nst[0])
+                'aa'     :  [8, 16],       # parameter a (or range), array('f') with bounds (nst)
+                'aa1'    :  [8, 16],       # parameter a (or range), array('f') with bounds (nst)
+                'aa2'    :  [8, 16],       # parameter a (or range), array('f') with bounds (nst)
+                'irot'   :  0,            # index of the rotation matrix for the first nested structure
+                                          # the second nested structure will use irot+1, the third irot+2, and so on
+                'rotmat' :  rotmat,       # rotation matrices (output of the funtion setrot)
+                
+                'ang1'   : [0, 0],              # input rank-1 array('d') with bounds (nst)
+                'ang2'   : [0, 0],              # input rank-1 array('d') with bounds (nst)
+                'ang3'   : [0, 0]}                # input rank-1 array('d') with bounds (nst)
+    
+    Returns
+    -------   
+    out : cbb
+       
+       cbb: float,  is the actual block covariance. 
+
+    """
+
+    unbias,cbb = __fgslib.block_covariance(**parameters)
+
+    return cbb
+
+
+
+# TODO: -----------------------------------------------------------------------------------------------------------
+#
+#    Search srchsupr !!!! this is to search data in a grid.... 
+#
+#-----------------------------------------------------------------------------------------------------------------
+
+
+# TODO: ----------------------------------------------------------------------------------------------------------
+#
+#    Kriging kt3d
+#
+#-----------------------------------------------------------------------------------------------------------------
+

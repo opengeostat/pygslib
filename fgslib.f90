@@ -330,9 +330,9 @@ subroutine cova3(x1,y1,z1,x2,y2,z2,ivarg,nst,c0,it,cc,aa, &
     real*8, intent(in) :: x1,y1,z1,x2,y2,z2
     integer, intent(in) :: ivarg, irot,maxrot
     integer, intent(in) :: nst
-    integer, intent(in), dimension(ivarg) :: it
     real*8, intent(in), dimension(ivarg) :: c0
-    real*8, intent(in), dimension((maxrot-1)*ivarg) :: cc, aa
+    integer, intent(in),dimension(nst*ivarg) :: it
+    real*8, intent(in), dimension(nst*ivarg) :: cc, aa
     real*8, intent(in), dimension(maxrot,3,3) :: rotmat
 
     ! output
@@ -340,7 +340,7 @@ subroutine cova3(x1,y1,z1,x2,y2,z2,ivarg,nst,c0,it,cc,aa, &
 
     ! internal variables
     real*8 ::    hsqd, h, hr
-    integer :: ir, is, ist, istart, maxnst
+    integer :: ir, is, ist, istart
     
     !parameters
     real*8 :: DEG2RAD,EPSLON,PI,PMX
@@ -356,8 +356,8 @@ subroutine cova3(x1,y1,z1,x2,y2,z2,ivarg,nst,c0,it,cc,aa, &
     ! Calculate the maximum covariance value (used for zero distances and
     ! for power model covariance):
 
-    maxnst=maxrot-1
-    istart = 1 + (ivarg-1)*maxnst
+
+    istart = 1 + (ivarg-1)*nst
     cmax   = c0(ivarg)
     do is=1,nst
         ist = istart + is - 1
@@ -486,7 +486,7 @@ subroutine block_covariance(xdb,ydb,zdb, ndb, &
     ! in 
     ! variogram
     integer, intent(in)                 :: nst
-    real*8, intent(in), dimension(nst)  :: c0
+    real*8, intent(in),   dimension(1)  :: c0
     integer, intent(in), dimension(nst) :: it 
     real*8, intent(in), dimension(nst)  :: cc,aa, aa1, aa2,ang1,ang2,ang3
     !discretization points of the last block
@@ -643,6 +643,7 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
     !out
     real*8, intent(out), dimension(nd) :: close
     integer, intent(out) :: infoct, nclose
+    integer :: dhole
 
 
     !internal
@@ -653,7 +654,10 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
 
     ! TODO: this is for sortem, see if this can be modified and avoid declaring non used arrays (e, f, g, hh)
     real*8, dimension(nd) :: c, d, e, f, g, hh
-    integer, dimension(nd) :: bhidinx
+    
+    ! to deal with max per BHID 
+    integer, dimension(nd) :: take, tmp_ind
+    integer :: counter, l
 
 
     ! Determine the super block location of point being estimated:
@@ -710,11 +714,41 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
 
     call sortem(1,nclose,tmp,1,close,c,d,e,f,g,hh)
 
+
+    ! get maximum per drillhole 
+    ! warning: this operation is preceding octants and will overwrite the
+    !          close vector. 
+    take(:)= 1
+    tmp_ind(:)= 0
+    l=0
+    do i=1, nclose
+        if (take(i) .NE. 0) then
+            dhole=bhid(i)
+            counter=0
+            l=l+1
+            tmp_ind(l)=close(i)
+            do j=i, nclose
+                if (dhole==bhid(j)) then 
+                    counter=counter+1
+                    if (counter>maxbhid) then 
+                        take(j)=0
+                    end if
+                end if 
+            end do 
+        else 
+            continue
+        end if
+    end do
     
-    ! bhidinx(1:nclose)=1
-    ! if (maxbhid>0)
-     ! TODO: search 
-    ! end if
+    ! update close list
+    j=0
+    do i=1, nclose
+        if (take(i)==1) then
+            j=j+1
+            close(j)=close(i)
+        end if 
+    end do 
+    nclose=j
 
     ! If we aren't doing an octant search then just return:
 
