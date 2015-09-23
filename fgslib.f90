@@ -808,8 +808,6 @@ subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
 end subroutine srchsupr
 
 
-
-
 subroutine setsupr(nx,xmn,xsiz,ny,ymn,ysiz,nz,zmn,zsiz,nd,x,y,z, &
     vr,tmp,nsec,sec1,sec2,sec3,MAXSBX,MAXSBY, &
     MAXSBZ,nisb,nxsup,xmnsup,xsizsup,nysup,ymnsup, &
@@ -2683,902 +2681,10 @@ subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
 !***********************************************************************
 ! 
 ! 
-!     Subroutines for GSLIB gam/gamv (variograms)
+!     Subroutines for interpolation GSLIB kt3d
 ! 
 ! 
 !***********************************************************************
-
-subroutine kt3d( &   
-                 nd,x,y,z,vr, ve, bhid, tmin, tmax, koption, &          ! input parameters (Data)
-                 ndjak, xlj, ylj, zlj, vrlj, extvj, &                   ! input parameters (Jacknife)
-                 nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz, extve,  &         ! input grid parameters (no rotation allowed)
-                 nxdis,nydis,nzdis,                          &
-                 radius,radius1,radius2,sang1,sang2,sang3, &            ! input search parameters
-                 ndmax, ndmin, noct, maxbhid, MAXSBX, MAXSBY, MAXSBZ,  &
-                 nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,   &            ! input variogram
-                 ktype, skmean, itrend, UNEST, &                        ! input kriging parameters 
-                 idrift, &                                              ! input drift parameters                         
-                 na, na_index, esta,estva, &                            ! output data used in last estimate
-                 estj,estvj, &                                          ! output jacknife
-                 estg,estvg, &                                          ! output grid
-                 a,r,s, &                                               ! output kriging equations
-                 cbb, lagrange)                                         ! output extra (block covariance and lagrange multiplier) 
-    !-----------------------------------------------------------------------
-
-    !                Krige a 3-D Grid of Rectangular Blocks
-    !                **************************************
-
-    ! This subroutine estimates point or block values of one variable by
-    ! simple, ordinary, or kriging with a trend model.  It is also possible
-    ! to estimate the trend directly.
-
-    ! Original:  A.G. Journel and C. Lemmer                             1981
-    ! Revisions: A.G. Journel and C. Kostov                             1984
-
-    
-    ! 2015 changes
-    ! This is a function to be used from python... 
-    ! TODO: add comments 
-
-
-    ! PARAMETERS:
-    ! Input: 
-    !  *Data points for estimation
-    !     nd                    - integer:  number of rows in the data
-    !     x(nd),y(nd),z(nd)     - [double]: coordinates 
-    !     vr(nd),ve(nd)         - [double]: variable and external drift
-    !     bhid(nd)              - [integer]: dhole ID
-    !     tmin,tmax             - double:   trimming limits
-    !     koption               - integer:  
-    !                                 0 kriging on grid 
-    !                                 1 cross validation with input data
-    !                                 2 jackknife in a separate file
-    !  *Jacknife (can be used to estimate in arbitrary block locations)
-    !     ndjak                 - integer:  number of rows in the jacknife file
-    !     xlj,ylj,zlj(ndjak)    - [double]: coordinates
-    !     vrlj,extvj(ndjak)     - [double]: variable and external drift
-    !  *Grid parameters (no rotation allowed)
-    !     nx,ny,nz              - integer: number of rows, columns and levels
-    !     xmn,ymn,zmn           - double:  block origin of coordinate
-    !     xsiz,ysiz,zsiz        - double:  block sizes
-    !     nxdis,nydis,nzdis     - integer: number of discretization points
-    !     extve(nx*ny*nz)       - external drift on grid    
-    !  *Search parameters                      
-    !     ndmax, ndmin          - integer: nmin, max data for estimate
-    !     radius, radius1, radius2 - double: ellipse radius
-    !     sang1, sang2, sang3      - double: ellipse rotation angles
-    !     noct                     - integer: maximum per octant
-    !     maxbhid                  - integer: maximum per drillhole
-    !     MAXSBX, MAXSBY, MAXSBZ   - integer: super-block definition
-    !                                    ** make sure the search ellipse    
-    !                                       fits in it. 
-    !  *Variogram 
-    !     nst(1)                   - [integer]: number of structures 
-    !     c0(1)                    - [double]: nugget effect    
-    !     it(nst)                  - [integer]: structure type 
-    !                                  1. spherical (range a)
-    !                                  2. exponential (p'range 3a)
-    !                                  3. gaussian (p'range a*sqrt(3))
-    !                                  4. power (0<a<2), if linear model, a=1,c=slope.
-    !                                  5. hole effect
-    !     cc(nst)                  - [double]: structure variance
-    !     aa, aa1, aa2(nst)        - [double]: structure ranges
-    !                                 ** aa is used to calculate anisotroy
-    !     ang1,ang2,ang3(nst)      - [double]: structure rotation angles
-    !                                 ** variable angles per structure allowed    
-    !  *Kriging parameters
-    !     ktype                    - integer: 0=SK,1=OK,2=non-st SK,3=exdrift
-    !     itrend                   - integer: 0, variable; 1, estimate trend
-    !     UNEST                    - double: non estimated values (ex. numpy.nan)
-    !     skmean                   - double: constant used for simple kriging mean
-    !                                      *warning this is an inout parameter*
-    !  *drift
-    !     idrift(9)                 - [logical]: if true will use or ignore
-    !                                           the following drift terms: 
-    !                                           x,y,z,xx,yy,zz,xy,xz,zy 
-    ! Output: 
-    !  *Data points for estimation
-    !     na                         - integer: number of datapoint retained
-    !     na_index(ndmax)            - [integer]: index of data used in last estimate     
-    !     esta,estva(ndjak)          - [double] : kriging estimate and estimate variance
-    !  *Jacknife (can be used to estimate in arbitrary block locations)
-    !     estj,estvj(ndjak)          - [double] : kriging estimate and estimate variance
-    !  *Grid parameters (no rotation allowed)
-    !     estg,estvg(nx*ny*nz)       - [double] : kriging estimate and estimate variance
-    !  *Search parameters                      
-    !  *Variogram 
-    !  *Kriging parameters
-    !     a((ndmax+9+2)*(ndmax+9+2))  - [double] : kriging matrix
-    !     r,s (ndmax+9)               - [double] : kriging vector and solution vector
-
-    !  *Drift
-    !  *Extra parameters
-    !     cbb                        - double : block covariance
-    ! Notes: 
-    ! The debugging levels were excluded and reported for the las block 
-    ! estimated
-
-    ! TODO: add masked grid support (example index where we whant to estimate)
-    ! TODO: consider a different array size for external drif to implement sparse grid (use index size)
-
-    ! TODO: simplify this function as mush as possible
-    !      - split search in to external function (use kdtree for speed)
-    !      - remove unnecessary variables output an options  
-    !      - store the debugging info in the last estimate (to test use a single block estimate)
-    
-    ! TODO: consider rewriting this as a single block estimate and iterate in Python 
-    !       use Cython, Numba and parallel computing as way to speed the process 
-
-
-    
-    !-----------------------------------------------------------------------
-
-
-
-
-    !for safety reason we don't want undeclared variables
-    IMPLICIT NONE 
-
-
-    ! in 
-    ! data 
-    integer, intent(in)               :: nd
-    integer, intent(in), dimension(nd) :: bhid                          !dhole ID for search 
-    real*8, intent(in), dimension(nd) :: x,y,z,vr, ve                   !vr->variable, ve->external drift
-    real*8, intent(in) :: tmin, tmax
-    integer, intent(in) :: koption
-    !Jacknife
-    integer, intent(in)               :: ndjak
-    real*8, intent(in), dimension(ndjak) :: xlj, ylj, zlj, vrlj, extvj
-    ! grid 
-    integer, intent(in) :: nx,ny,nz
-    real*8 , intent(in) :: xmn,ymn,zmn,xsiz,ysiz,zsiz
-    real*8 , intent(in), dimension(nx*ny*nz) :: extve
-    integer, intent(inout) :: nxdis,nydis,nzdis   
-    ! search
-    integer, intent(in) :: ndmax, ndmin
-    real*8, intent(in) :: radius, radius1, radius2, sang1, sang2, sang3
-    integer, intent(in) :: noct, maxbhid
-    integer, intent(in) :: MAXSBX, MAXSBY, MAXSBZ                        ! Don't like this, remove and use kdtree
-    ! variogram
-    integer, intent(in)  :: nst
-    integer, intent(in), dimension(1)     :: it
-    real*8, intent(in), dimension(1)      :: c0
-    real*8, intent(in), dimension(nst) :: cc,aa, aa1, aa2,ang1,ang2,ang3
-    !kriging parameters     
-    integer, intent(in) :: ktype,  itrend
-    real*8, intent(in) :: UNEST
-    real*8, intent(inout) :: skmean
-    logical, intent(in), dimension(9) :: idrift                         !MAXDT=9     maximum number of drift terms
-
-
-    ! out
-    ! Data points for estimation
-    integer, intent(out) :: na                                          ! number of points used in the last estimate
-    real*8, intent (out), dimension(ndmax) :: na_index 
-    real*8, intent (out), dimension(nd) :: esta,estva
-    ! Jacknife
-    real*8, intent (out), dimension(ndjak) :: estj,estvj
-    ! Grid
-    real*8, intent (out), dimension(nx*ny*nz) :: estg,estvg
-    ! some extra parameters 
-    !block covariance
-    real*8, intent(out) :: cbb, lagrange
-    !kriging equations of the last block estimated
-    real*8,  intent(out), dimension((ndmax+9+2)*(ndmax+9+2)) :: a       ! this is MAXDT=9 and MAXEQ=MAXSAM+MAXDT+2
-    real*8,  intent(out), dimension(ndmax+9) :: r, s
-
-    ! internal
-    ! kriging parameters
-    ! discretization points
-    real*8, dimension(nxdis*nydis*nzdis) :: xdb,ydb,zdb                 ! MAXDIS=nxdis*nydis*nzdis number of discretization points (variable)
-    ! drift
-    real*8 ::  bv(9)
-    ! the samples around the block (last block) we may use this to test estimate in a single block
-    ! TODO: fix this, the samples are shift, remove from output and use single block to test. 
-    real*8, dimension(nd) :: close
-    integer :: nclose, infoct
-    real*8,  dimension(ndmax)  ::  xa,ya,za,vra, vea
-    integer, dimension (9) :: idrif
-    
-    
-    ! constants
-    real*8 :: EPSLON=0.000001,PMX = 999.0
-    integer :: MAXROT
-    ! search 
-    real*8, dimension(nst+1,3,3) :: rotmat
-    real*8 :: radsqd,resc,sanis1, sanis2
-    integer, dimension (MAXSBX*MAXSBY*MAXSBZ) :: nisb                   ! Array with cumulative number of data in each super block.
-    integer            :: nxsup, nysup, nzsup                           ! Definition of the X super block grid
-    real*8             :: xmnsup,xsizsup,ymnsup, ysizsup,zmnsup,zsizsup ! Definition of the X super block grid
-    integer, dimension (8*MAXSBX*MAXSBY*MAXSBZ) ::ixsbtosr,iysbtosr,izsbtosr  ! X offsets for super blocks to search
-    integer :: nsbtosr                                                        ! Number of super blocks to search
-    ! variogram 
-    real*8 :: covmax, unbias
-    real*8, dimension(nst) :: anis1 , anis2
-    integer :: isrot 
-    ! data
-    real*8, dimension(nd) :: tmp, sec2, sec3                            !required in supper-block functions
-    ! drift 
-    integer :: mdt
-    ! kriging parameters
-    real*8 :: xdis, ydis, zdis, xloc, yloc, zloc
-    real*8 :: true, secj, extest
-    real*8, dimension(ndmax+9) :: rr
-    integer :: ndb, iktype = 0                                          ! I'm removing this part from the code IK with KT3D
-    ! other
-    integer :: i, j, is, nsec, ix, iy, iz, index, ind, neq, im, k, &
-               kadim, ksdim, nrhs, nv, maxeq, ising
-    integer :: nxy, nxyz, nloop, irepo, nk                              !some variables to iterate in main 
-    real*8 :: xkmae, xkmse
-    real*8 :: est, estv, resce, cb, cb1, cmax, cov, dx, dy, dz, err, xk, vk
-    logical :: accept
- 
-    MAXROT = nst + 1
-    maxeq = ndmax+9+2
-    
-    !fix drift value
-    do i=1,9
-        idrif(i)=idrift(i)
-    end do 
-    
-    ! calculate anisotropy
-    do i=1,nst
-
-            anis1(i) = aa1(i) / max(aa(i),EPSLON)
-            anis2(i) = aa2(i) / max(aa(i),EPSLON)
-            write(*,*) ' it,cc,ang[1,2,3]; ',it(i),cc(i), ang1(i),ang2(i),ang3(i)
-            write(*,*) ' a1 a2 a3: ',aa(i),aa1(i),aa2(i)
-            write(*,*) ' anis1 anis2: ',anis1(i),anis2(i)
-            
-            if(it(i).eq.4) then
-                  if(aa(i).lt.0.0) stop ' INVALID power variogram'
-                  if(aa(i).gt.2.0) stop ' INVALID power variogram'
-            end if
-    end do
-   
-    ! Set up the rotation/anisotropy matrices that are needed for the
-    ! variogram and search.  Also compute the maximum covariance for
-    ! the rescaling factor:
-
-    write(*,*) 'Setting up rotation matrices for variogram and search'
-    
-    radsqd = radius * radius ! the search first radius
-    if(radius.lt.EPSLON) stop 'radius must be greater than zero'
-    radsqd = radius  * radius
-    sanis1 = radius1 / radius
-    sanis2 = radius2 / radius
-    
- 
-    covmax = c0(1)
-    do is=1,nst
-        call setrot(ang1(is),ang2(is),ang3(is),anis1(is),anis2(is), &
-        is,MAXROT,rotmat)
-        if(it(is) == 4) then
-            covmax = covmax + PMX
-        else
-            covmax = covmax + cc(is)
-        endif
-    end do
-    isrot = nst + 1
-    
-    
-    call setrot(sang1,sang2,sang3,sanis1,sanis2,isrot,MAXROT,rotmat)     ! this is the rotation matrix for the search ellipse
-    
-
-    ! Finish computing the rescaling factor and stop if unacceptable:
-    
-    if(radsqd < 1.0) then
-        resc = 2.0 * radius / max(covmax,0.0001)
-    else
-        resc =(4.0 * radsqd)/ max(covmax,0.0001)
-    endif
-    if(resc <= 0.0) then
-        write(*,*) 'ERROR KT3D: The rescaling value is wrong ',resc
-        write(*,*) '            Maximum covariance: ',covmax
-        write(*,*) '            search radius:      ',radius
-        stop                                                            ! remove this guy
-    endif
-    resc = 1.0 / resc
-   
-   
-    ! Set up for super block searching:
-
-    write(*,*) 'Setting up super block search strategy'
-    nsec = 1
-    call setsupr(nx,xmn,xsiz,ny,ymn,ysiz,nz,zmn,zsiz,nd,x,y,z, &
-                 vr,tmp,nsec,ve,sec2,sec3,MAXSBX,MAXSBY,MAXSBZ,nisb, &
-                 nxsup,xmnsup,xsizsup,nysup,ymnsup,ysizsup,nzsup, &
-                 zmnsup,zsizsup)
-            
-                
-    call picksup(nxsup,xsizsup,nysup,ysizsup,nzsup,zsizsup, &
-                isrot,MAXROT,rotmat,radsqd,nsbtosr,ixsbtosr, &
-                iysbtosr,izsbtosr)
-    
- 
-    ! Compute the number of drift terms, if an external drift is being
-    ! considered then it is one more drift term, if SK is being considered
-    ! then we will set all the drift terms off and mdt to 0):
-
-    mdt = 1
-    do i=1,9
-        if(ktype == 0 .OR. ktype == 2) idrif(i) = 0
-        mdt = mdt + idrif(i)
-    end do
-    if(ktype == 3) mdt = mdt + 1
-    if(ktype == 0) mdt = 0
-    if(ktype == 2) mdt = 0
-
-    ! Set up the discretization points per block.  Figure out how many
-    ! are needed, the spacing, and fill the xdb,ydb, and zdb arrays with
-    ! the offsets relative to the block center (this only gets done once):
-
-    ! In all cases the offsets are relative to the lower left corner.
-    ! This is done for rescaling the drift terms in the kriging matrix.
-
-    if(nxdis < 1) nxdis = 1
-    if(nydis < 1) nydis = 1
-    if(nzdis < 1) nzdis = 1
-    ndb = nxdis * nydis * nzdis
-    xdis = xsiz  / max(dble(nxdis),1.0)
-    ydis = ysiz  / max(dble(nydis),1.0)
-    zdis = zsiz  / max(dble(nzdis),1.0)    
-    i    = 0
-    xloc = -0.5*(xsiz+xdis)
-    do ix =1,nxdis
-        xloc = xloc + xdis
-        yloc = -0.5*(ysiz+ydis)
-        do iy=1,nydis
-            yloc = yloc + ydis
-            zloc = -0.5*(zsiz+zdis)
-            do iz=1,nzdis
-                zloc = zloc + zdis
-                i = i+1
-                xdb(i) = xloc + 0.5*xsiz
-                ydb(i) = yloc + 0.5*ysiz
-                zdb(i) = zloc + 0.5*zsiz
-            end do
-        end do
-    end do
-  
-  
-    ! Calculate Block Covariance. Check for point kriging
-    call block_covariance(xdb,ydb,zdb, ndb, &
-                            nst,it,c0,cc,aa, aa1, aa2,ang1,ang2,ang3, &
-                            unbias, cbb)
-
-    do i=1,9
-        bv(i) = 0.0
-    end do
-    do i=1,ndb
-        bv(1) = bv(1) + xdb(i)
-        bv(2) = bv(2) + ydb(i)
-        bv(3) = bv(3) + zdb(i)
-        bv(4) = bv(4) + xdb(i)*xdb(i)
-        bv(5) = bv(5) + ydb(i)*ydb(i)
-        bv(6) = bv(6) + zdb(i)*zdb(i)
-        bv(7) = bv(7) + xdb(i)*ydb(i)
-        bv(8) = bv(8) + xdb(i)*zdb(i)
-        bv(9) = bv(9) + ydb(i)*zdb(i)
-    end do
-    do i=1,9
-        bv(i) = (bv(i) / dble(ndb)) * resc
-    end do
-
-    ! Report on progress from time to time:
-
-    if(koption == 0) then
-        nxy   = nx*ny
-        nxyz  = nx*ny*nz
-        nloop = nxyz
-        irepo = max(1,min((nxyz/10),10000))
-    else
-        nloop = ndjak
-        irepo = max(1,min((ndjak/10),10000))
-    end if
-    write(*,*)
-    write(*,*) 'Working on the kriging '
-
-
-    ! Initialize accumulators:
-
-    nk    = 0
-    xk    = 0.0
-    vk    = 0.0
-    xkmae = 0.0
-    xkmse = 0.0
-
-! #########################################################
-
-    do index=1,nloop
-        if((int(index/irepo)*irepo) == index) write(*,103) index
-        103 format('   currently on estimate ',i9)
-    
-        ! Where are we making an estimate?
-    
-        if(koption == 0) then
-            iz   = int((index-1)/nxy) + 1
-            iy   = int((index-(iz-1)*nxy-1)/nx) + 1
-            ix   = index - (iz-1)*nxy - (iy-1)*nx
-            xloc = xmn + dble(ix-1)*xsiz
-            yloc = ymn + dble(iy-1)*ysiz
-            zloc = zmn + dble(iz-1)*zsiz
-            print *, ' estimating in grid', xloc, yloc, zloc
-        else
-            xloc = xmn
-            yloc = ymn
-            zloc = zmn
-            true = UNEST
-            secj = UNEST
-            xloc   = xlj(index)
-            yloc   = ylj(index)
-            zloc   = zlj(index)
-            true   = vrlj(index)
-            extest = extvj(index)
-            print *, ' estimating in point', xloc, yloc, zloc
-        end if
-
-        ! Read in the external drift variable for this grid node if needed:
-    
-        if(ktype == 2 .OR. ktype == 3) then
-            if(koption == 0) then
-                extest = extve(index)
-            end if
-            if(extest < tmin .OR. extest >= tmax) then
-                est  = UNEST
-                estv = UNEST
-                go to 1
-            end if
-            resce  = covmax / max(extest,0.0001)
-        endif
-        
-        
-        ! FROM AAAAAAA  Put this in a separate function to isolate and add more options (use kdtree for speed, see example scipy)
-        ! ----------------------------------------------------------------------------------------------------------------        
-        
-        ! Find the nearest samples:
-    
-        call srchsupr(xloc,yloc,zloc,radsqd,isrot,MAXROT,rotmat,nsbtosr, &
-        ixsbtosr,iysbtosr,izsbtosr,noct, maxbhid,nd,x,y,z,bhid,tmp, &
-        nisb,nxsup,xmnsup,xsizsup,nysup,ymnsup,ysizsup, &
-        nzsup,zmnsup,zsizsup,nclose,close,infoct)
-
-        ! Load the nearest data in xa,ya,za,vra,vea:
-        ! TODO: Improve this with drillhole column!!!!!!!
-        ! TODO: put this search part in a different function? 
-        na = 0
-        do i=1,nclose
-            ind    = int(close(i)+0.5)
-            accept = .TRUE. 
-            
-            if(koption /= 0 .AND. &
-            (abs(x(ind)-xloc)+abs(y(ind)-yloc)+ abs(z(ind)-zloc)) &
-             < EPSLON) accept = .FALSE. 
-            if(accept) then
-                if(na < ndmax) then
-                    na = na + 1
-                    xa(na)  = x(ind) - xloc + 0.5*xsiz                   !this shift the data with centre at block location
-                    ya(na)  = y(ind) - yloc + 0.5*ysiz
-                    za(na)  = z(ind) - zloc + 0.5*zsiz
-                    vra(na) = vr(ind)
-                    vea(na) = ve(ind)
-                    na_index(na) = ind
-                end if
-            end if
-        end do
-
-        ! Test number of samples found:
-    
-        if(na < ndmin) then
-            est  = UNEST
-            estv = UNEST
-            go to 1
-        end if
-
-        ! Test if there are enough samples to estimate all drift terms:
-    
-        if(na >= 1 .AND. na <= mdt) then
-            ! pot warning/error 999 here
-            est  = UNEST
-            estv = UNEST
-            go to 1
-        end if
-        ! 999 format(' Encountered a location where there were too few data ',/, &
-        ! ' to estimate all of the drift terms but there would be',/, &
-        ! ' enough data for OK or SK.   KT3D currently leaves ',/, &
-        ! ' these locations unestimated.',/, &
-        ! ' This message is only written once - the first time.',/)
-    
-    
-        ! To AAAAAAA -> Put this in a separate function to isolate and add more options (use kdtree for speed, see example scipy)
-        ! ----------------------------------------------------------------------------------------------------------------
-    
-    
-    
-        ! There are enough samples - proceed with estimation.
-        
-        if(na <= 1) then
-        
-            ! Handle the situation of only one sample:
-        
-            call cova3(xa(1),ya(1),za(1),xa(1),ya(1),za(1),1,nst, &
-            c0,it,cc,aa,1,maxrot,rotmat,cmax,cb1)
-       
-            
-            ! Establish Right Hand Side Covariance:
-        
-            if(ndb <= 1) then
-                call cova3(xa(1),ya(1),za(1),xdb(1),ydb(1),zdb(1),1, &
-                nst,c0,it,cc,aa,1,MAXROT,rotmat,cmax,cb)
-            else
-                cb  = 0.0
-                do i=1,ndb
-                    call cova3(xa(1),ya(1),za(1),xdb(i),ydb(i), &
-                    zdb(i),1,nst,c0,it,cc,aa,1, &
-                    MAXROT,rotmat,cmax,cov)
-                    cb = cb + cov
-                    dx = xa(1) - xdb(i)
-                    dy = ya(1) - ydb(i)
-                    dz = za(1) - zdb(i)
-                    if((dx*dx+dy*dy+dz*dz) < EPSLON) cb=cb-c0(1)
-                end do
-                cb = cb / dble(ndb)
-            end if
-            est  = vra(1)
-            estv = dble(cbb) - 2.0*cb + cb1
-            nk   = nk + 1
-            xk   = xk + vra(1)
-            vk   = vk + vra(1)*vra(1)
-            go to 1
-        end if
-    
-        ! Go ahead and set up the OK portion of the kriging matrix:
-
-        neq = mdt+na
-    
-        ! Initialize the main kriging matrix:
-        do i=1,neq*neq
-            a(i) = 0.0
-        end do
-    
-        ! Fill in the kriging matrix:
-    
-        do i=1,na
-            do j=i,na
-                call cova3(xa(i),ya(i),za(i),xa(j),ya(j),za(j),1,nst, &
-                c0,it,cc,aa,1,MAXROT,rotmat,cmax,cov)
-                a(neq*(i-1)+j) = dble(cov)
-                a(neq*(j-1)+i) = dble(cov)
-            end do
-        end do
-        
-    
-        ! Fill in the OK unbiasedness portion of the matrix (if not doing SK):
-    
-        if(neq > na) then
-            do i=1,na
-                a(neq*(i-1)+na+1) = dble(unbias)
-                a(neq*na+i)       = dble(unbias)
-            end do
-        endif
-        
-        ! Set up the right hand side:
-    
-        do i=1,na
-            if(ndb <= 1) then
-                call cova3(xa(i),ya(i),za(i),xdb(1),ydb(1),zdb(1),1, &
-                nst,c0,it,cc,aa,1,MAXROT,rotmat,cmax,cb)
-            else
-                cb  = 0.0
-                do j=1,ndb
-                    call cova3(xa(i),ya(i),za(i),xdb(j),ydb(j), &
-                    zdb(j),1,nst,c0,it,cc,aa,1, &
-                    MAXROT,rotmat,cmax,cov)
-                    cb = cb + cov
-                    dx = xa(i) - xdb(j)
-                    dy = ya(i) - ydb(j)
-                    dz = za(i) - zdb(j)
-                    if((dx*dx+dy*dy+dz*dz) < EPSLON) cb=cb-c0(1)
-                end do
-                cb = cb / dble(ndb)
-            end if
-            r(i) = dble(cb)
-        end do
-        if(neq > na) r(na+1) = dble(unbias)
-    
-        ! Add the additional unbiasedness constraints:  
-    
-        im = na + 1
-    
-        ! First drift term (linear in "x"):
-    
-        if(idrif(1) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(xa(k)*resc)
-                a(neq*(k-1)+im) = dble(xa(k)*resc)
-            end do
-            r(im) = dble(bv(1))
-        endif
-    
-        ! Second drift term (linear in "y"):
-    
-        if(idrif(2) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(ya(k)*resc)
-                a(neq*(k-1)+im) = dble(ya(k)*resc)
-            end do
-            r(im) = dble(bv(2))
-        endif
-    
-        ! Third drift term (linear in "z"):
-    
-        if(idrif(3) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(za(k)*resc)
-                a(neq*(k-1)+im) = dble(za(k)*resc)
-            end do
-            r(im) = dble(bv(3))
-        endif
-    
-    ! Fourth drift term (quadratic in "x"):
-    
-        if(idrif(4) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(xa(k)*xa(k)*resc)
-                a(neq*(k-1)+im) = dble(xa(k)*xa(k)*resc)
-            end do
-            r(im) = dble(bv(4))
-        endif
-    
-        ! Fifth drift term (quadratic in "y"):
-    
-        if(idrif(5) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(ya(k)*ya(k)*resc)
-                a(neq*(k-1)+im) = dble(ya(k)*ya(k)*resc)
-            end do
-            r(im) = dble(bv(5))
-        endif
-    
-        ! Sixth drift term (quadratic in "z"):
-    
-        if(idrif(6) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(za(k)*za(k)*resc)
-                a(neq*(k-1)+im) = dble(za(k)*za(k)*resc)
-            end do
-            r(im) = dble(bv(6))
-        endif
-    
-        ! Seventh drift term (quadratic in "xy"):
-    
-        if(idrif(7) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(xa(k)*ya(k)*resc)
-                a(neq*(k-1)+im) = dble(xa(k)*ya(k)*resc)
-            end do
-            r(im) = dble(bv(7))
-        endif
-    
-        ! Eighth drift term (quadratic in "xz"):
-    
-        if(idrif(8) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(xa(k)*za(k)*resc)
-                a(neq*(k-1)+im) = dble(xa(k)*za(k)*resc)
-            end do
-            r(im) = dble(bv(8))
-        endif
-    
-        ! Ninth drift term (quadratic in "yz"):
-    
-        if(idrif(9) == 1) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(ya(k)*za(k)*resc)
-                a(neq*(k-1)+im) = dble(ya(k)*za(k)*resc)
-            end do
-            r(im) = dble(bv(9))
-        endif
-    
-        ! External drift term (specified by external variable):
-    
-        if(ktype == 3) then
-            im=im+1
-            do k=1,na
-                a(neq*(im-1)+k) = dble(vea(k)*resce)
-                a(neq*(k-1)+im) = dble(vea(k)*resce)
-            end do
-            r(im) = dble(extest*resce)
-        endif
-    
-        ! Copy the right hand side to compute the kriging variance later:
-    
-        do k=1,neq
-            rr(k) = r(k)
-        end do
-        kadim = neq * neq
-        ksdim = neq
-        nrhs  = 1
-        nv    = 1
-    
-        ! If estimating the trend then reset all the right hand side terms=0.0:
-    
-        if(itrend >= 1) then
-            do i=1,na
-                r(i)  = 0.0
-                rr(i) = 0.0
-            end do
-        endif
-    
-        ! Write out the kriging Matrix if Seriously Debugging:
-    
-!~         if(idbg == 3) then
-!~             write(ldbg,*) 'Estimating node index : ',ix,iy,iz
-!~             is = 1 - neq
-!~             do i=1,neq
-!~                 is = 1 + (i-1)*neq
-!~                 ie = is + neq - 1
-!~                 write(ldbg,100) i,r(i),(a(j),j=is,ie)
-!~                 100 format('    r(',i2,') =',f7.4,'  a= ',9(10f7.4))
-!~             end do
-!~         endif
-    
-        ! Solve the kriging system:
-    
-        call ktsol(neq,nrhs,nv,a,r,s,ising,maxeq)
-    
-        ! Compute the solution:
-    
-        if(ising /= 0) then
-!~             if(idbg >= 3) write(ldbg,*) ' Singular Matrix ',ix,iy,iz
-            est  = UNEST
-            estv = UNEST
-        else
-            est  = 0.0
-            estv = dble(cbb)
-            if(ktype == 2) skmean = extest
-            do j=1,neq
-                estv = estv - dble(s(j))*rr(j)
-                if(j <= na) then
-                    if(ktype == 0 .OR. ktype == 2) then
-                        est = est + dble(s(j))*(vra(j)-skmean)
-                    else
-                        est = est + dble(s(j))*vra(j)
-                    endif
-                endif
-            end do
-            if(ktype == 0 .OR. ktype == 2) est = est + skmean
-            nk   = nk + 1
-            xk   = xk + est
-            vk   = vk + est*est
-            
-            lagrange = s(na+1)*unbias
-            
-            ! Write the kriging weights and data if debugging level is above 2:
-        
-!~             if(idbg >= 2) then
-!~                 write(ldbg,*) '       '
-!~                 write(ldbg,*) 'BLOCK: ',ix,iy,iz,' at ',xloc,yloc,zloc
-!~                 write(ldbg,*) '       '
-!~                 if(ktype /= 0) &
-!~                 write(ldbg,*) '  Lagrange : ',s(na+1)*unbias
-!~                 write(ldbg,*) '  BLOCK EST: x,y,z,vr,wt '
-!~                 do i=1,na
-!~                     xa(i) = xa(i) + xloc - 0.5*xsiz
-!~                     ya(i) = ya(i) + yloc - 0.5*ysiz
-!~                     za(i) = za(i) + zloc - 0.5*zsiz
-!~                     write(ldbg,'(5f12.3)') xa(i),ya(i),za(i), &
-!~                     vra(i),s(i)
-!~                 end do
-!~                 write(ldbg,*) '  estimate, variance  ',est,estv
-!~             endif
-        endif
-        
-        ! END OF MAIN KRIGING LOOP:
-    
-        1 continue
-
-        if(iktype == 0) then
-            if(koption == 0) then
-!~                 write(lout,'(f9.3,1x,f9.3)') est,estv
-                estg(index)= est
-                estvg(index)= estv
-            else
-                err = UNEST
-                if(true /= UNEST .AND. est /= UNEST)err=est-true
-!~                 write(lout,'(7(f12.3,1x))') xloc,yloc,zloc,true, &
-!~                 est,estv,err
-                xkmae = xkmae + abs(err)
-                xkmse = xkmse + err*err
-                
-                if (koption == 1) then
-                    esta(index)= est
-                    estva(index)= estv                    
-                end if 
-                if (koption == 2) then
-                    estj(index)= est
-                    estvj(index)= estv
-                end if
-                
-            end if
-!~         else
-!~         
-!~         ! Work out the IK-type distribution implicit to this data configuration
-!~         ! and kriging weights:
-!~         
-!~             do icut=1,ncut
-!~                 cdf(icut) = -1.0
-!~             end do
-!~             wtmin = 1.0
-!~             do i=1,na
-!~                 if(s(i) < wtmin) wtmin = s(i)
-!~             end do
-!~             sumwt = 0.0
-!~             do i=1,na
-!~                 s(i)  = s(i) - wtmin
-!~                 sumwt = sumwt + s(i)
-!~             end do
-!~             do i=1,na
-!~                 s(i) = s(i) / max(0.00001,sumwt)
-!~             end do
-!~             if(na > 1 .AND. sumwt > 0.00001) then
-!~                 do icut=1,ncut
-!~                     cdf(icut) = 0.0
-!~                     do i=1,na
-!~                         if(vra(i) <= cut(icut)) &
-!~                         cdf(icut)=cdf(icut)+s(i)
-!~                     end do
-!~                 end do
-!~             end if
-!~             if(koption == 0) then
-!~                 write(lout,'(30(f8.4))') (cdf(i),i=1,ncut)
-!~             else
-!~                 write(lout,'(30(f8.4))') (cdf(i),i=1,ncut),true
-!~             end if
-        end if
-    end do
-    2 continue
-!~     if(koption > 0) close(ljack)
-
-    ! Write statistics of kriged values:
-
-     
-    if(nk > 0 ) then
-        xk    = xk/dble(nk)
-        vk    = vk/dble(nk) - xk*xk
-        xkmae = xkmae/dble(nk)
-        xkmse = xkmse/dble(nk)
-        ! write(ldbg,105) nk,xk,vk
-        print *, 'Estimated blocks ', nk
-        print *, 'Average          ', xk
-        print *, 'Variance         ', vk
-        if(koption /= 0) then
-            print *, 'Mean error', xkmae
-            print *, 'Mean sqd e', xkmse
-        end if
-    endif
-
-    ! All finished the kriging:
-    
-! ###########################################################   
-
-
-  
-    return
-    
-    ! 96 stop 'ERROR in jackknife file!'                                ! remove this guy
-    
-end subroutine kt3d
 
 subroutine ktsol(n  ,ns  ,nv,a,b,x,ktilt,maxeq)
     !-----------------------------------------------------------------------
@@ -3776,3 +2882,707 @@ subroutine ktsol(n  ,ns  ,nv,a,b,x,ktilt,maxeq)
 
     return
 end subroutine ktsol
+
+
+subroutine kt3d( &   
+                 na,xa,ya,za,vra, vea,                     &            ! input parameters (Data within search ellipse)
+                 ndb, xdb, ydb, zdb, extest, cbb,          &            ! input grid block and block covariance (use discretization points for block estimate or center point for point estimate)
+                 radius,                                   &            ! input search parameters (this is a dummy parameter for rescaling, TODO: find the way to remove it)
+                 nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,   &            ! input variogram
+                 ktype, skmean,  UNEST,                    &            ! input kriging parameters 
+                 idrif,                                    &            ! input drift parameters                         
+                 kneq,                                     &            ! number of kriging equations (can be calculated with kt3d_getmatrix_size )
+                 est, estv, estt, estvt,                   &            ! output: estimate, estimation variance on a single block (including estimate of the trend)
+                 w, wt,  error,                            &            ! output: weight (and trend wight) and error (if error error > 0)
+                 kmatrix, kvector, ksolution)                           ! output: system of kriging equations, only returned if kneq> 0
+
+    
+    !-----------------------------------------------------------------------
+    !                Krige a 3-D Grid of Rectangular Blocks
+    !                **************************************
+    !
+    ! This subroutine estimates point or block values of one variable by
+    ! simple, ordinary, or kriging with a trend model.  It is also possible
+    ! to estimate the trend directly.
+
+    ! Original:  A.G. Journel and C. Lemmer                             1981
+    ! Revisions: A.G. Journel and C. Kostov                             1984
+    !
+    !
+    ! 2015 changes
+    ! this is only to calculate in a single block
+    ! the block is defined by discretization points (this functions may estimate polygos... )
+    ! all data input is used
+    ! This is a function to be used from python... 
+    ! TODO: add comments 
+    !
+    !
+    ! PARAMETERS:
+    ! Input: 
+    !  *Data points for estimation
+    !     na                    - integer:  number of rows in the data
+    !     xa(na),ya(na),za(na)  - [double]: coordinates 
+    !     vra(nd),vea(nd)       - [double]: variable and external drift
+    !  *Grid parameters (no rotation allowed)
+    !     ndb                   - integer: number of discretization points
+    !     xdb(ndb)              - [double]: x coordinates of discretization points
+    !     ydb(ndb)              - [double]: y coordinates of discretization points
+    !     zdb(ndb)              - [double]: z coordinates of discretization points 
+    !     extest                - double:  external drift on block/point
+    !     cbb                   - double:  block covariance
+    !  *Search parameters                      
+    !     radius                - double: ellipse radius (this is dummy, TODO: remove it)
+    !  *Variogram 
+    !     nst(1)                   - [integer]: number of structures 
+    !     c0(1)                    - [double]: nugget effect    
+    !     it(nst)                  - [integer]: structure type 
+    !                                  1. spherical (range a)
+    !                                  2. exponential (p'range 3a)
+    !                                  3. gaussian (p'range a*sqrt(3))
+    !                                  4. power (0<a<2), if linear model, a=1,c=slope.
+    !                                  5. hole effect
+    !     cc(nst)                  - [double]: structure variance
+    !     aa, aa1, aa2(nst)        - [double]: structure ranges
+    !                                 ** aa is used to calculate anisotroy
+    !     ang1,ang2,ang3(nst)      - [double]: structure rotation angles
+    !                                 ** variable angles per structure allowed    
+    !  *Kriging parameters
+    !     ktype                    - integer: 0=SK,1=OK,2=non-st SK,3=exdrift
+    !     UNEST                    - double: non estimated values (ex. numpy.nan)
+    !     skmean                   - double: constant used for simple kriging mean
+    !                                      *warning this is an inout parameter*
+    !     kneq                     - integer: number of kriging equations 
+    !                                         if 0 no kriging equations reported
+    !                                         if equal to the actual number of k equations k equations reported
+    !                                         if > 0 and wrong number report error
+    !                                         Note: use kt3d_getmatrix_size to calculate kneq
+    !  *Drift
+    !     idrift(9)                 - [logical]: if true will use or ignore
+    !                                           the following drift terms: 
+    !                                           x,y,z,xx,yy,zz,xy,xz,zy 
+    ! Output: 
+    !  *Estimate
+    !     est, estv,               - double: estimate and kriging variance
+    !     estt, estvt              - double: drift estimate and kriging variance (drift)
+    !  *weight
+    !    w(na), wt(na)             - [double] : estimate wight and trend weight
+    !  *Kriging equations
+    !    kmatrix(kneq,kneq)       - [double] : kriging matriz 
+    !    kvector(kneq)            - [double] : kriging vector
+    !    ksolution(kneq)          - [double] : kriging solution vector
+    !-----------------------------------------------------------------------
+    
+
+	implicit none
+
+	! input variables
+	! target
+	integer, intent(in) :: ndb  ! total number of discretization points 
+	real*8,  intent(in), dimension (ndb) :: xdb, ydb, zdb
+	real*8,  intent(in) :: extest   ! this is the external drift at target location
+	real*8,  intent(in) :: radius   ! this is for internal rescal factor, TODO: find way to remove it
+	real*8,  intent(in) :: UNEST
+
+	! kriging parameters
+	integer, intent(in) :: ktype
+	real*8, intent(in) :: cbb
+	real*8, intent(inout) :: skmean
+
+	! drift 
+	integer, intent(inout), dimension (9) :: idrif
+
+	! variogram
+	integer, intent(in) :: nst
+	real*8,  intent(in), dimension (1) :: c0
+	real*8,  intent(in), dimension (nst) :: cc, aa, aa1, aa2, ang1, ang2, ang3
+	integer, intent(in), dimension (nst) :: it 
+	
+	! data
+	integer, intent(in) :: na
+	real*8,  intent(in), dimension (na) :: xa, ya, za, vra, vea
+
+	! ksystem of equations
+	integer, intent(in) :: kneq
+
+
+	! output variables 
+	real*8,  intent(out):: est, estv ! estimate and estimate variance
+	real*8,  intent(out):: estt, estvt ! estimate and estimate variance (trend)
+	integer, intent(out) :: error ! 1=> allocation error
+	real*8,  intent(out), dimension (na) :: w, wt  ! kriging weight (variable and trend) asigned to each variable
+	! ksystem of equations
+	real*8,  intent(out), dimension (kneq,kneq) :: kmatrix
+	real*8,  intent(out), dimension (1,kneq) :: kvector, ksolution
+
+
+	! internal variables
+	real*8 :: PMX, covmax, EPSLON, radsqd , resc, xk, &
+              vk, xkmae, xkmse, cb, cmax, cb1, cov, dx, dy, dz, &
+			  unbias, resce
+	real*8, dimension (nst,3,3) :: rotmat
+	real*8, dimension (nst) :: anis1,anis2
+	real*8, dimension (9) :: bv
+	integer :: is, ie, i, j, k , maxrot, mdt, nk, neq, im, test, &
+			   kadim, ksdim, nrhs, nv, ising
+
+	! internal and dinamic
+	real*8, allocatable,  dimension (:) :: a, at, att, r, rr, rt, rrt, s, st
+	! TODO: find how to provide a,r,rt,s,st as outpot
+
+
+
+
+	error = 0
+	PMX    = 999.0
+	EPSLON = 0.00000001
+
+
+	! ********** this is the actual function ***************
+
+	!calculate anisotropy factor 
+    do i=1,nst
+        anis1(i) = aa1 (i) / max(aa(i),EPSLON)
+        anis2(i) = aa2 (i) / max(aa(i),EPSLON)
+    end do
+
+	! Set up the rotation/anisotropy matrices that are needed for the
+	! variogram.  Also compute the maximum covariance for
+	! the rescaling factor:
+    
+	maxrot = nst
+    covmax = c0(1)	
+    do is=1,nst
+        call setrot(ang1(is),ang2(is),ang3(is),anis1(is),anis2(is), &
+        is,MAXROT,rotmat)
+        if(it(is) == 4) then
+            covmax = covmax + PMX
+        else
+            covmax = covmax + cc(is)
+        endif
+    end do
+
+
+	! Finish computing the rescaling factor and stop if unacceptable:
+	radsqd = radius * radius
+    if(radsqd < 1.0) then
+        resc = 2.0 * radius / max(covmax,0.0001)
+    else
+        resc =(4.0 * radsqd)/ max(covmax,0.0001)
+    endif
+    !if(resc <= 0.0) then
+    !    write(*,*) 'ERROR KT3D: The rescaling value is wrong ',resc
+    !    write(*,*) '            Maximum covariance: ',covmax
+    !    write(*,*) '            search radius:      ',radius
+    !    stop
+    !endif
+    resc = 1.0 / resc
+
+
+	! Compute the number of drift terms, if an external drift is being
+	! considered then it is one more drift term, if SK is being considered
+	! then we will set all the drift terms off and mdt to 0):
+
+    mdt = 1
+    do i=1,9
+        if(ktype == 0 .OR. ktype == 2) idrif(i) = 0
+        if(idrif(i) < 0 .OR. idrif(i) > 1) then
+            write(*,*) 'ERROR KT3D: invalid drift term',idrif(i)
+            write(*,*) 'Using idrif(i) = 0 on drift i= ', i
+            idrif(i) = 0
+        endif
+        mdt = mdt + idrif(i)
+    end do
+    if(ktype == 3) mdt = mdt + 1
+    if(ktype == 0) mdt = 0
+    if(ktype == 2) mdt = 0
+	
+	! print *, 'mdt : ', mdt
+
+	! Set up the discretization points per block.  Figure out how many
+	! are needed, the spacing, and fill the xdb,ydb, and zdb arrays with
+	! the offsets relative to the block center (this only gets done once):
+
+	! In all cases the offsets are relative to the lower left corner.
+	! This is done for rescaling the drift terms in the kriging matrix.
+
+	! in this version we input arbitrary xdb,ydb, zdb values... 
+
+
+	! Initialize accumulators:
+
+    nk    = 0
+    xk    = 0.0
+    vk    = 0.0
+    xkmae = 0.0
+    xkmse = 0.0
+
+	!
+	! Calculate point Covariance. The block covariance is calculated externally
+	!
+	call cova3(xdb(1),ydb(1),zdb(1),xdb(1),ydb(1),zdb(1),1,nst, &
+		       c0,it,cc,aa,1,MAXROT,rotmat,cmax,cov)
+	!
+	! Set the ``unbias'' variable so that the matrix solution is more stable
+	!
+    
+	unbias = cov
+
+
+	! Mean values of the drift functions:
+
+    do i=1,9
+        bv(i) = 0.0
+    end do
+    do i=1,ndb
+        bv(1) = bv(1) + xdb(i)
+        bv(2) = bv(2) + ydb(i)
+        bv(3) = bv(3) + zdb(i)
+        bv(4) = bv(4) + xdb(i)*xdb(i)
+        bv(5) = bv(5) + ydb(i)*ydb(i)
+        bv(6) = bv(6) + zdb(i)*zdb(i)
+        bv(7) = bv(7) + xdb(i)*ydb(i)
+        bv(8) = bv(8) + xdb(i)*zdb(i)
+        bv(9) = bv(9) + ydb(i)*zdb(i)
+    end do
+    do i=1,9
+        bv(i) = (bv(i) / real(ndb)) * resc
+    end do
+
+	! Test if there are enough samples to estimate all drift terms:
+
+    if(na >= 1 .AND. na <= mdt) then
+        est  = UNEST
+        estv = UNEST
+		error = 100        ! no enough samples error
+        return 
+    end if
+
+	! There are enough samples - proceed with estimation.
+
+    if(na <= 1) then
+    
+    	! Handle the situation of only one sample:
+    
+        call cova3(xa(1),ya(1),za(1),xa(1),ya(1),za(1),1,nst, &
+        c0,it,cc,aa,1,maxrot,rotmat,cmax,cb1)
+    
+    	! Establish Right Hand Side Covariance:
+    
+        if(ndb <= 1) then
+            call cova3(xa(1),ya(1),za(1),xdb(1),ydb(1),zdb(1),1, &
+            nst,c0,it,cc,aa,1,maxrot,rotmat,cmax,cb)
+        else
+            cb  = 0.0
+            do i=1,ndb
+                call cova3(xa(1),ya(1),za(1),xdb(i),ydb(i), &
+                zdb(i),1,nst,c0,it,cc,aa,1, &
+                MAXROT,rotmat,cmax,cov)
+                cb = cb + cov
+                dx = xa(1) - xdb(i)
+                dy = ya(1) - ydb(i)
+                dz = za(1) - zdb(i)
+                if((dx*dx+dy*dy+dz*dz) < EPSLON) cb=cb-c0(1)
+            end do
+            cb = cb / real(ndb)
+        end if
+        est  = vra(1)
+        estv = real(cbb) - 2.0*cb + cb1
+        nk   = nk + 1
+        xk   = xk + vra(1)
+        vk   = vk + vra(1)*vra(1)
+		error = 900000               ! warning, estimate with one sample
+        return 
+    end if
+
+	! Go ahead and set up the OK portion of the kriging matrix:
+
+    neq = mdt+na
+
+	! Initialize the main kriging matrix:
+
+    allocate( a(neq*neq), att(neq*neq), at(neq*neq), r(neq), rr(neq), rt(neq), rrt(neq), s(neq), st(neq),  stat = test)
+	if(test.ne.0)then
+    	error = 1
+		return        ! allocation error
+    end if
+
+
+    do i=1,neq*neq
+        a(i) = 0.0
+    end do
+	
+
+    do i=1,neq
+        r(i) = 0.0
+		rr(i) = 0.0
+		rt(i) = 0.0
+		rrt(i) = 0.0
+		s(i) = 0.0
+		st(i) = 0.0
+    end do
+
+	! Fill in the kriging matrix:
+
+    do i=1,na
+        do j=i,na
+            call cova3(xa(i),ya(i),za(i),xa(j),ya(j),za(j),1,nst, &
+            c0,it,cc,aa,1,maxrot,rotmat,cmax,cov)
+            a(neq*(i-1)+j) = dble(cov)
+            a(neq*(j-1)+i) = dble(cov)
+        end do
+    end do
+
+	! Fill in the OK unbiasedness portion of the matrix (if not doing SK):
+
+    if(neq > na) then
+        do i=1,na
+            a(neq*(i-1)+na+1) = dble(unbias)
+            a(neq*na+i)       = dble(unbias)
+        end do
+    endif
+
+
+	! Set up the right hand side:
+
+    do i=1,na
+        if(ndb <= 1) then  ! point kriging
+			! print *, 'doing point kriging'
+            call cova3(xa(i),ya(i),za(i),xdb(1),ydb(1),zdb(1),1, &
+            nst,c0,it,cc,aa,1,MAXROT,rotmat,cmax,cb)
+        else
+			! print *, 'doing block kriging'
+            cb  = 0.0
+            do j=1,ndb
+                call cova3(xa(i),ya(i),za(i),xdb(j),ydb(j), &
+                zdb(j),1,nst,c0,it,cc,aa,1, &
+                MAXROT,rotmat,cmax,cov)
+                cb = cb + cov
+                dx = xa(i) - xdb(j)
+                dy = ya(i) - ydb(j)
+                dz = za(i) - zdb(j)
+                if((dx*dx+dy*dy+dz*dz) < EPSLON) cb=cb-c0(1)
+            end do
+            cb = cb / real(ndb)
+        end if
+        r(i) = dble(cb)
+    end do
+    if(neq > na) r(na+1) = dble(unbias)
+
+	! Add the additional unbiasedness constraints:
+
+	im = na + 1
+
+	! First drift term (linear in "x"):
+
+    if(idrif(1) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(xa(k)*resc)
+            a(neq*(k-1)+im) = dble(xa(k)*resc)
+        end do
+        r(im) = dble(bv(1))
+    endif
+
+	! Second drift term (linear in "y"):
+
+    if(idrif(2) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(ya(k)*resc)
+            a(neq*(k-1)+im) = dble(ya(k)*resc)
+        end do
+        r(im) = dble(bv(2))
+    endif
+
+	! Third drift term (linear in "z"):
+
+    if(idrif(3) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(za(k)*resc)
+            a(neq*(k-1)+im) = dble(za(k)*resc)
+        end do
+        r(im) = dble(bv(3))
+    endif
+
+	! Fourth drift term (quadratic in "x"):
+
+    if(idrif(4) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(xa(k)*xa(k)*resc)
+            a(neq*(k-1)+im) = dble(xa(k)*xa(k)*resc)
+        end do
+        r(im) = dble(bv(4))
+    endif
+
+	! Fifth drift term (quadratic in "y"):
+
+    if(idrif(5) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(ya(k)*ya(k)*resc)
+            a(neq*(k-1)+im) = dble(ya(k)*ya(k)*resc)
+        end do
+        r(im) = dble(bv(5))
+    endif
+
+	! Sixth drift term (quadratic in "z"):
+
+    if(idrif(6) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(za(k)*za(k)*resc)
+            a(neq*(k-1)+im) = dble(za(k)*za(k)*resc)
+        end do
+        r(im) = dble(bv(6))
+    endif
+
+	! Seventh drift term (quadratic in "xy"):
+
+    if(idrif(7) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(xa(k)*ya(k)*resc)
+            a(neq*(k-1)+im) = dble(xa(k)*ya(k)*resc)
+        end do
+        r(im) = dble(bv(7))
+    endif
+
+	! Eighth drift term (quadratic in "xz"):
+
+    if(idrif(8) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(xa(k)*za(k)*resc)
+            a(neq*(k-1)+im) = dble(xa(k)*za(k)*resc)
+        end do
+        r(im) = dble(bv(8))
+    endif
+
+	! Ninth drift term (quadratic in "yz"):
+
+    if(idrif(9) == 1) then
+        im=im+1
+        do k=1,na
+            a(neq*(im-1)+k) = dble(ya(k)*za(k)*resc)
+            a(neq*(k-1)+im) = dble(ya(k)*za(k)*resc)
+        end do
+        r(im) = dble(bv(9))
+    endif
+
+	! External drift term (specified by external variable):
+
+    if(ktype == 3) then
+        im=im+1
+		resce  = covmax / max(extest,0.0001)
+        do k=1,na
+            a(neq*(im-1)+k) = dble(vea(k)*resce)
+            a(neq*(k-1)+im) = dble(vea(k)*resce)
+        end do
+        r(im) = dble(extest*resce)
+		! print *, 'r(im)', r(im), im
+		! print *, 'covmax, extest, resce ', covmax , extest, resce
+    endif
+
+
+ 	! Copy the right hand side to compute the kriging variance later:
+	! this is because ksolve may change r values... 
+    do k=1,neq
+        rr(k) = r(k)
+		rt(k) = r(k)
+		rrt(k)= r(k) 
+    end do
+	! doing the same with a
+    do k=1,neq*neq
+        at(k) = a(k)
+		att(k) = a(k) 
+    end do
+    kadim = neq * neq
+    ksdim = neq
+    nrhs  = 1
+    nv    = 1
+
+   
+	! To estimate the trend we reset all the right hand side terms=0.0:
+    do i=1,na
+          rt(i)  = 0.0
+          rrt(i) = 0.0
+    end do
+
+
+	! Solve the kriging system for data estimate
+    call ktsol(neq,nrhs,nv,a,r,s,ising,neq)
+
+	! Solve the kriging system for trend estimate
+	call ktsol(neq,nrhs,nv,at,rt,st,ising,neq)
+
+
+	! Compute the solution:
+    if(ising /= 0) then
+        est  = UNEST
+        estv = UNEST
+        estt  = UNEST
+        estvt = UNEST
+    else
+        est  = 0.0
+        estv = real(cbb)
+        estt  = 0.0
+        estvt = real(cbb)
+        if(ktype == 2) skmean = extest
+        do j=1,neq
+            estv = estv - real(s(j))*rr(j)
+			estvt = estvt - real(st(j))*rrt(j)
+            if(j <= na) then
+                if(ktype == 0 .OR. ktype == 2) then
+                    est = est + real(s(j))*(vra(j)-skmean)
+					estt = estt + real(st(j))*(vra(j)-skmean)
+				    w(j) = s(j)
+					wt(j) = s(j)
+                else
+                    est = est + real(s(j))*vra(j)
+					estt = estt + real(st(j))*vra(j)
+                endif
+            endif
+        end do
+        if(ktype == 0 .OR. ktype == 2) then
+			est = est + skmean
+			estt = estt + skmean			
+		end if
+ 
+    end if
+
+	! print *, 'r:', r
+	! print *, 'rt:', rt
+	! print *, 'rr:', rr
+	! print *, 'rrt:', rrt
+	! print *, 's:', s
+	! print *, 'st:', st
+
+	!
+	! Write out the kriging equations
+	!
+
+	! The matrix has the right size?
+	if (kneq>0 .and. kneq/=neq) then
+		error = 10  ! wrong size for the kriging matrix, use kt3d_getmatrix_size to calculate right size
+		deallocate( a, r, rr, rt, rrt, s, st,  stat = test)
+		return
+	end if	
+
+	! then we populate the external matrix/vectors with values
+    if(kneq>0) then
+		is = 1 - neq
+
+		do i=1, neq
+			is = 1 + (i-1)*neq
+			ie = is + neq - 1
+			kvector(1,i)   = rr(i)
+			ksolution(1,i) =  s(i)
+			k=0
+		    do j=is,ie
+				k=k+1
+		        kmatrix (i,k) = att(j) 
+		        kmatrix (k,i) = att(j)
+		    end do
+			!kmatrix (neq,neq) = a(neq*neq)
+		end do
+	endif
+           
+	!dealocate arrays
+    deallocate( a, r, rr, rt, rrt, s, st,  stat = test)
+	if(test.ne.0)then
+    	error = 2
+		return           ! deallocation error
+    end if
+
+	return
+
+end subroutine kt3d
+
+
+
+subroutine kt3d_getmatrix_size ( &
+			  ktype, idrif , na, & 
+			  mdt, kneq, error)
+    !-----------------------------------------------------------------------
+    !                Gets the size of the kriging equations from parameters
+    !                **************************************
+    !
+    !
+    ! PARAMETERS:
+    ! Input: 
+    !  *Data points for estimation
+    !     na                    - integer:  number of rows in the data
+    !  *Kriging parameters
+    !     ktype                    - integer: 0=SK,1=OK,2=non-st SK,3=exdrift
+
+    !  *Drift
+    !     idrift(9)                 - [logical]: if true will use or ignore
+    !                                           the following drift terms: 
+    !                                           x,y,z,xx,yy,zz,xy,xz,zy 
+    ! Output: 
+    !     mdt                      - integer: size of the unbias terms
+    !     kneq                     - integer: number of kriging equations (na + mdt)
+    !-----------------------------------------------------------------------
+
+
+	implicit none
+
+	! input variables
+	! target
+
+	! kriging parameters
+	integer, intent(in) :: ktype
+
+	! drift 
+	integer, intent(inout), dimension (9) :: idrif
+	
+	! data
+	integer, intent(in) :: na
+
+	! output variables 
+	integer, intent(out) :: error ! 1=> allocation error
+	integer, intent(out) ::	mdt, kneq
+
+	! internal variables
+	integer :: i
+
+	error = 0
+
+
+	! Compute the number of drift terms, if an external drift is being
+	! considered then it is one more drift term, if SK is being considered
+	! then we will set all the drift terms off and mdt to 0):
+
+    mdt = 1
+    do i=1,9
+        if(ktype == 0 .OR. ktype == 2) idrif(i) = 0
+        if(idrif(i) < 0 .OR. idrif(i) > 1) then
+            write(*,*) 'ERROR KT3D: invalid drift term',idrif(i)
+            write(*,*) 'Using idrif(i) = 0 on drift i= ', i
+            idrif(i) = 0
+        endif
+        mdt = mdt + idrif(i)
+    end do
+    if(ktype == 3) mdt = mdt + 1
+    if(ktype == 0) mdt = 0
+    if(ktype == 2) mdt = 0
+	
+
+	! Test if there are enough samples to estimate all drift terms:
+
+    if(na >= 1 .AND. na <= mdt) then
+		error = 100        ! no eanough samples error
+        return 
+    end if
+
+	! Go ahead and set up the OK portion of the kriging matrix:
+
+    kneq = mdt+na
+
+	return
+
+end subroutine kt3d_getmatrix_size 
+
+

@@ -677,7 +677,7 @@ def cova3(parameters):
                 'z2'     :  0,            # Z coordinates, point 2
                 'nst'    :  2,            # number of nested structures, array('i') with bounds (ivarg), 
                                           # ivarg is variogram number
-                'it'     :  [3],          # structure type,  array('i') with bounds (ivarg)        
+                'it'     :  [3, 3],       # structure type,  array('i') with bounds (ivarg)        
                 'c0'     :  [0.1],        # nugget,  array('f') with bounds (ivarg)        
                 'cc'     :  [0.4, 0.5],   # variance, array('f') with bounds (nvarg*nst[0])
                 'aa'     :  [8, 16],       # parameter a (or range), array('f') with bounds (nvarg*nst[0])
@@ -730,7 +730,7 @@ def block_covariance(parameters):
                 'xdb'  :  [0 , 0, 1, 1],  # X coordinates of discretazation points
                 'ydb'  :  [1 , 0, 1, 0],  # Y coordinates of discretazation points
                 'zdb'  :  [0 , 0, 0, 0],  # Z coordinates of discretazation points
-                'it'     :  [3, 2],        # structure type,  array('i') with bounds (ivarg)        
+                'it'     :  [3, 3],        # structure type,  array('i') with bounds (ivarg)        
                 'c0'     :  [0.1],        # nugget,  array('f') with bounds (ivarg)        
                 'cc'     :  [0.4, 0.5],   # variance, array('f') with bounds (nvarg*nst[0])
                 'aa'     :  [8, 16],       # parameter a (or range), array('f') with bounds (nst)
