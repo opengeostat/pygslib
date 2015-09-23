@@ -241,31 +241,6 @@ real*8 function sqdist(x1,y1,z1,x2,y2,z2,ind,maxrot,rotmat)
 end function sqdist
 
 
-
-! TODO delete this
-! *** test function for ind in rotmatrix
-subroutine testind(ind,maxrot,rotmat, mtout)
-    ! delete this      
-    implicit none
-
-    ! input
-    integer, intent(in) ::  maxrot, ind
-    real*8, intent(in), dimension(maxrot,3,3) ::  rotmat
-    real*8, intent(out), dimension(3,3) ::  mtout
-
-    integer :: i, j
-
-    do i=1,3
-        do j=1,3
-           mtout(i,j)=rotmat(ind,i,j)
-        end do
-    end do
-  
-    ! return
-end subroutine testind
-
-
-
 subroutine cova3(x1,y1,z1,x2,y2,z2,ivarg,nst,c0,it,cc,aa, &
     irot,maxrot,rotmat,cmax,cova)
     !-----------------------------------------------------------------------
@@ -557,499 +532,6 @@ subroutine block_covariance(xdb,ydb,zdb, ndb, &
     
 end subroutine block_covariance
 
-
-subroutine srchsupr(xloc,yloc,zloc,radsqd,irot,MAXROT,rotmat, &
-    nsbtosr,ixsbtosr,iysbtosr,izsbtosr,noct,maxbhid,nd, &
-    x,y,z, bhid,tmp,nisb,nxsup,xmnsup,xsizsup, &
-    nysup,ymnsup,ysizsup,nzsup,zmnsup,zsizsup, &
-    nclose,close,infoct)
-    !-----------------------------------------------------------------------
-
-    !              Search Within Super Block Search Limits
-    !              ***************************************
-
-
-    ! This subroutine searches through all the data that have been tagged in
-    ! the super block subroutine.  The close data are passed back in the
-    ! index array "close".  An octant search is allowed.
-
-
-
-    ! INPUT VARIABLES:
-
-    !   xloc,yloc,zloc   location of point being estimated/simulated
-    !   radsqd           squared search radius
-    !   irot             index of the rotation matrix for searching
-    !   MAXROT           size of rotation matrix arrays
-    !   rotmat           rotation matrices
-    !   nsbtosr          Number of super blocks to search
-    !   ixsbtosr         X offsets for super blocks to search
-    !   iysbtosr         Y offsets for super blocks to search
-    !   izsbtosr         Z offsets for super blocks to search
-    !   noct             If >0 then data will be partitioned into octants
-    !   maxbhid          Maximum number of samples per BHID
-    !   nd               Number of data
-    !   x(nd)            X coordinates of the data
-    !   y(nd)            Y coordinates of the data
-    !   z(nd)            Z coordinates of the data
-    !   bhid(nd)         BHID 
-    !   tmp(nd)          Temporary storage to keep track of the squared
-    !                      distance associated with each data
-    !   nisb()                Array with cumulative number of data in each
-    !                           super block.
-    !   nxsup,xmnsup,xsizsup  Definition of the X super block grid
-    !   nysup,ymnsup,ysizsup  Definition of the X super block grid
-    !   nzsup,zmnsup,zsizsup  Definition of the X super block grid
-
-
-
-    ! OUTPUT VARIABLES:
-
-    !   nclose           Number of close data
-    !   close()          Index of close data
-    !   infoct           Number of informed octants (only computes if
-    !                      performing an octant search)
-
-
-
-    ! EXTERNAL REFERENCES:
-
-    !   sqdist           Computes anisotropic squared distance
-    !   sortem           Sorts multiple arrays in ascending order
-
-
-
-    !-----------------------------------------------------------------------
-    implicit none
-
-
-    !external references
-    real*8,external :: sqdist
-
-    !input
-    integer, intent(in) :: nxsup, nysup, nzsup
-    integer, intent(in) :: irot, MAXROT, nsbtosr, noct, maxbhid, nd
-    real*8, intent(in), dimension (MAXROT,3,3) :: rotmat
-    real*8, intent(in) ::  xloc,yloc,zloc,radsqd 
-    integer, intent(in), dimension(nsbtosr) ::ixsbtosr, iysbtosr, izsbtosr
-    integer, intent(in), dimension(nd) :: bhid
-    real*8, intent(in), dimension(nd) :: x, y, z 
-    integer, intent(in), dimension (nxsup*nysup*nzsup) :: nisb
-    real*8, intent(in) :: xmnsup,xsizsup,ymnsup, ysizsup, zmnsup, zsizsup
-
-    !inout
-    real*8, intent(inout), dimension(nd) :: tmp
-
-    !out
-    real*8, intent(out), dimension(nd) :: close
-    integer, intent(out) :: infoct, nclose
-    integer :: dhole
-
-
-    !internal
-    real*8 ::  hsqd, h, dx, dy, dz
-    integer :: inoct(8)
-    logical :: inflag
-    integer :: isup,ixsup, iysup, izsup, i, ii, nt, na, nums, j, ix, iy, iz, iq
-
-    ! TODO: this is for sortem, see if this can be modified and avoid declaring non used arrays (e, f, g, hh)
-    real*8, dimension(nd) :: c, d, e, f, g, hh
-    
-    ! to deal with max per BHID 
-    integer, dimension(nd) :: take, tmp_ind
-    integer :: counter, l
-
-
-    ! Determine the super block location of point being estimated:
-
-    call getindx(nxsup,xmnsup,xsizsup,xloc,ix,inflag)
-    call getindx(nysup,ymnsup,ysizsup,yloc,iy,inflag)
-    call getindx(nzsup,zmnsup,zsizsup,zloc,iz,inflag)
-
-    ! Loop over all the possible Super Blocks:
-
-    nclose = 0
-    do 1 isup=1,nsbtosr
-    
-        ! Is this super block within the grid system:
-    
-        ixsup = ix + ixsbtosr(isup)
-        iysup = iy + iysbtosr(isup)
-        izsup = iz + izsbtosr(isup)
-        if(ixsup <= 0 .OR. ixsup > nxsup .OR. &
-        iysup <= 0 .OR. iysup > nysup .OR. &
-        izsup <= 0 .OR. izsup > nzsup) go to 1
-    
-            ! Figure out how many samples in this super block:
-    
-        ii = ixsup + (iysup-1)*nxsup + (izsup-1)*nxsup*nysup
-        if(ii == 1) then
-            nums = nisb(ii)
-            i    = 0
-        else
-            nums = nisb(ii) - nisb(ii-1)
-            i    = nisb(ii-1)
-        endif
-    
-        ! Loop over all the data in this super block:
-    
-        do 2 ii=1,nums
-            i = i + 1
-        
-            ! Check squared distance:
-        
-            hsqd = sqdist(xloc,yloc,zloc,x(i),y(i),z(i),irot, &
-            MAXROT,rotmat)
-            if(dble(hsqd) > radsqd) go to 2
-        
-            ! Accept this sample:
-        
-            nclose = nclose + 1
-            close(nclose) = dble(i)
-            tmp(nclose)  = dble(hsqd)
-        2 END DO
-    1 END DO
-
-    ! Sort the nearby samples by distance to point being estimated:
-
-    call sortem(1,nclose,tmp,1,close,c,d,e,f,g,hh)
-
-
-    ! get maximum per drillhole 
-    ! warning: this operation is preceding octants and will overwrite the
-    !          close vector. 
-    take(:)= 1
-    tmp_ind(:)= 0
-    l=0
-    do i=1, nclose
-        if (take(i) .NE. 0) then
-            dhole=bhid(i)
-            counter=0
-            l=l+1
-            tmp_ind(l)=close(i)
-            do j=i, nclose
-                if (dhole==bhid(j)) then 
-                    counter=counter+1
-                    if (counter>maxbhid) then 
-                        take(j)=0
-                    end if
-                end if 
-            end do 
-        else 
-            continue
-        end if
-    end do
-    
-    ! update close list
-    j=0
-    do i=1, nclose
-        if (take(i)==1) then
-            j=j+1
-            close(j)=close(i)
-        end if 
-    end do 
-    nclose=j
-
-    ! If we aren't doing an octant search then just return:
-
-    if(noct <= 0) return
-
-    ! PARTITION THE DATA INTO OCTANTS:
-
-    do i=1,8
-        inoct(i) = 0
-    end do
-
-    ! Now pick up the closest samples in each octant:
-
-    nt = 8*noct
-    na = 0
-    do j=1,nclose
-        i  = int(close(j))
-        h  = tmp(j)
-        dx = x(i) - xloc
-        dy = y(i) - yloc
-        dz = z(i) - zloc
-        if(dz < 0.) go to 5
-        iq=4
-        if(dx <= 0.0 .AND. dy > 0.0) iq=1
-        if(dx > 0.0 .AND. dy >= 0.0) iq=2
-        if(dx < 0.0 .AND. dy <= 0.0) iq=3
-        go to 6
-        5 iq=8
-        if(dx <= 0.0 .AND. dy > 0.0) iq=5
-        if(dx > 0.0 .AND. dy >= 0.0) iq=6
-        if(dx < 0.0 .AND. dy <= 0.0) iq=7
-        6 continue
-        inoct(iq) = inoct(iq) + 1
-    
-        ! Keep this sample if the maximum has not been exceeded:
-    
-        if(inoct(iq) <= noct) then
-            na = na + 1
-            close(na) = i
-            tmp(na)   = h
-            if(na == nt) go to 7
-        endif
-    end do
-
-    ! End of data selection. Compute number of informed octants and return:
-
-    7 nclose = na
-    infoct = 0
-    do i=1,8
-        if(inoct(i) > 0) infoct = infoct + 1
-    end do
-
-    ! Finished:
-
-    return
-
-end subroutine srchsupr
-
-
-subroutine setsupr(nx,xmn,xsiz,ny,ymn,ysiz,nz,zmn,zsiz,nd,x,y,z, &
-    vr,tmp,nsec,sec1,sec2,sec3,MAXSBX,MAXSBY, &
-    MAXSBZ,nisb,nxsup,xmnsup,xsizsup,nysup,ymnsup, &
-    ysizsup,nzsup,zmnsup,zsizsup)
-    !-----------------------------------------------------------------------
-
-    !           Establish Super Block Search Limits and Sort Data
-    !           *************************************************
-
-    ! This subroutine sets up a 3-D "super block" model and orders the data
-    ! by super block number.  The limits of the super block is set to the
-    ! minimum and maximum limits of the grid; data outside are assigned to
-    ! the nearest edge block.
-
-    ! The idea is to establish a 3-D block network that contains all the
-    ! relevant data.  The data are then sorted by their index location in
-    ! the search network, i.e., the index location is given after knowing
-    ! the block index in each coordinate direction (ix,iy,iz):
-    !          ii = (iz-1)*nxsup*nysup + (iy-1)*nxsup + ix
-    ! An array, the same size as the number of super blocks, is constructed
-    ! that contains the cumulative number of data in the model.  With this
-    ! array it is easy to quickly check what data are located near any given
-    ! location.
-
-
-
-    ! INPUT VARIABLES:
-
-    !   nx,xmn,xsiz      Definition of the X grid being considered
-    !   ny,ymn,ysiz      Definition of the Y grid being considered
-    !   nz,zmn,zsiz      Definition of the Z grid being considered
-    !   nd               Number of data
-    !   x(nd)            X coordinates of the data
-    !   y(nd)            Y coordinates of the data
-    !   z(nd)            Z coordinates of the data
-    !   vr(nd)           Variable at each location.
-    !   tmp(nd)          Temporary storage to keep track of the super block
-    !                      index associated to each data (uses the same
-    !                      storage already allocated for the simulation)
-    !   nsec             Number of secondary variables to carry with vr
-    !   sec1(nd)         First secondary variable (if nsec >= 1)
-    !   sec2(nd)         Second secondary variable (if nsec >= 2)
-    !   sec3(nd)         Third secondary variable (if nsec = 3)
-    !   MAXSB[X,Y,Z]     Maximum size of super block network
-
-
-
-    ! OUTPUT VARIABLES:
-
-    !   nisb()                Array with cumulative number of data in each
-    !                         super block.
-    !   nxsup,xmnsup,xsizsup  Definition of the X super block grid
-    !   nysup,ymnsup,ysizsup  Definition of the Y super block grid
-    !   nzsup,zmnsup,zsizsup  Definition of the Z super block grid
-
-
-
-    ! EXTERNAL REFERENCES:
-
-    !   sortem           Sorting routine to sort the data
-
-
-
-    !-----------------------------------------------------------------------
-
-    implicit none
-    !input
-    real*8, intent(in), dimension (nd) ::  x,y,z,vr,sec1,sec2,sec3
-    integer , intent(in) :: nx, ny, nz, nd, nsec, MAXSBX,MAXSBY,MAXSBZ
-    real*8 , intent(in) :: xmn,xsiz,ymn,ysiz,zmn,zsiz
-
-    !inout (warning...)
-    real*8, intent(inout), dimension (nd) ::  tmp    
-
-    !output
-    !nisb(nxsup*nysup*nzsup) not possible, assigning large value or MAXSBX*MAXSBY*MAXSBZ
-    integer, intent(out), dimension (MAXSBX*MAXSBY*MAXSBZ) :: nisb
-    integer, intent(out) :: nxsup, nysup, nzsup
-    real*8, intent(out) :: xmnsup,xsizsup,ymnsup, ysizsup,zmnsup,zsizsup
-
-
-    !local
-    logical :: inflag
-    integer :: i, ii, nsort, ix, iy, iz
-
-    ! Establish the number and size of the super blocks:
-
-    nxsup   = min(nx,MAXSBX)
-    nysup   = min(ny,MAXSBY)
-    nzsup   = min(nz,MAXSBZ)
-    xsizsup = dble(nx)*xsiz/dble(nxsup)
-    ysizsup = dble(ny)*ysiz/dble(nysup)
-    zsizsup = dble(nz)*zsiz/dble(nzsup)
-    xmnsup  = (xmn-0.5*xsiz)+0.5*xsizsup
-    ymnsup  = (ymn-0.5*ysiz)+0.5*ysizsup
-    zmnsup  = (zmn-0.5*zsiz)+0.5*zsizsup
-
-    ! Initialize the extra super block array to zeros:
-
-    do i=1,nxsup*nysup*nzsup
-        nisb(i) = 0
-    end do
-
-    ! Loop over all the data assigning the data to a super block and
-    ! accumulating how many data are in each super block:
-
-    do i=1,nd
-        call getindx(nxsup,xmnsup,xsizsup,x(i),ix,inflag)
-        call getindx(nysup,ymnsup,ysizsup,y(i),iy,inflag)
-        call getindx(nzsup,zmnsup,zsizsup,z(i),iz,inflag)
-        ii = ix + (iy-1)*nxsup + (iz-1)*nxsup*nysup
-        tmp(i)   = ii
-        nisb(ii) = nisb(ii) + 1
-    end do
-
-    ! Sort the data by ascending super block number:
-
-    nsort = 4 + nsec
-    call sortem(1,nd,tmp,nsort,x,y,z,vr,sec1,sec2,sec3)
-
-    ! Set up array nisb with the starting address of the block data:
-
-    do i=1,(nxsup*nysup*nzsup-1)
-        nisb(i+1) = nisb(i) + nisb(i+1)
-    end do
-
-    ! Finished:
-
-    return
-end subroutine setsupr
-
-
-subroutine picksup(nxsup,xsizsup,nysup,ysizsup,nzsup,zsizsup, &
-    irot,MAXROT,rotmat,radsqd,nsbtosr,ixsbtosr, &
-    iysbtosr,izsbtosr)
-    !-----------------------------------------------------------------------
-
-    !             Establish Which Super Blocks to Search
-    !             **************************************
-
-    ! This subroutine establishes which super blocks must be searched given
-    ! that a point being estimated/simulated falls within a super block
-    ! centered at 0,0,0.
-
-    ! INPUT VARIABLES:
-
-    !   nxsup,xsizsup    Definition of the X super block grid
-    !   nysup,ysizsup    Definition of the Y super block grid
-    !   nzsup,zsizsup    Definition of the Z super block grid
-    !   irot             index of the rotation matrix for searching
-    !   MAXROT           size of rotation matrix arrays
-    !   rotmat           rotation matrices
-    !   radsqd           squared search radius
-
-    ! OUTPUT VARIABLES:
-
-    !   nsbtosr          Number of super blocks to search
-    !   ixsbtosr         X offsets for super blocks to search
-    !   iysbtosr         Y offsets for super blocks to search
-    !   izsbtosr         Z offsets for super blocks to search
-
-    ! EXTERNAL REFERENCES:
-
-    !   sqdist           Computes anisotropic squared distance
-
-    !-----------------------------------------------------------------------
-    implicit none
-
-
-    !external references
-    real*8,external :: sqdist
-    
-
-    !input
-    real*8, intent(in), dimension (MAXROT,3,3) :: rotmat
-    integer, intent(in) :: nxsup, nysup, nzsup, irot, MAXROT
-    real*8, intent(in) ::  xsizsup, ysizsup, zsizsup, radsqd
-
-
-    !output
-    integer, intent(out) :: nsbtosr
-    integer, intent(out) :: ixsbtosr(*),iysbtosr(*),izsbtosr(*)
-    
-
-    !local
-    integer :: i, j, k, i1, j1, k1, i2, j2, k2
-    real*8 :: xo, yo,zo, hsqd, shortest, xdis, ydis, zdis
-
-
-
-    ! MAIN Loop over all possible super blocks:
-
-    nsbtosr = 0
-    do i=-(nxsup-1),(nxsup-1)
-        do j=-(nysup-1),(nysup-1)
-            do k=-(nzsup-1),(nzsup-1)
-                xo = dble(i)*xsizsup
-                yo = dble(j)*ysizsup
-                zo = dble(k)*zsizsup
-            
-                ! Find the closest distance between the corners of the super blocks:
-            
-                shortest = 1.0e21
-                do i1=-1,1
-                    do j1=-1,1
-                        do k1=-1,1
-                            do i2=-1,1
-                                do j2=-1,1
-                                    do k2=-1,1
-                                        if(i1 /= 0 .AND. j1 /= 0 .AND. k1 /= 0 .AND. &
-                                        i2 /= 0 .AND. j2 /= 0 .AND. k2 /= 0) then
-                                            xdis = dble(i1-i2)*0.5*xsizsup + xo
-                                            ydis = dble(j1-j2)*0.5*ysizsup + yo
-                                            zdis = dble(k1-k2)*0.5*zsizsup + zo
-                                            hsqd = sqdist(dble(0.0),dble(0.0),dble(0.0),xdis,ydis,zdis, &
-                                            irot,MAXROT,rotmat)
-                                            if(hsqd < shortest) shortest = hsqd
-                                        end if
-                                    end do
-                                end do
-                            end do
-                        end do
-                    end do
-                end do
-            
-                ! Keep this super block if it is close enoutgh:
-            
-                if(dble(shortest) <= radsqd) then
-                    nsbtosr = nsbtosr + 1
-                    ixsbtosr(nsbtosr) = i
-                    iysbtosr(nsbtosr) = j
-                    izsbtosr(nsbtosr) = k
-                end if
-            end do
-        end do
-    end do
-
-    ! Finished:
-
-    return
-
-end subroutine picksup
 
 
 subroutine getindx(n,min,siz,loc,index,inflag)
@@ -2957,7 +2439,7 @@ subroutine kt3d( &
     !                                         if > 0 and wrong number report error
     !                                         Note: use kt3d_getmatrix_size to calculate kneq
     !  *Drift
-    !     idrift(9)                 - [logical]: if true will use or ignore
+    !     idrift(9)                 - [integer]: if true will use or ignore
     !                                           the following drift terms: 
     !                                           x,y,z,xx,yy,zz,xy,xz,zy 
     ! Output: 
@@ -3069,12 +2551,13 @@ subroutine kt3d( &
     else
         resc =(4.0 * radsqd)/ max(covmax,0.0001)
     endif
-    !if(resc <= 0.0) then
-    !    write(*,*) 'ERROR KT3D: The rescaling value is wrong ',resc
-    !    write(*,*) '            Maximum covariance: ',covmax
-    !    write(*,*) '            search radius:      ',radius
-    !    stop
-    !endif
+    if(resc <= 0.0) then
+        write(*,*) 'ERROR KT3D: The rescaling value is wrong ',resc
+        write(*,*) '            Maximum covariance: ',covmax
+        write(*,*) '            search radius:      ',radius
+        error = 700   ! rescale factor error
+        return
+    endif
     resc = 1.0 / resc
 
 
@@ -3202,8 +2685,8 @@ subroutine kt3d( &
 
     allocate( a(neq*neq), att(neq*neq), at(neq*neq), r(neq), rr(neq), rt(neq), rrt(neq), s(neq), st(neq),  stat = test)
 	if(test.ne.0)then
-    	error = 1
-		return        ! allocation error
+    	error = 1   ! allocation error
+		return        
     end if
 
 
@@ -3492,8 +2975,8 @@ subroutine kt3d( &
 	!dealocate arrays
     deallocate( a, r, rr, rt, rrt, s, st,  stat = test)
 	if(test.ne.0)then
-    	error = 2
-		return           ! deallocation error
+    	error = 2    ! deallocation error
+		return           
     end if
 
 	return
@@ -3561,6 +3044,7 @@ subroutine kt3d_getmatrix_size ( &
         if(idrif(i) < 0 .OR. idrif(i) > 1) then
             write(*,*) 'ERROR KT3D: invalid drift term',idrif(i)
             write(*,*) 'Using idrif(i) = 0 on drift i= ', i
+            error = 1
             idrif(i) = 0
         endif
         mdt = mdt + idrif(i)
@@ -3573,7 +3057,7 @@ subroutine kt3d_getmatrix_size ( &
 	! Test if there are enough samples to estimate all drift terms:
 
     if(na >= 1 .AND. na <= mdt) then
-		error = 100        ! no eanough samples error
+		error = 100        ! no enough samples error
         return 
     end if
 

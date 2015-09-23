@@ -641,7 +641,7 @@ def gam(parameters):
 
 
 
-# TODO: ----------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------
 #
 #    Variograms rotmat
 #
@@ -652,7 +652,7 @@ def setrot(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,maxrot=1):
     """
     return __fgslib.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
 
-# TODO: ----------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
 #
 #    Variograms cova3
 #
@@ -710,7 +710,7 @@ def cova3(parameters):
 
 
 
-# TODO: ----------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------
 #
 #    Variograms block_covariance
 #
@@ -756,18 +756,142 @@ def block_covariance(parameters):
 
     return cbb
 
-
-
-# TODO: -----------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------
 #
-#    Search srchsupr !!!! this is to search data in a grid.... 
+#    Kriging kt3d get kriging matrix size
 #
-#-----------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------
+def kt3d_getmatrix_size(ktype,idrif,na):
+    """Calculate the number of kriging equations (univariate)
+       
+    The number of kriging equations for univariate kriging is calculated 
+    as number of data (na) number of unbias conditions (mdt)
+    
+    mdt is calculated depending on the kriging type (ktype) and the 
+    number of drift terms (defined in idrif)
+    
+    Parameters
+    ----------
+    ktype : input, int. Kriging type, 0=SK,1=OK,2=non-st SK,3=exdrift
+    idrif : in/output array('i/boolean') with bounds (9). 
+                Indicator of drift term (used if idrif(i)==1)
+                The following drift terms are defined: 
+                    x,y,z,xx,yy,zz,xy,xz,zy 
+                    0,1,2, 3, 4, 5, 6, 7, 8
+     
+    na : input int. Number of data points used to estimate
+    
+    Returns
+    -------   
+    mdt : int.  Number of unbias elements in the kriging matrix
+    kneq : int. Number of kriging equations
+    error : int. If > 1 there was an error 
+                error = 1, (idrif(i) < 0 or  idrif(i) > 1)
+                error = 100, if(na >= 1 and na <= mdt)
+                     no enough samples to estimate all drift terms
 
-
-# TODO: ----------------------------------------------------------------------------------------------------------
+    """
+    
+    mdt,kneq,error = __fgslib.kt3d_getmatrix_size(ktype,idrif,na)
+    
+    if (error>0):
+        warnings.warn('Error > 0, check your parameters')
+    
+    return mdt,kneq,error
+    
+    
+# ----------------------------------------------------------------------------------------------------------------
 #
 #    Kriging kt3d
 #
-#-----------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------
+def kt3d(parameters)
+    """Estimate with univariate kriging in a single block/polygon/point
+    
+    This function is similar to the GSLIB Kt3D function but with some differences:
+    
+        a) The estimate is in a single point/block or polygon
+        b) The the target is difined as a set of discretization points.
+           If the number of discretization points is greater than one
+           point kriging will be performed, otherwise block kriging 
+           will be performed. The size of the block is defined by the 
+           location and number of discretization points. The location 
+           can be arbitrary, this allows to do polygon kriging or block 
+           kriging with random discretization points            
+        c) The block covariance is an input parameter
+        d) The kriging equations an other debug results are
+           returned as arrays
+    
+    the parameter file here is a dictionary with the following keys.
+    
+    Parameters
+    ----------
+        parameters  :  dict
+            This is a dictionary with key parameter (case sensitive) and values, for example:
+
+
+
+            parameters = { 
+                    'xa'      :  [ 0.,1.],    # data x coordinates, array('f') with bounds (na), na is number of data points
+                    'ya'      :  [ 1.,0.],    # data y coordinates, array('f') with bounds (na)
+                    'za'      :  [ 0.,0.],    # data z coordinates, array('f') with bounds (na)
+                    'vra'     :  [ 1.,9.],    # variable, array('f') with bounds (na)
+                    'vea'     :  [ 2.,7.],    # external drift, array('f') with bounds (na)
+                    'xdb'     :  [0.],        # discretization points x coordinates, array('f') with bounds (ndb), ndb is number of discretization points
+                    'ydb'     :  [0.],        # discretization points y coordinates, array('f') with bounds (ndb)
+                    'zdb'     :  [0.],        # discretization points z coordinates, array('f') with bounds (ndb)
+                    'extest'  :  5.,          # external drift at target block, 'f' 
+                    'cbb'     :  .5,          # block covariance , 'f'. Use block_covariance(parameters) to calculate its value
+                    'radius'  :  1.,          # search radius, 'f'. Only used to rescale some values
+                    'c0'      :  [0.25],      # nugget,  array('f') with bounds (1)  
+                    'it'      :  [2, 3],      # structure type,  array('i') with bounds (nst)          
+                    'cc'      :  [0.25, 0.5], # variance, array('f') with bounds (nst)
+                    'aa'      :  [5, 30],     # parameter a (or range mayor), array('f') with bounds (nst)
+                    'aa1'     :  [5, 30],     # parameter a1 (or range semimayor), array('f') with bounds (nst)
+                    'aa2'     :  [5, 30],     # parameter a2 (or range minor), array('f') with bounds (nst)
+                    'ang1'    :  [0.,0.],     # rotation angle 1, array('f') with bounds (nst)
+                    'ang2'    :  [0.,0.],     # rotation angle 2, array('f') with bounds (nst)
+                    'ang3'    :  [0.,0.],     # rotation angle 3, array('f') with bounds (nst)
+                    'ktype'   :  1,           # kriging type, 'i' (-0=SK,1=OK,2=non-st SK,3=exdrift)
+                    'skmean'  :  0.,          # mean for simple kriging, 'f'
+                    'unest'   :  numpy.nan    # value for unestimated, 'f'
+                    'idrif'   :  [0,0,0,0,0,0,0,0,0]  # drift terms,  array('i') with bounds (9)     
+                                                      # the following drift terms are used
+                                                      # x,y,z,xx,yy,zz,xy,xz,zy  
+                    'kneq'    :  3}                   # number of kriging equations, 'f'
+  
+    
+    Returns
+    -------   
+        est : float, estimated value
+        estv : float, kriging variance
+        estt : float, estimated trend 
+        estvt : float, kriging variance of the trend estimate
+        w : rank-1 array('d') with bounds (na), weight for the estimate
+        wt : rank-1 array('d') with bounds (na), weight for the trend estimate
+        error : int, error = 0 if all ok. 
+                error = 700   ! rescale factor
+                error = 100   ! no enough samples to estimate the drift terms
+                error = 900000  ! warning, estimate with one sample
+                error = 1     ! allocation error
+                error = 10    ! wrong size for the kriging matrix, use kt3d_getmatrix_size to calculate right size
+                error = 2     ! deallocation error
+        kmatrix : rank-2 array('d') with bounds (kneq,kneq)
+        kvector : rank-2 array('d') with bounds (1,kneq)
+        ksolution : rank-2 array('d') with bounds (1,kneq)
+        
+    
+    """
+
+    est,estv,estt,estvt,w,wt,error,kmatrix,kvector,ksolution = __fgslib.kt3d(**parameters)
+    
+    if (error>0):
+        warnings.warn('Error > 0, check your parameters')
+
+    return est,estv,estt,estvt,w,wt,error,kmatrix,kvector,ksolution
+
+
+
+
+
 
