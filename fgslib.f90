@@ -2372,7 +2372,7 @@ subroutine kt3d( &
                  radius,                                   &            ! input search parameters (this is a dummy parameter for rescaling, TODO: find the way to remove it)
                  nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,   &            ! input variogram
                  ktype, skmean,  UNEST,                    &            ! input kriging parameters 
-                 idrif,                                    &            ! input drift parameters                         
+                 idrift,                                   &            ! input drift parameters                         
                  kneq,                                     &            ! number of kriging equations (can be calculated with kt3d_getmatrix_size )
                  est, estv, estt, estvt,                   &            ! output: estimate, estimation variance on a single block (including estimate of the trend)
                  w, wt,  error,                            &            ! output: weight (and trend wight) and error (if error error > 0)
@@ -2471,7 +2471,7 @@ subroutine kt3d( &
 	real*8, intent(inout) :: skmean
 
 	! drift 
-	integer, intent(inout), dimension (9) :: idrif
+	integer, intent(in), dimension (9) :: idrift
 
 	! variogram
 	integer, intent(in) :: nst
@@ -2504,6 +2504,7 @@ subroutine kt3d( &
 	real*8, dimension (nst,3,3) :: rotmat
 	real*8, dimension (nst) :: anis1,anis2
 	real*8, dimension (9) :: bv
+    integer, dimension (9) :: idrif
 	integer :: is, ie, i, j, k , maxrot, mdt, nk, neq, im, test, &
 			   kadim, ksdim, nrhs, nv, ising
 
@@ -2525,6 +2526,11 @@ subroutine kt3d( &
     do i=1,nst
         anis1(i) = aa1 (i) / max(aa(i),EPSLON)
         anis2(i) = aa2 (i) / max(aa(i),EPSLON)
+    end do
+    
+    ! put drift in a new variable to avoid inout 
+    do i=1, 9
+        idrif(i) = idrift(i)
     end do
 
 	! Set up the rotation/anisotropy matrices that are needed for the
@@ -2907,6 +2913,9 @@ subroutine kt3d( &
         estv = UNEST
         estt  = UNEST
         estvt = UNEST
+        error = 20    ! singular matrix
+        deallocate( a, r, rr, rt, rrt, s, st,  stat = test)
+        return
     else
         est  = 0.0
         estv = real(cbb)
@@ -2920,12 +2929,12 @@ subroutine kt3d( &
                 if(ktype == 0 .OR. ktype == 2) then
                     est = est + real(s(j))*(vra(j)-skmean)
 					estt = estt + real(st(j))*(vra(j)-skmean)
-				    w(j) = s(j)
-					wt(j) = s(j)
                 else
                     est = est + real(s(j))*vra(j)
 					estt = estt + real(st(j))*vra(j)
                 endif
+                w(j) = s(j)
+                wt(j) = st(j)
             endif
         end do
         if(ktype == 0 .OR. ktype == 2) then
@@ -2935,12 +2944,6 @@ subroutine kt3d( &
  
     end if
 
-	! print *, 'r:', r
-	! print *, 'rt:', rt
-	! print *, 'rr:', rr
-	! print *, 'rrt:', rrt
-	! print *, 's:', s
-	! print *, 'st:', st
 
 	!
 	! Write out the kriging equations
@@ -2986,7 +2989,7 @@ end subroutine kt3d
 
 
 subroutine kt3d_getmatrix_size ( &
-			  ktype, idrif , na, & 
+			  ktype, idrift , na, & 
 			  mdt, kneq, error)
     !-----------------------------------------------------------------------
     !                Gets the size of the kriging equations from parameters
@@ -3019,7 +3022,7 @@ subroutine kt3d_getmatrix_size ( &
 	integer, intent(in) :: ktype
 
 	! drift 
-	integer, intent(inout), dimension (9) :: idrif
+	integer, intent(in), dimension (9) :: idrift
 	
 	! data
 	integer, intent(in) :: na
@@ -3030,8 +3033,14 @@ subroutine kt3d_getmatrix_size ( &
 
 	! internal variables
 	integer :: i
+    integer,  dimension (9) :: idrif
 
 	error = 0
+
+    ! put drift in a new variable to avoid inout 
+    do i=1, 9
+        idrif(i) = idrift(i)
+    end do
 
 
 	! Compute the number of drift terms, if an external drift is being

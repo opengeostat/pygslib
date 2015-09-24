@@ -805,7 +805,7 @@ def kt3d_getmatrix_size(ktype,idrif,na):
 #    Kriging kt3d
 #
 # ----------------------------------------------------------------------------------------------------------------
-def kt3d(parameters)
+def kt3d(parameters):
     """Estimate with univariate kriging in a single block/polygon/point
     
     This function is similar to the GSLIB Kt3D function but with some differences:
@@ -855,7 +855,7 @@ def kt3d(parameters)
                     'ktype'   :  1,           # kriging type, 'i' (-0=SK,1=OK,2=non-st SK,3=exdrift)
                     'skmean'  :  0.,          # mean for simple kriging, 'f'
                     'unest'   :  numpy.nan    # value for unestimated, 'f'
-                    'idrif'   :  [0,0,0,0,0,0,0,0,0]  # drift terms,  array('i') with bounds (9)     
+                    'idrift'   :  [0,0,0,0,0,0,0,0,0]  # drift terms,  array('i') with bounds (9)     
                                                       # the following drift terms are used
                                                       # x,y,z,xx,yy,zz,xy,xz,zy  
                     'kneq'    :  3}                   # number of kriging equations, 'f'
@@ -876,6 +876,7 @@ def kt3d(parameters)
                 error = 1     ! allocation error
                 error = 10    ! wrong size for the kriging matrix, use kt3d_getmatrix_size to calculate right size
                 error = 2     ! deallocation error
+                error = 20    ! singular matrix
         kmatrix : rank-2 array('d') with bounds (kneq,kneq)
         kvector : rank-2 array('d') with bounds (1,kneq)
         ksolution : rank-2 array('d') with bounds (1,kneq)
