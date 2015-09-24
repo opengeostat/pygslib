@@ -6,11 +6,20 @@ This is GSLIB FORTRAN code wrapped into python
 What is implemented? 
 
 * function to import GSLIB/Geoeas files into pandas DataFrames
-* function to calculate directional varigrams (using gslib gamv)
+* function to calculate directional varigrams (using gslib gamv and gam)
 * modified FORTRAN version of GSLIB gamv function to implement  downhole variograms and variograms with lithocodes 
 * modified FORTRAN version of GSLIB gamv function to implement variogram cloud 
+* kriging with KT3D modified to estimate in a single block/point or polygon 
+* declustering with declus
+* model covariance
 
 The implement the rest of the GSLIB programs is in process
+
+Current version
+----------
+version = '0.0.0.3'
+
+This means that we are in a very early developing stage and the package is experimental!
 
 
 Algorithms
@@ -20,7 +29,7 @@ PyGSLIB implements algorithms, those are pure python functions than calls GSLIB 
 
 Ipython notebook templates 
 --------------------------
-The easies way to use PyGSLIB is to modify the Ipython notebook  provided as template. Just change some input and enjoy the results. 
+The easiest way to use PyGSLIB is to modify the Ipython notebook  provided as template. Just change some input and enjoy the results. 
 
 Notes
 -----

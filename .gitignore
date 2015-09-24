@@ -12,6 +12,9 @@
 
 #temporary files
 *~
+/develop_tmp
+.spyderworkspace
+.spyderproject
 
 #Ipython check points
 /.ipynb_checkpoints
