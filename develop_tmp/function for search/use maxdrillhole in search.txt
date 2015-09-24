@@ -1,0 +1,76 @@
+This was added into search function of GSLIB, 
+we are not using this fuction. TODO: implement this in python/cython/f2py 
+module. 
+
+Use the octant function in gslib. 
+
+NEW  
+
+     !input
+     integer, intent(in) :: nxsup, nysup, nzsup
+     integer, intent(in) :: irot, MAXROT, nsbtosr, noct, maxbhid, nd
+     real*8, intent(in), dimension (MAXROT,3,3) :: rotmat
+     real*8, intent(in) ::  xloc,yloc,zloc,radsqd 
+     integer, intent(in), dimension(nsbtosr) ::ixsbtosr, iysbtosr, izsbtosr
+     integer, intent(in), dimension(nd) :: bhid
+     real*8, intent(in), dimension(nd) :: x, y, z 
+     integer, intent(in), dimension (nxsup*nysup*nzsup) :: nisb
+     real*8, intent(in) :: xmnsup,xsizsup,ymnsup, ysizsup, zmnsup, zsizsup
+ 
+     !inout
+     real*8, intent(inout), dimension(nd) :: tmp
+
+     !out
+     real*8, intent(out), dimension(nd) :: close
+     integer, intent(out) :: infoct, nclose
++    integer :: dhole
+
+     !internal
++    ! to deal with max per BHID 
++    integer, dimension(nd) :: take, tmp_ind
++    integer :: counter, l
+
+
+
+
+GSLIB! Sort the nearby samples by distance to point being estimated:
+ 
+     call sortem(1,nclose,tmp,1,close,c,d,e,f,g,hh)
+ 
+ 
+NEW  ! get maximum per drillhole 
+     ! warning: this operation is preceding octants and will overwrite the
+     !          close vector. 
+     take(:)= 1
+     tmp_ind(:)= 0
+     l=0
+     do i=1, nclose
+         if (take(i) .NE. 0) then
+             dhole=bhid(i)
+             counter=0
+             l=l+1
+             tmp_ind(l)=close(i)
+             do j=i, nclose
+                 if (dhole==bhid(j)) then 
+                     counter=counter+1
+                     if (counter>maxbhid) then 
+                         take(j)=0
+                     end if
+                 end if 
+             end do 
+         else 
+             continue
+         end if
+     end do
+     
+     ! update close list
+     j=0
+     do i=1, nclose
+         if (take(i)==1) then
+             j=j+1
+             close(j)=close(i)
+         end if 
+     end do 
+     nclose=j
+ 
+GSLIB ! If we aren't doing an octant search then just return:

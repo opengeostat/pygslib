@@ -892,7 +892,66 @@ def kt3d(parameters):
     return est,estv,estt,estvt,w,wt,error,kmatrix,kvector,ksolution
 
 
+# ----------------------------------------------------------------------------------------------------------------
+#
+#    Declustering
+#
+# ----------------------------------------------------------------------------------------------------------------
+def declus(parameters):
+    """Decluster data and run test with different declustering sizes
+    
+    The parameter file here is a dictionary with the following keys
+    
+    Parameters
+    ----------
+        parameters  :  dict
+            This is a dictionary with key parameter (case sensitive) and values, for example:
 
+            parameters = { 
+                    'x'      :  mydata.x,     # data x coordinates, array('f') with bounds (na), na is number of data points
+                    'y'      :  mydata.y,     # data y coordinates, array('f') with bounds (na)
+                    'z'      :  mydata.z,     # data z coordinates, array('f') with bounds (na)
+                    'vr'     :  mydata.vr,    # variable, array('f') with bounds (na)
+                    'anisy'  :  5.,           # Y cell anisotropy (Ysize=size*Yanis), 'f' 
+                    'anisz'  :  3.,           # Z cell anisotropy (Zsize=size*Zanis), 'f' 
+                    'minmax' :  1,            # 0=look for minimum declustered mean (1=max), 'i' 
+                    'ncell'  :  10,           # number of cell sizes, 'i' 
+                    'cmin'   :  5,            # minimum cell sizes, 'i' 
+                    'cmax'   :  50,           # maximum cell sizes, 'i'. Will be update to cmin if ncell == 1
+                    'noff'   :  8,            # number of origin offsets, 'i'. This is to avoid local minima/maxima
+                    'maxcel' :  100000}       # maximum number of cells, 'i'. This is to avoid large calculations, if MAXCEL<1 this check will be ignored
+     
+    Returns
+    -------     
+        wtopt : rank-1 array('d') with bounds (nd), weight value
+        vrop  : float, declustered mean
+        wtmin : float, weight minimum
+        wtmax : float, weight maximum
+        error : int,   runtime error: 
+                error = 10   ! ncellt > MAXCEL ' check for outliers - increase cmin and/or MAXCEL'
+                error = 1    ! allocation error
+                error = 2    ! deallocation error
+        xinc  : float, cell size increment
+        yinc  : float, cell size increment
+        zinc  : float, cell size increment
+        rxcs  : rank-1 array('d') with bounds (ncell + 1), xcell size 
+        rycs  : rank-1 array('d') with bounds (ncell + 1), ycell size 
+        rzcs  : rank-1 array('d') with bounds (ncell + 1), zcell size 
+        rvrcr : rank-1 array('d') with bounds (ncell + 1), declustering weight  
+    
+    Note
+    -------
+    
+    Minimun and maximum valid data values are not tested. Filter out vr 
+    tmin, tmax values on x,y,z,vr before using this function.
+    
+    """
 
+    wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr = __fgslib.declus(**parameters)
+    
+    if (error>0):
+        warnings.warn('Error > 0, check your parameters')
+
+    return wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr
 
 
