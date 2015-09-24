@@ -38,7 +38,7 @@ class PyTest(TestCommand):
 	2 for release candidate
 	3 for (final) release
 """
-version = '0.0.0.3'
+version = '0.0.0.3.3'
 
 if __name__ == '__main__':
      
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 		  packages=find_packages(exclude=['examples', 'tests']),
 		  include_package_data=True,
 		  zip_safe=False,
-		  tests_require=['numpy', 'pandas', 'matplotlib', 'nose'],
+		  tests_require=['numpy', 'pandas', 'matplotlib', 'nose', 'mock'],
 		  cmdclass={'test': PyTest},   
-		  install_requires=['numpy', 'pandas', 'matplotlib'],
+		  install_requires=['numpy', 'pandas', 'matplotlib', 'nose', 'mock'],
 		  ext_modules = [fgslib])

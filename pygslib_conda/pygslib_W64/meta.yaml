@@ -1,11 +1,11 @@
 package:
   name: pygslib
-  version: "0.0.0.2"
+  version: "0.0.0.3.3"
 
 source:
-  fn: pygslib-0.0.0.2.tar.gz
-  url: https://pypi.python.org/packages/source/p/pygslib/pygslib-0.0.0.2.tar.gz
-  md5: 329b0061511b2d9630123964d020c71c
+  fn: pygslib-0.0.0.3.3.tar.gz
+  url: https://pypi.python.org/packages/source/p/pygslib/pygslib-0.0.0.3.3.tar.gz
+  md5: d2e5ce80efeed99b9fc4d5ecda81456c
 #  patches:
    # List any patch files here
    # - fix.patch
@@ -33,15 +33,16 @@ requirements:
     - numpy
     - pandas
     - matplotlib
-    - mock
     - nose
-    - mingwpy
+    - mock
 
   run:
     - python
     - numpy
     - pandas
     - matplotlib
+    - nose
+    - mock
 
 test:
   # Python imports
@@ -59,6 +60,7 @@ test:
 
   requires:
     - matplotlib
+    - mock
     - nose
     - numpy
     - pandas
