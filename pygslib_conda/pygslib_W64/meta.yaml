@@ -1,3 +1,5 @@
+#require custom channels
+# conda config --add channels https://conda.binstar.org/ioos  for mingwpy
 package:
   name: pygslib
   version: "0.0.0.3.3"
@@ -28,13 +30,14 @@ source:
 
 requirements:
   build:
+    - mingwpy
     - python
     - setuptools
-    - numpy
     - pandas
     - matplotlib
     - nose
     - mock
+    - numpy
 
   run:
     - python
