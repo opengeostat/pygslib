@@ -41,14 +41,12 @@ If you are planning to use or modify this library you may understand the code or
 
 Installation in Anaconda distribution (Linux/Window/OS)
 ------------
-The easiest way to install and work with PyGSLIB is to use Anaconda (conda) distributions. The binary packages of PyGSLIB are not in the Anaconda server yet (https://binstar.org/). This work is in process but for now you will have to compile the code.
-
-TODO: generate a conda binary distribution
+The easiest way to install and work with PyGSLIB is to use Anaconda (conda) distributions. 
 
 To install PyGSLIB in the root environment of your anaconda distribution follow the instructions below. 
 
 
-Binary Installation in Anaconda 64 bits distribution   (Linux)
+Binary Installation in Anaconda 64 bits distribution   (Linux/Window 64)
 ------------
 There is a binary distribution at binstar.org. First install conda or anaconda distribution, 
 if you don't have one, and run the command: 
@@ -171,6 +169,18 @@ install all the dependencies and make sure you have gfortran available::
 	git clone https://github.com/opengeostat/pygslib.git
 	cd pygslib
 	python setup.py install 
+
+
+To update this module as contributor, make changes and the update git (requesting a pull).
+To update the pypi repository::
+
+	python setup.py sdist upload -r pypi
+
+To update conda repository(Linux)::
+
+	conda skeleton pypi pygslib
+	conda build pygslib
+	anaconda upload /home/adrian/anaconda/conda-bld/linux-64/pygslib-0.0.0.3.3-nppy27_0.tar.bz2
 
 
 
