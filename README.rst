@@ -92,23 +92,16 @@ Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 32 bits compile
 
 Installation from sources (pypi.python.org) in Anaconda 64 bits distribution  (Windows)
 ------------
-Install dependencies:: 
-
- 
+Install dependencies: 
 
 ``C:\>conda install numpy pandas matplotlib`` 
 
 
-
-Install mingw with 64 bit compiler::
-
-
+Install mingw with 64 bit compiler
 
 ``C:\>conda install -c https://conda.binstar.org/omnia mingwpy``
 
-
-
-Install PyGSLIB with  `easy_install` or `pip` using gfortran 64 bits compiler::
+Install PyGSLIB with  `easy_install` or `pip` using gfortran 64 bits compiler:
 
 
 ``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
@@ -121,12 +114,11 @@ If you get an error like this::
     NotImplementedError: Only MS compiler supported with gfortran on win64
 
 
-
-Don't worry, this is a known issue in numpys distutils. Go to the file:: 
+Don't worry, this is a known issue in numpys distutils. Go to the file 
 
 ``C:\Users\YYOUR_USER_NAME\Anaconda\lib\site-packages\numpy\distutils\fcompiler\gnu.py``
 
-or this file, if you are installing PyGSLIB in an environment::
+or this file, if you are installing PyGSLIB in an environment
 
 ``C:\Users\YYOUR_USER_NAME\Anaconda\envs\YOUR_ENVIRONMENT\lib\site-packages\numpy\distutils\fcompiler\gnu.py``
 
@@ -152,7 +144,7 @@ rewrite the code like this::
 
 
 
-and rerun::
+and rerun
 
 
 ``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
