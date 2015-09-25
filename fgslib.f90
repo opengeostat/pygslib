@@ -486,7 +486,7 @@ subroutine block_covariance(xdb,ydb,zdb, ndb, &
         anis1(i) = aa1(i) / max(aa(i),EPSLON)
         anis2(i) = aa2(i) / max(aa(i),EPSLON)
         
-        print *, aa(i), aa1(i), aa2(i), anis1(i), anis2(i)
+        ! print *, aa(i), aa1(i), aa2(i), anis1(i), anis2(i)
         
         if(it(i).eq.4) then
               if(aa(i).lt.0.0) stop ' INVALID power variogram'
