@@ -22,7 +22,7 @@ version = '0.0.0.3'
 This means that we are in a very early developing stage and the package is experimental!
 
 
-Algorithms
+<i class="icon-file"></i> Algorithms
 ----------
 PyGSLIB implements algorithms, those are pure python functions than calls GSLIB FORTRAN code. The algorithms functions are easy to use and include some graphical output implemented. 
 
