@@ -643,14 +643,70 @@ def gam(parameters):
 
 # ----------------------------------------------------------------------------------------------------------------
 #
-#    Variograms rotmat
+#    Rotations
 #
 #-----------------------------------------------------------------------------------------------------------------
 def setrot(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,maxrot=1):
-    """
-    to do: add stringdoc
+    """Update a rotation and scaling matrix given a set of angles
+    
+    This is necessary for some interval GSLIB function (ex. cova3)
+    
+    The rotations are odd, dont use this to rotate data...
+    
+    TODO: implement code from http://www.ccgalberta.com/ccgresources/report06/2004-403-angle_rotations.pdf
+    
+     
+    Parameters
+    ----------
+        ang1 : input float, Azimuth angle  (rotation along Z)
+        ang2 : input float, Dip angle (downdip positive) (rotation along X)
+        ang3 : input float, Plunge angle   (rotation along Z)
+        anis1 : input float, First anisotropy ratio (semimayor direction/mayor direction)
+        anis2 : input float, Second anisotropy ratio (minor direction/mayor direction)
+        ind : input int, index 
+        maxrot : input int, number of matrices (for example use 3 for a ZXZ, rotation)
+                               
+    
+    Returns
+    -------   
+        rotmat : rank-3 array('d') with bounds (maxrot,3,3)
+        
+    
     """
     return __fgslib.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
+
+
+def rotcoord(X,Y,Z,ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,invert=0):
+    """Rotate and revert rotation of data with 3d Coordinates
+    
+    This is implemented as in http://www.ccgalberta.com/ccgresources/report06/2004-403-angle_rotations.pdf
+    
+    Note
+    ---------
+        This is a pure python function
+    
+     
+    Parameters
+    ----------
+        ang1 : input float, Azimuth angle  (rotation along Z)
+        ang2 : input float, Dip angle (downdip positive) (rotation along X)
+        ang3 : input float, Plunge angle   (rotation along Z)
+        anis1 : input float, First anisotropy ratio (semimayor direction/mayor direction)
+        anis2 : input float, Second anisotropy ratio (minor direction/mayor direction)
+        ind : input int, index 
+        maxrot : input int, number of matrices (for example use 3 for a ZXZ, rotation)
+                               
+    
+    Returns
+    -------   
+        rotmat : rank-3 array('d') with bounds (maxrot,3,3)
+        
+    
+    """
+    return __fgslib.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
+
+
+
 
 # ---------------------------------------------------------------------------------------------------------------
 #
@@ -953,5 +1009,57 @@ def declus(parameters):
         warnings.warn('Error > 0, check your parameters')
 
     return wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr
+
+
+#***********************************************************************
+# 
+# 
+#     New functions (non standard GSLIB)
+# 
+# 
+#***********************************************************************
+def rotscale(parameters):
+    """ Shift, Rotate and rescale a set of 3D coordinates
+    
+    The parameter file here is a dictionary with the following keys
+    
+    Parameters
+    ----------
+        parameters  :  dict
+            This is a dictionary with key parameter (case sensitive) and values, for example:
+
+            parameters = { 
+                    'x'      :  mydata.x,     # data x coordinates, array('f') with bounds (na), na is number of data points
+                    'y'      :  mydata.y,     # data y coordinates, array('f') with bounds (na)
+                    'z'      :  mydata.z,     # data z coordinates, array('f') with bounds (na)
+                    'x0'     :  0             # new X origin of coordinate , 'f' 
+                    'y0'     :  0             # new Y origin of coordinate , 'f'
+                    'z0'     :  0             # new Z origin of coordinate , 'f'
+                    'ang1'   :  45.,          # Z  Rotation angle, 'f' 
+                    'ang2'   :  0.,           # X  Rotation angle, 'f' 
+                    'ang2'   :  0.,           # Y  Rotation angle, 'f' 
+                    'anis1'  :  1.,           # Y cell anisotropy, 'f' 
+                    'anis2'  :  1.,           # Z cell anisotropy, 'f' 
+                    'invert' :  0}            # 0 do rotation, <> 0 invert rotation, 'i' 
+
+     
+    Returns
+    -------     
+        xr : rank-1 array('d') with bounds (nd), new X coordinate
+        yr : rank-1 array('d') with bounds (nd), new X coordinate
+        zr : rank-1 array('d') with bounds (nd), new X coordinate
+ 
+    
+    Note
+    -------
+    This is non standard gslib function and is based on the paper:
+        http://www.ccgalberta.com/ccgresources/report06/2004-403-angle_rotations.pdf
+        
+    The rotation is  {Z counter clockwise ; X clockwise; Y counter clockwise} [-ZX-Y]
+    
+    """
+    xr,yr,zr = __fgslib.rotscale(**parameters)
+
+    return xr,yr,zr
 
 
