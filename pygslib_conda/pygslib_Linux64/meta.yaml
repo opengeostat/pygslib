@@ -1,11 +1,11 @@
 package:
   name: pygslib
-  version: "0.0.0.3.3"
+  version: "0.0.0.3.4"
 
 source:
-  fn: pygslib-0.0.0.3.3.tar.gz
-  url: https://pypi.python.org/packages/source/p/pygslib/pygslib-0.0.0.3.3.tar.gz
-  md5: d2e5ce80efeed99b9fc4d5ecda81456c
+  git_rev: v0.0.0.3
+  git_url: https://github.com/opengeostat/pygslib.git
+
 #  patches:
    # List any patch files here
    # - fix.patch

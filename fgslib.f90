@@ -3723,6 +3723,212 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
 
 end subroutine  histplt
 
+
+
+subroutine probplt( iwt, nd, va, wt,  &
+                    binval, cl, &
+                    xpt025, xlqt, xmed, xuqt, xpt975, xmin, &
+                    xmax, xcvr, xmen, xvar, &
+                    error)
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    !                                                                      %
+    ! Copyright (C) 1996, The Board of Trustees of the Leland Stanford     %
+    ! Junior University.  All rights reserved.                             %
+    !                                                                      %
+    ! The programs in GSLIB are distributed in the hope that they will be  %
+    ! useful, but WITHOUT ANY WARRANTY.  No author or distributor accepts  %
+    ! responsibility to anyone for the consequences of using them or for   %
+    ! whether they serve any particular purpose or work at all, unless he  %
+    ! says so in writing.  Everyone is granted permission to copy, modify  %
+    ! and redistribute the programs in GSLIB, but only under the condition %
+    ! that this notice and the above copyright notice remain intact.       %
+    !                                                                      %
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    !-----------------------------------------------------------------------
+
+    !                  Normal/Lognormal Probability Plot
+    !                  *********************************
+
+    ! Displays a set of data values on a probability plot with either an
+    ! arithmetic or logarithmic scaling.
+
+    ! INPUT/OUTPUT Parameters:
+    !  iwt, nd, va, wt         
+
+
+    ! PROGRAM NOTES:
+
+    ! 1. The program is executed with no command line arguments.  The user
+    !    will be prompted for the name of a parameter file.  The parameter
+    !    file is described in the documentation (see example scatplt.par)
+
+    ! 2. The logarithmic scaling is base 10
+
+    ! 3. All acceptable values outside the plotting limits (including
+    !    zero or negative values when a logarithmic scale is used) are
+    !    used to establish the cdf but are not shown.
+
+
+
+    ! The following Parameters control static dimensioning:
+
+    !   MAXDAT    maximum number of data
+
+
+
+    !-----------------------------------------------------------------------
+
+    implicit none    
+
+    ! input 
+    real*8, intent(in), dimension(nd) :: va, wt
+    integer, intent(in) ::  nd, iwt
+
+
+    ! output
+    integer, intent(out) :: error
+    ! the statistics
+    real*8, intent(out) :: xmen, xvar, xmed, xcvr, xmin, xmax, xpt025, xlqt, xuqt, xpt975
+    ! the actual histogram
+    real*8, intent(out), dimension(nd) :: binval, cl
+
+    ! internal 
+    real*8 :: EPSLON, xtwti, oldcp,cp, xtwt
+    real*8, dimension (1) :: h, g, f, e, d, c
+    real*8::       ar1(nd),ar2(nd)
+    integer ::     j, i
+ 
+
+    ! ar1 ==> data, ar2 ==> wight
+
+    EPSLON=1.0e-20
+    error = 0
+    xtwt = 0.0
+    xmen = 0.0
+
+
+   if(nd <= 1) then 
+        error = 1  ! 'ERROR: there is less than one datum ',nd
+        return
+    endif
+    
+
+    xtwt = 0.0
+    xmen = 0.0
+    do j=1, nd    
+        ar1(j)=va(j)
+        if(iwt >= 1) then
+            ! Invalid wight?
+            if(wt(j) <= EPSLON) then
+                error = 10           ! weight too low, filter low wight before
+                return
+            endif
+            ar2(j) = wt(j)
+        else
+            ar2(j) = 1.0
+        endif
+        ! Get mean and total weight:
+        xmen = xmen + ar1(j)*ar2(j)
+        xtwt = xtwt + ar2(j)
+    end do
+  
+    if(xtwt < EPSLON) then
+        error = 10         ! 'Cumulative Probability too LOW'
+        return
+    end if
+    xtwti = 1.0  / xtwt
+    xmen  = xmen * xtwti
+
+    ! Get the variance:
+
+    xvar = 0.0
+    do i=1,nd
+        xvar = xvar + (ar1(i)-xmen) * (ar1(i)-xmen) * ar2(i)
+    end do
+    xvar  = xvar * xtwti
+
+   
+    ! Sort the Data in Ascending Order:
+
+    call sortem(1,nd,ar1,1,ar2,c,d,e,f,g,h)
+
+
+    ! Obtain the quantiles:
+
+    call locate(ar2,nd,1,nd,0.025,i)
+    if(i == 0) then
+        xpt025 = ar1(1)
+    else if(i == nd) then
+        xpt025 = ar1(nd)
+    else
+        xpt025 = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.025-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+    call locate(ar2,nd,1,nd,0.25,i)
+    if(i == 0) then
+        xlqt = ar1(1)
+    else if(i == nd) then
+        xlqt = ar1(nd)
+    else
+        xlqt = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.25-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+    call locate(ar2,nd,1,nd,0.75,i)
+    if(i == 0) then
+        xuqt = ar1(1)
+    else if(i == nd) then
+        xuqt = ar1(nd)
+    else
+        xuqt = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.75-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+    call locate(ar2,nd,1,nd,0.975,i)
+    if(i == 0) then
+        xpt975 = ar1(1)
+    else if(i == nd) then
+        xpt975 = ar1(nd)
+    else
+        xpt975 = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.975-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+
+    ! The coeficient of variation:
+    xmin = ar1(1)
+    xmax = ar1(nd)
+    if(xmin < 0.0 .OR. xmen <= EPSLON) then
+        xcvr = -1.0
+    else
+        xcvr = sqrt(max(xvar,0.0))/xmen
+    endif
+
+
+    ! Get cumulative probability and normalize:
+
+    oldcp = 0.0
+    cp    = 0.0
+    do i=1,nd
+        cp     = cp + ar2(i)*xtwti
+        ar2(i) = 0.5*(cp+oldcp)
+        oldcp  = cp
+        binval(i) = ar2(i)
+        cl(i) =      ar1(i)
+    end do
+    
+    call locate(ar2,nd,1,nd,0.50,i)
+    if(i == 0) then
+        xmed = ar1(1)
+    else if(i == nd) then
+        xmed = ar1(nd)
+    else
+        xmed = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.50-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+
+
+
+end subroutine probplt
+
+
 !***********************************************************************
 ! 
 ! 
