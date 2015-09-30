@@ -3853,6 +3853,28 @@ subroutine probplt( iwt, nd, va, wt,  &
     call sortem(1,nd,ar1,1,ar2,c,d,e,f,g,h)
 
 
+    ! Get cumulative probability and normalize:
+
+    oldcp = 0.0
+    cp    = 0.0
+    do i=1,nd
+        cp     = cp + ar2(i)*xtwti
+        ar2(i) = 0.5*(cp+oldcp)
+        oldcp  = cp
+        binval(i) = ar2(i)
+        cl(i) =      ar1(i)
+    end do
+    
+    call locate(ar2,nd,1,nd,0.50,i)
+    if(i == 0) then
+        xmed = ar1(1)
+    else if(i == nd) then
+        xmed = ar1(nd)
+    else
+        xmed = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.50-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+
     ! Obtain the quantiles:
 
     call locate(ar2,nd,1,nd,0.025,i)
@@ -3900,31 +3922,6 @@ subroutine probplt( iwt, nd, va, wt,  &
     else
         xcvr = sqrt(max(xvar,0.0))/xmen
     endif
-
-
-    ! Get cumulative probability and normalize:
-
-    oldcp = 0.0
-    cp    = 0.0
-    do i=1,nd
-        cp     = cp + ar2(i)*xtwti
-        ar2(i) = 0.5*(cp+oldcp)
-        oldcp  = cp
-        binval(i) = ar2(i)
-        cl(i) =      ar1(i)
-    end do
-    
-    call locate(ar2,nd,1,nd,0.50,i)
-    if(i == 0) then
-        xmed = ar1(1)
-    else if(i == nd) then
-        xmed = ar1(nd)
-    else
-        xmed = ar1(i) +      (ar1(i+1)-ar1(i)) * &
-        (0.50-ar2(i))/(ar2(i+1)-ar2(i))
-    endif
-
-
 
 end subroutine probplt
 
