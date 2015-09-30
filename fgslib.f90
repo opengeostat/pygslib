@@ -588,6 +588,64 @@ subroutine getindx(n,min,siz,loc,index,inflag)
 
 end subroutine getindx
 
+subroutine locate(xx,n,is,ie,x,j)
+    ! -----------------------------------------------------------------------
+    ! 
+    ! Given an array "xx" of length "n", and given a value "x", this routine
+    ! returns a value "j" such that "x" is between xx(j) and xx(j+1).  xx
+    ! must be monotonic, either increasing or decreasing.  j=is-1 or j=ie is
+    ! returned to indicate that x is out of range.
+    ! 
+    ! Bisection Concept From "Numerical Recipes", Press et. al. 1986  pp 90.
+    ! -----------------------------------------------------------------------
+
+    real*8, intent(in), dimension(n) :: xx
+ 
+    ! Initialize lower and upper methods:
+ 
+    if(is.le.0) is = 1
+    jl = is-1
+    ju = ie
+    if(xx(n).le.x) then
+        j = ie
+        return
+    end if
+
+    ! If we are not done then compute a midpoint: 
+    10 if(ju-jl.gt.1) then
+        jm = (ju+jl)/2
+
+        ! Replace the lower or upper limit with the midpoint:
+        if((xx(ie).gt.xx(is)).eqv.(x.gt.xx(jm))) then
+              jl = jm
+        else
+              ju = jm
+        endif
+        go to 10
+    endif
+
+    ! Return with the array index:
+
+    j = jl
+
+    return
+
+end subroutine locate
+
+
+real function resc(xmin1,xmax1,xmin2,xmax2,x111)
+    ! Simple linear rescaling (get a value in coordinate system "2" given
+    ! a value in "1"):
+
+    real*8 rsc
+
+    rsc  = dble((xmax2-xmin2)/(xmax1-xmin1))
+    resc = xmin2 + real( dble(x111 - xmin1) * rsc )
+
+    return
+
+end function resc
+
 
 subroutine sortem(ib,ie,a,iperm,b,c,d,e,f,g,h)
     !-----------------------------------------------------------------------
@@ -2455,74 +2513,74 @@ subroutine kt3d( &
     !-----------------------------------------------------------------------
     
 
-	implicit none
+    implicit none
 
-	! input variables
-	! target
-	integer, intent(in) :: ndb  ! total number of discretization points 
-	real*8,  intent(in), dimension (ndb) :: xdb, ydb, zdb
-	real*8,  intent(in) :: extest   ! this is the external drift at target location
-	real*8,  intent(in) :: radius   ! this is for internal rescal factor, TODO: find way to remove it
-	real*8,  intent(in) :: UNEST
+    ! input variables
+    ! target
+    integer, intent(in) :: ndb  ! total number of discretization points 
+    real*8,  intent(in), dimension (ndb) :: xdb, ydb, zdb
+    real*8,  intent(in) :: extest   ! this is the external drift at target location
+    real*8,  intent(in) :: radius   ! this is for internal rescal factor, TODO: find way to remove it
+    real*8,  intent(in) :: UNEST
 
-	! kriging parameters
-	integer, intent(in) :: ktype
-	real*8, intent(in) :: cbb
-	real*8, intent(inout) :: skmean
+    ! kriging parameters
+    integer, intent(in) :: ktype
+    real*8, intent(in) :: cbb
+    real*8, intent(inout) :: skmean
 
-	! drift 
-	integer, intent(in), dimension (9) :: idrift
+    ! drift 
+    integer, intent(in), dimension (9) :: idrift
 
-	! variogram
-	integer, intent(in) :: nst
-	real*8,  intent(in), dimension (1) :: c0
-	real*8,  intent(in), dimension (nst) :: cc, aa, aa1, aa2, ang1, ang2, ang3
-	integer, intent(in), dimension (nst) :: it 
-	
-	! data
-	integer, intent(in) :: na
-	real*8,  intent(in), dimension (na) :: xa, ya, za, vra, vea
+    ! variogram
+    integer, intent(in) :: nst
+    real*8,  intent(in), dimension (1) :: c0
+    real*8,  intent(in), dimension (nst) :: cc, aa, aa1, aa2, ang1, ang2, ang3
+    integer, intent(in), dimension (nst) :: it 
+    
+    ! data
+    integer, intent(in) :: na
+    real*8,  intent(in), dimension (na) :: xa, ya, za, vra, vea
 
-	! ksystem of equations
-	integer, intent(in) :: kneq
-
-
-	! output variables 
-	real*8,  intent(out):: est, estv ! estimate and estimate variance
-	real*8,  intent(out):: estt, estvt ! estimate and estimate variance (trend)
-	integer, intent(out) :: error ! 1=> allocation error
-	real*8,  intent(out), dimension (na) :: w, wt  ! kriging weight (variable and trend) asigned to each variable
-	! ksystem of equations
-	real*8,  intent(out), dimension (kneq,kneq) :: kmatrix
-	real*8,  intent(out), dimension (1,kneq) :: kvector, ksolution
+    ! ksystem of equations
+    integer, intent(in) :: kneq
 
 
-	! internal variables
-	real*8 :: PMX, covmax, EPSLON, radsqd , resc, xk, &
+    ! output variables 
+    real*8,  intent(out):: est, estv ! estimate and estimate variance
+    real*8,  intent(out):: estt, estvt ! estimate and estimate variance (trend)
+    integer, intent(out) :: error ! 1=> allocation error
+    real*8,  intent(out), dimension (na) :: w, wt  ! kriging weight (variable and trend) asigned to each variable
+    ! ksystem of equations
+    real*8,  intent(out), dimension (kneq,kneq) :: kmatrix
+    real*8,  intent(out), dimension (1,kneq) :: kvector, ksolution
+
+
+    ! internal variables
+    real*8 :: PMX, covmax, EPSLON, radsqd , resc, xk, &
               vk, xkmae, xkmse, cb, cmax, cb1, cov, dx, dy, dz, &
-			  unbias, resce
-	real*8, dimension (nst,3,3) :: rotmat
-	real*8, dimension (nst) :: anis1,anis2
-	real*8, dimension (9) :: bv
+              unbias, resce
+    real*8, dimension (nst,3,3) :: rotmat
+    real*8, dimension (nst) :: anis1,anis2
+    real*8, dimension (9) :: bv
     integer, dimension (9) :: idrif
-	integer :: is, ie, i, j, k , maxrot, mdt, nk, neq, im, test, &
-			   kadim, ksdim, nrhs, nv, ising
+    integer :: is, ie, i, j, k , maxrot, mdt, nk, neq, im, test, &
+               kadim, ksdim, nrhs, nv, ising
 
-	! internal and dinamic
-	real*8, allocatable,  dimension (:) :: a, at, att, r, rr, rt, rrt, s, st
-	! TODO: find how to provide a,r,rt,s,st as outpot
-
-
+    ! internal and dinamic
+    real*8, allocatable,  dimension (:) :: a, at, att, r, rr, rt, rrt, s, st
+    ! TODO: find how to provide a,r,rt,s,st as outpot
 
 
-	error = 0
-	PMX    = 999.0
-	EPSLON = 0.00000001
 
 
-	! ********** this is the actual function ***************
+    error = 0
+    PMX    = 999.0
+    EPSLON = 0.00000001
 
-	!calculate anisotropy factor 
+
+    ! ********** this is the actual function ***************
+
+    !calculate anisotropy factor 
     do i=1,nst
         anis1(i) = aa1 (i) / max(aa(i),EPSLON)
         anis2(i) = aa2 (i) / max(aa(i),EPSLON)
@@ -2533,12 +2591,12 @@ subroutine kt3d( &
         idrif(i) = idrift(i)
     end do
 
-	! Set up the rotation/anisotropy matrices that are needed for the
-	! variogram.  Also compute the maximum covariance for
-	! the rescaling factor:
+    ! Set up the rotation/anisotropy matrices that are needed for the
+    ! variogram.  Also compute the maximum covariance for
+    ! the rescaling factor:
     
-	maxrot = nst
-    covmax = c0(1)	
+    maxrot = nst
+    covmax = c0(1)    
     do is=1,nst
         call setrot(ang1(is),ang2(is),ang3(is),anis1(is),anis2(is), &
         is,MAXROT,rotmat)
@@ -2550,8 +2608,8 @@ subroutine kt3d( &
     end do
 
 
-	! Finish computing the rescaling factor and stop if unacceptable:
-	radsqd = radius * radius
+    ! Finish computing the rescaling factor and stop if unacceptable:
+    radsqd = radius * radius
     if(radsqd < 1.0) then
         resc = 2.0 * radius / max(covmax,0.0001)
     else
@@ -2567,9 +2625,9 @@ subroutine kt3d( &
     resc = 1.0 / resc
 
 
-	! Compute the number of drift terms, if an external drift is being
-	! considered then it is one more drift term, if SK is being considered
-	! then we will set all the drift terms off and mdt to 0):
+    ! Compute the number of drift terms, if an external drift is being
+    ! considered then it is one more drift term, if SK is being considered
+    ! then we will set all the drift terms off and mdt to 0):
 
     mdt = 1
     do i=1,9
@@ -2584,20 +2642,20 @@ subroutine kt3d( &
     if(ktype == 3) mdt = mdt + 1
     if(ktype == 0) mdt = 0
     if(ktype == 2) mdt = 0
-	
-	! print *, 'mdt : ', mdt
+    
+    ! print *, 'mdt : ', mdt
 
-	! Set up the discretization points per block.  Figure out how many
-	! are needed, the spacing, and fill the xdb,ydb, and zdb arrays with
-	! the offsets relative to the block center (this only gets done once):
+    ! Set up the discretization points per block.  Figure out how many
+    ! are needed, the spacing, and fill the xdb,ydb, and zdb arrays with
+    ! the offsets relative to the block center (this only gets done once):
 
-	! In all cases the offsets are relative to the lower left corner.
-	! This is done for rescaling the drift terms in the kriging matrix.
+    ! In all cases the offsets are relative to the lower left corner.
+    ! This is done for rescaling the drift terms in the kriging matrix.
 
-	! in this version we input arbitrary xdb,ydb, zdb values... 
+    ! in this version we input arbitrary xdb,ydb, zdb values... 
 
 
-	! Initialize accumulators:
+    ! Initialize accumulators:
 
     nk    = 0
     xk    = 0.0
@@ -2605,19 +2663,19 @@ subroutine kt3d( &
     xkmae = 0.0
     xkmse = 0.0
 
-	!
-	! Calculate point Covariance. The block covariance is calculated externally
-	!
-	call cova3(xdb(1),ydb(1),zdb(1),xdb(1),ydb(1),zdb(1),1,nst, &
-		       c0,it,cc,aa,1,MAXROT,rotmat,cmax,cov)
-	!
-	! Set the ``unbias'' variable so that the matrix solution is more stable
-	!
+    !
+    ! Calculate point Covariance. The block covariance is calculated externally
+    !
+    call cova3(xdb(1),ydb(1),zdb(1),xdb(1),ydb(1),zdb(1),1,nst, &
+               c0,it,cc,aa,1,MAXROT,rotmat,cmax,cov)
+    !
+    ! Set the ``unbias'' variable so that the matrix solution is more stable
+    !
     
-	unbias = cov
+    unbias = cov
 
 
-	! Mean values of the drift functions:
+    ! Mean values of the drift functions:
 
     do i=1,9
         bv(i) = 0.0
@@ -2637,25 +2695,25 @@ subroutine kt3d( &
         bv(i) = (bv(i) / real(ndb)) * resc
     end do
 
-	! Test if there are enough samples to estimate all drift terms:
+    ! Test if there are enough samples to estimate all drift terms:
 
     if(na >= 1 .AND. na <= mdt) then
         est  = UNEST
         estv = UNEST
-		error = 100        ! no enough samples error
+        error = 100        ! no enough samples error
         return 
     end if
 
-	! There are enough samples - proceed with estimation.
+    ! There are enough samples - proceed with estimation.
 
     if(na <= 1) then
     
-    	! Handle the situation of only one sample:
+        ! Handle the situation of only one sample:
     
         call cova3(xa(1),ya(1),za(1),xa(1),ya(1),za(1),1,nst, &
         c0,it,cc,aa,1,maxrot,rotmat,cmax,cb1)
     
-    	! Establish Right Hand Side Covariance:
+        ! Establish Right Hand Side Covariance:
     
         if(ndb <= 1) then
             call cova3(xa(1),ya(1),za(1),xdb(1),ydb(1),zdb(1),1, &
@@ -2679,38 +2737,38 @@ subroutine kt3d( &
         nk   = nk + 1
         xk   = xk + vra(1)
         vk   = vk + vra(1)*vra(1)
-		error = 900000               ! warning, estimate with one sample
+        error = 900000               ! warning, estimate with one sample
         return 
     end if
 
-	! Go ahead and set up the OK portion of the kriging matrix:
+    ! Go ahead and set up the OK portion of the kriging matrix:
 
     neq = mdt+na
 
-	! Initialize the main kriging matrix:
+    ! Initialize the main kriging matrix:
 
     allocate( a(neq*neq), att(neq*neq), at(neq*neq), r(neq), rr(neq), rt(neq), rrt(neq), s(neq), st(neq),  stat = test)
-	if(test.ne.0)then
-    	error = 1   ! allocation error
-		return        
+    if(test.ne.0)then
+        error = 1   ! allocation error
+        return        
     end if
 
 
     do i=1,neq*neq
         a(i) = 0.0
     end do
-	
+    
 
     do i=1,neq
         r(i) = 0.0
-		rr(i) = 0.0
-		rt(i) = 0.0
-		rrt(i) = 0.0
-		s(i) = 0.0
-		st(i) = 0.0
+        rr(i) = 0.0
+        rt(i) = 0.0
+        rrt(i) = 0.0
+        s(i) = 0.0
+        st(i) = 0.0
     end do
 
-	! Fill in the kriging matrix:
+    ! Fill in the kriging matrix:
 
     do i=1,na
         do j=i,na
@@ -2721,7 +2779,7 @@ subroutine kt3d( &
         end do
     end do
 
-	! Fill in the OK unbiasedness portion of the matrix (if not doing SK):
+    ! Fill in the OK unbiasedness portion of the matrix (if not doing SK):
 
     if(neq > na) then
         do i=1,na
@@ -2731,15 +2789,15 @@ subroutine kt3d( &
     endif
 
 
-	! Set up the right hand side:
+    ! Set up the right hand side:
 
     do i=1,na
         if(ndb <= 1) then  ! point kriging
-			! print *, 'doing point kriging'
+            ! print *, 'doing point kriging'
             call cova3(xa(i),ya(i),za(i),xdb(1),ydb(1),zdb(1),1, &
             nst,c0,it,cc,aa,1,MAXROT,rotmat,cmax,cb)
         else
-			! print *, 'doing block kriging'
+            ! print *, 'doing block kriging'
             cb  = 0.0
             do j=1,ndb
                 call cova3(xa(i),ya(i),za(i),xdb(j),ydb(j), &
@@ -2757,11 +2815,11 @@ subroutine kt3d( &
     end do
     if(neq > na) r(na+1) = dble(unbias)
 
-	! Add the additional unbiasedness constraints:
+    ! Add the additional unbiasedness constraints:
 
-	im = na + 1
+    im = na + 1
 
-	! First drift term (linear in "x"):
+    ! First drift term (linear in "x"):
 
     if(idrif(1) == 1) then
         im=im+1
@@ -2772,7 +2830,7 @@ subroutine kt3d( &
         r(im) = dble(bv(1))
     endif
 
-	! Second drift term (linear in "y"):
+    ! Second drift term (linear in "y"):
 
     if(idrif(2) == 1) then
         im=im+1
@@ -2783,7 +2841,7 @@ subroutine kt3d( &
         r(im) = dble(bv(2))
     endif
 
-	! Third drift term (linear in "z"):
+    ! Third drift term (linear in "z"):
 
     if(idrif(3) == 1) then
         im=im+1
@@ -2794,7 +2852,7 @@ subroutine kt3d( &
         r(im) = dble(bv(3))
     endif
 
-	! Fourth drift term (quadratic in "x"):
+    ! Fourth drift term (quadratic in "x"):
 
     if(idrif(4) == 1) then
         im=im+1
@@ -2805,7 +2863,7 @@ subroutine kt3d( &
         r(im) = dble(bv(4))
     endif
 
-	! Fifth drift term (quadratic in "y"):
+    ! Fifth drift term (quadratic in "y"):
 
     if(idrif(5) == 1) then
         im=im+1
@@ -2816,7 +2874,7 @@ subroutine kt3d( &
         r(im) = dble(bv(5))
     endif
 
-	! Sixth drift term (quadratic in "z"):
+    ! Sixth drift term (quadratic in "z"):
 
     if(idrif(6) == 1) then
         im=im+1
@@ -2827,7 +2885,7 @@ subroutine kt3d( &
         r(im) = dble(bv(6))
     endif
 
-	! Seventh drift term (quadratic in "xy"):
+    ! Seventh drift term (quadratic in "xy"):
 
     if(idrif(7) == 1) then
         im=im+1
@@ -2838,7 +2896,7 @@ subroutine kt3d( &
         r(im) = dble(bv(7))
     endif
 
-	! Eighth drift term (quadratic in "xz"):
+    ! Eighth drift term (quadratic in "xz"):
 
     if(idrif(8) == 1) then
         im=im+1
@@ -2849,7 +2907,7 @@ subroutine kt3d( &
         r(im) = dble(bv(8))
     endif
 
-	! Ninth drift term (quadratic in "yz"):
+    ! Ninth drift term (quadratic in "yz"):
 
     if(idrif(9) == 1) then
         im=im+1
@@ -2860,32 +2918,32 @@ subroutine kt3d( &
         r(im) = dble(bv(9))
     endif
 
-	! External drift term (specified by external variable):
+    ! External drift term (specified by external variable):
 
     if(ktype == 3) then
         im=im+1
-		resce  = covmax / max(extest,0.0001)
+        resce  = covmax / max(extest,0.0001)
         do k=1,na
             a(neq*(im-1)+k) = dble(vea(k)*resce)
             a(neq*(k-1)+im) = dble(vea(k)*resce)
         end do
         r(im) = dble(extest*resce)
-		! print *, 'r(im)', r(im), im
-		! print *, 'covmax, extest, resce ', covmax , extest, resce
+        ! print *, 'r(im)', r(im), im
+        ! print *, 'covmax, extest, resce ', covmax , extest, resce
     endif
 
 
- 	! Copy the right hand side to compute the kriging variance later:
-	! this is because ksolve may change r values... 
+     ! Copy the right hand side to compute the kriging variance later:
+    ! this is because ksolve may change r values... 
     do k=1,neq
         rr(k) = r(k)
-		rt(k) = r(k)
-		rrt(k)= r(k) 
+        rt(k) = r(k)
+        rrt(k)= r(k) 
     end do
-	! doing the same with a
+    ! doing the same with a
     do k=1,neq*neq
         at(k) = a(k)
-		att(k) = a(k) 
+        att(k) = a(k) 
     end do
     kadim = neq * neq
     ksdim = neq
@@ -2893,21 +2951,21 @@ subroutine kt3d( &
     nv    = 1
 
    
-	! To estimate the trend we reset all the right hand side terms=0.0:
+    ! To estimate the trend we reset all the right hand side terms=0.0:
     do i=1,na
           rt(i)  = 0.0
           rrt(i) = 0.0
     end do
 
 
-	! Solve the kriging system for data estimate
+    ! Solve the kriging system for data estimate
     call ktsol(neq,nrhs,nv,a,r,s,ising,neq)
 
-	! Solve the kriging system for trend estimate
-	call ktsol(neq,nrhs,nv,at,rt,st,ising,neq)
+    ! Solve the kriging system for trend estimate
+    call ktsol(neq,nrhs,nv,at,rt,st,ising,neq)
 
 
-	! Compute the solution:
+    ! Compute the solution:
     if(ising /= 0) then
         est  = UNEST
         estv = UNEST
@@ -2924,73 +2982,73 @@ subroutine kt3d( &
         if(ktype == 2) skmean = extest
         do j=1,neq
             estv = estv - real(s(j))*rr(j)
-			estvt = estvt - real(st(j))*rrt(j)
+            estvt = estvt - real(st(j))*rrt(j)
             if(j <= na) then
                 if(ktype == 0 .OR. ktype == 2) then
                     est = est + real(s(j))*(vra(j)-skmean)
-					estt = estt + real(st(j))*(vra(j)-skmean)
+                    estt = estt + real(st(j))*(vra(j)-skmean)
                 else
                     est = est + real(s(j))*vra(j)
-					estt = estt + real(st(j))*vra(j)
+                    estt = estt + real(st(j))*vra(j)
                 endif
                 w(j) = s(j)
                 wt(j) = st(j)
             endif
         end do
         if(ktype == 0 .OR. ktype == 2) then
-			est = est + skmean
-			estt = estt + skmean			
-		end if
+            est = est + skmean
+            estt = estt + skmean            
+        end if
  
     end if
 
 
-	!
-	! Write out the kriging equations
-	!
+    !
+    ! Write out the kriging equations
+    !
 
-	! The matrix has the right size?
-	if (kneq>0 .and. kneq/=neq) then
-		error = 10  ! wrong size for the kriging matrix, use kt3d_getmatrix_size to calculate right size
-		deallocate( a, r, rr, rt, rrt, s, st,  stat = test)
-		return
-	end if	
+    ! The matrix has the right size?
+    if (kneq>0 .and. kneq/=neq) then
+        error = 10  ! wrong size for the kriging matrix, use kt3d_getmatrix_size to calculate right size
+        deallocate( a, r, rr, rt, rrt, s, st,  stat = test)
+        return
+    end if    
 
-	! then we populate the external matrix/vectors with values
+    ! then we populate the external matrix/vectors with values
     if(kneq>0) then
-		is = 1 - neq
+        is = 1 - neq
 
-		do i=1, neq
-			is = 1 + (i-1)*neq
-			ie = is + neq - 1
-			kvector(1,i)   = rr(i)
-			ksolution(1,i) =  s(i)
-			k=0
-		    do j=is,ie
-				k=k+1
-		        kmatrix (i,k) = att(j) 
-		        kmatrix (k,i) = att(j)
-		    end do
-			!kmatrix (neq,neq) = a(neq*neq)
-		end do
-	endif
+        do i=1, neq
+            is = 1 + (i-1)*neq
+            ie = is + neq - 1
+            kvector(1,i)   = rr(i)
+            ksolution(1,i) =  s(i)
+            k=0
+            do j=is,ie
+                k=k+1
+                kmatrix (i,k) = att(j) 
+                kmatrix (k,i) = att(j)
+            end do
+            !kmatrix (neq,neq) = a(neq*neq)
+        end do
+    endif
            
-	!dealocate arrays
+    !dealocate arrays
     deallocate( a, r, rr, rt, rrt, s, st,  stat = test)
-	if(test.ne.0)then
-    	error = 2    ! deallocation error
-		return           
+    if(test.ne.0)then
+        error = 2    ! deallocation error
+        return           
     end if
 
-	return
+    return
 
 end subroutine kt3d
 
 
 
 subroutine kt3d_getmatrix_size ( &
-			  ktype, idrift , na, & 
-			  mdt, kneq, error)
+              ktype, idrift , na, & 
+              mdt, kneq, error)
     !-----------------------------------------------------------------------
     !                Gets the size of the kriging equations from parameters
     !                **************************************
@@ -3013,29 +3071,29 @@ subroutine kt3d_getmatrix_size ( &
     !-----------------------------------------------------------------------
 
 
-	implicit none
+    implicit none
 
-	! input variables
-	! target
+    ! input variables
+    ! target
 
-	! kriging parameters
-	integer, intent(in) :: ktype
+    ! kriging parameters
+    integer, intent(in) :: ktype
 
-	! drift 
-	integer, intent(in), dimension (9) :: idrift
-	
-	! data
-	integer, intent(in) :: na
+    ! drift 
+    integer, intent(in), dimension (9) :: idrift
+    
+    ! data
+    integer, intent(in) :: na
 
-	! output variables 
-	integer, intent(out) :: error ! 1=> allocation error
-	integer, intent(out) ::	mdt, kneq
+    ! output variables 
+    integer, intent(out) :: error ! 1=> allocation error
+    integer, intent(out) ::    mdt, kneq
 
-	! internal variables
-	integer :: i
+    ! internal variables
+    integer :: i
     integer,  dimension (9) :: idrif
 
-	error = 0
+    error = 0
 
     ! put drift in a new variable to avoid inout 
     do i=1, 9
@@ -3043,9 +3101,9 @@ subroutine kt3d_getmatrix_size ( &
     end do
 
 
-	! Compute the number of drift terms, if an external drift is being
-	! considered then it is one more drift term, if SK is being considered
-	! then we will set all the drift terms off and mdt to 0):
+    ! Compute the number of drift terms, if an external drift is being
+    ! considered then it is one more drift term, if SK is being considered
+    ! then we will set all the drift terms off and mdt to 0):
 
     mdt = 1
     do i=1,9
@@ -3061,20 +3119,20 @@ subroutine kt3d_getmatrix_size ( &
     if(ktype == 3) mdt = mdt + 1
     if(ktype == 0) mdt = 0
     if(ktype == 2) mdt = 0
-	
+    
 
-	! Test if there are enough samples to estimate all drift terms:
+    ! Test if there are enough samples to estimate all drift terms:
 
     if(na >= 1 .AND. na <= mdt) then
-		error = 100        ! no enough samples error
+        error = 100        ! no enough samples error
         return 
     end if
 
-	! Go ahead and set up the OK portion of the kriging matrix:
+    ! Go ahead and set up the OK portion of the kriging matrix:
 
     kneq = mdt+na
 
-	return
+    return
 
 end subroutine kt3d_getmatrix_size 
 
@@ -3091,127 +3149,127 @@ end subroutine kt3d_getmatrix_size
 !     Subroutine declus (this is the declus program for declustering)
 !---------------------------------------------------------------------------
 subroutine declus( &
-				 x,y,z,vr, nd, anisy,anisz, minmax, ncell, cmin, cmax, noff, MAXCEL,  & ! input
-				 wtopt, vrop,wtmin,wtmax, error, &         ! out
-				 xinc, yinc, zinc, rxcs, rycs, rzcs,rvrcr)
-	! this is modified from opengeostat 2015, MIT lisence. .
-	! this is developing test... 
+                 x,y,z,vr, nd, anisy,anisz, minmax, ncell, cmin, cmax, noff, MAXCEL,  & ! input
+                 wtopt, vrop,wtmin,wtmax, error, &         ! out
+                 xinc, yinc, zinc, rxcs, rycs, rzcs,rvrcr)
+    ! this is modified from opengeostat 2015, MIT lisence. .
+    ! this is developing test... 
 
-	!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	!                                                                      %
-	! Copyright (C) 1996, The Board of Trustees of the Leland Stanford     %
-	! Junior University.  All rights reserved.                             %
-	!                                                                      %
-	! The programs in GSLIB are distributed in the hope that they will be  %
-	! useful, but WITHOUT ANY WARRANTY.  No author or distributor accepts  %
-	! responsibility to anyone for the consequences of using them or for   %
-	! whether they serve any particular purpose or work at all, unless he  %
-	! says so in writing.  Everyone is granted permission to copy, modify  %
-	! and redistribute the programs in GSLIB, but only under the condition %
-	! that this notice and the above copyright notice remain intact.       %
-	!                                                                      %
-	!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	!-----------------------------------------------------------------------
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    !                                                                      %
+    ! Copyright (C) 1996, The Board of Trustees of the Leland Stanford     %
+    ! Junior University.  All rights reserved.                             %
+    !                                                                      %
+    ! The programs in GSLIB are distributed in the hope that they will be  %
+    ! useful, but WITHOUT ANY WARRANTY.  No author or distributor accepts  %
+    ! responsibility to anyone for the consequences of using them or for   %
+    ! whether they serve any particular purpose or work at all, unless he  %
+    ! says so in writing.  Everyone is granted permission to copy, modify  %
+    ! and redistribute the programs in GSLIB, but only under the condition %
+    ! that this notice and the above copyright notice remain intact.       %
+    !                                                                      %
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    !-----------------------------------------------------------------------
 
-	!         DECLUS: a three dimensional cell declustering program
-	!         *****************************************************
+    !         DECLUS: a three dimensional cell declustering program
+    !         *****************************************************
 
-	! See paper in Computers and Geosciences Vol 15 No 3 (1989) pp 325-332
+    ! See paper in Computers and Geosciences Vol 15 No 3 (1989) pp 325-332
 
-	! INPUT Parameters:
+    ! INPUT Parameters:
 
-	!   x,y,z,vr        columns for X, Y, Z, and variable
-	!   not using this !         tmin,tmax       trimming limits
-	!   anisy,anisz     Y and Z cell anisotropy (Ysize=size*Yanis)
-	!   minmax          0=look for minimum declustered mean (1=max)
-	!   ncell,cmin,cmax number of cell sizes, min size, max size
-	!   noff            number of origin offsets
-
-
-	! OUTPUT 
-	!   wtopt                    declustering wight 
-	!   rxcs, rycs, rzcs,rvrcr   cell size and declustered mean
+    !   x,y,z,vr        columns for X, Y, Z, and variable
+    !   not using this !         tmin,tmax       trimming limits
+    !   anisy,anisz     Y and Z cell anisotropy (Ysize=size*Yanis)
+    !   minmax          0=look for minimum declustered mean (1=max)
+    !   ncell,cmin,cmax number of cell sizes, min size, max size
+    !   noff            number of origin offsets
 
 
-	! PROGRAM NOTES:
-	!   3. This program requires knowledge of whether the samples are
-	!      clustered in high or low values or, alternately, knowledge
-	!      of a ``natural'' cell size, e.g., an underlying regular data
-	!      spacing.
+    ! OUTPUT 
+    !   wtopt                    declustering wight 
+    !   rxcs, rycs, rzcs,rvrcr   cell size and declustered mean
 
 
-
-	! The following Parameters control static dimensioning:
-	!   MAXCEL    maximum number of cells.  The number of cells is a
-	!             function of the cell size and the size of the area of
-	!             interest.  In many cases a larger minimum cell size will
-	!             remove the need to increase MAXCEL.
+    ! PROGRAM NOTES:
+    !   3. This program requires knowledge of whether the samples are
+    !      clustered in high or low values or, alternately, knowledge
+    !      of a ``natural'' cell size, e.g., an underlying regular data
+    !      spacing.
 
 
 
+    ! The following Parameters control static dimensioning:
+    !   MAXCEL    maximum number of cells.  The number of cells is a
+    !             function of the cell size and the size of the area of
+    !             interest.  In many cases a larger minimum cell size will
+    !             remove the need to increase MAXCEL.
 
-	!-----------------------------------------------------------------------
+
+
+
+    !-----------------------------------------------------------------------
     
 
-	implicit none
+    implicit none
 
-	! Input
-	real*8, intent(in) :: anisy,anisz, cmin
-	integer, intent(in) :: nd, minmax, ncell, noff
+    ! Input
+    real*8, intent(in) :: anisy,anisz, cmin
+    integer, intent(in) :: nd, minmax, ncell, noff
     real*8, intent(in), dimension(nd)  ::  x(nd),y(nd),z(nd),vr(nd)
-	
-	! Inout
-	real*8, intent(in) :: cmax 
-	integer, intent(in) :: MAXCEL
+    
+    ! Inout
+    real*8, intent(in) :: cmax 
+    integer, intent(in) :: MAXCEL
 
-	! Output
-	real*8, intent(out), dimension(nd)  :: wtopt
-	real*8, intent(out), dimension(ncell+1)  :: rxcs, rycs, rzcs,rvrcr 
+    ! Output
+    real*8, intent(out), dimension(nd)  :: wtopt
+    real*8, intent(out), dimension(ncell+1)  :: rxcs, rycs, rzcs,rvrcr 
     
 
-	real*8, intent(out) ::vrop,wtmin,wtmax , &
-						  xinc, yinc, zinc
-	integer, intent(out) :: error
+    real*8, intent(out) ::vrop,wtmin,wtmax , &
+                          xinc, yinc, zinc
+    integer, intent(out) :: error
 
-	! Internal 
-	real*8 :: vrmin, vrmax, roff, vrav, best, facto, &
-			  xo1, yo1, zo1, xo, yo, zo, sumw, sumwg, xfac, yfac, zfac
+    ! Internal 
+    real*8 :: vrmin, vrmax, roff, vrav, best, facto, &
+              xo1, yo1, zo1, xo, yo, zo, sumw, sumwg, xfac, yfac, zfac
     logical :: min
-	real*8 :: wt(nd)
+    real*8 :: wt(nd)
     integer :: index(nd), lp, i, kp,  & 
-			   icell, icellx, icelly, icellz, &
-			   ipoint, ncellt, ncellx, ncelly, ncellz, &
-			   test
+               icell, icellx, icelly, icellz, &
+               ipoint, ncellt, ncellx, ncelly, ncellz, &
+               test
     real*8, allocatable :: cellwt(:)
     real*8 :: xmin,ymin,zmin,xmax,ymax,zmax, xcs, ycs, zcs,vrcr
-	
-	real*8 :: tcmax 
-	integer:: tMAXCEL
+    
+    real*8 :: tcmax 
+    integer:: tMAXCEL
 
 
     xmin = 1.0e21
-	ymin = 1.0e21
-	zmin = 1.0e21
+    ymin = 1.0e21
+    zmin = 1.0e21
     xmax =-1.0e21
-	ymax =-1.0e21
-	zmax =-1.0e21
-	
-	error = 0
+    ymax =-1.0e21
+    zmax =-1.0e21
+    
+    error = 0
 
     tcmax = cmax
     tMAXCEL = MAXCEL
 
 
-	! Doing only one/final declustering calculation? 
+    ! Doing only one/final declustering calculation? 
     if(ncell == 1) tcmax = cmin
 
-	! Some Initialization:
+    ! Some Initialization:
 
     min  = .TRUE. 
     if(minmax == 1) min = .FALSE. 
     roff = real(noff)
 
-	! compute min, max, and average:
+    ! compute min, max, and average:
 
     vrav = 0.0
     do i=1,nd
@@ -3226,63 +3284,63 @@ subroutine declus( &
     end do
     vrav = vrav / real(nd)
 
-	! initialize the "best" weight values:
+    ! initialize the "best" weight values:
 
     vrop = vrav
     best = 0.0
 
-	! define a "lower" origin to use for the cell sizes:
+    ! define a "lower" origin to use for the cell sizes:
 
     xo1 = xmin - 0.01
     yo1 = ymin - 0.01
     zo1 = zmin - 0.01
 
-	! define the increment for the cell size:
+    ! define the increment for the cell size:
 
     xinc = (tcmax-cmin) / real(ncell)
     yinc = anisy * xinc
     zinc = anisz * xinc
 
-	! loop over "ncell+1" cell sizes in the grid network:
+    ! loop over "ncell+1" cell sizes in the grid network:
 
     xcs =  cmin        - xinc
     ycs = (cmin*anisy) - yinc
     zcs = (cmin*anisz) - zinc
 
-	! MAIN LOOP over cell sizes:
+    ! MAIN LOOP over cell sizes:
 
     do lp=1,ncell+1
         xcs = xcs + xinc
         ycs = ycs + yinc
         zcs = zcs + zinc
     
-    	! initialize the weights to zero:
+        ! initialize the weights to zero:
     
         do i=1,nd
             wt(i) = 0.0
         end do
     
-    	! determine the maximum number of grid cells in the network:
+        ! determine the maximum number of grid cells in the network:
     
         ncellx = int((xmax-(xo1-xcs))/xcs)+1
         ncelly = int((ymax-(yo1-ycs))/ycs)+1
         ncellz = int((zmax-(zo1-zcs))/zcs)+1
         ncellt = real(ncellx*ncelly*ncellz)
     
-    	! check the array MAXCEL dimensions:  (warning: if MAXCEL<1 we don't check this)
+        ! check the array MAXCEL dimensions:  (warning: if MAXCEL<1 we don't check this)
     
         if(ncellt > real(tMAXCEL) .and. tMAXCEL>1 ) then
             error = 10   ! ncellt > MAXCEL ' check for outliers - increase cmin and/or MAXCEL'
             return 
         end if
     
-    	allocate( cellwt(ncellt),  stat = test)
-		if(test.ne.0)then
-    		error = 1    ! allocation error
-			return        
-		end if
+        allocate( cellwt(ncellt),  stat = test)
+        if(test.ne.0)then
+            error = 1    ! allocation error
+            return        
+        end if
 
-    	! loop over all the origin offsets selected:
+        ! loop over all the origin offsets selected:
     
         xfac = amin1((xcs/roff),(0.5*(xmax-xmin)))
         yfac = amin1((ycs/roff),(0.5*(ymax-ymin)))
@@ -3292,13 +3350,13 @@ subroutine declus( &
             yo = yo1 - (real(kp)-1.0)*yfac
             zo = zo1 - (real(kp)-1.0)*zfac
         
-        	! initialize the cumulative weight indicators:
+            ! initialize the cumulative weight indicators:
         
             do i=1,ncellt
                 cellwt(i) = 0.0
             end do
         
-        	! determine which cell each datum is in:
+            ! determine which cell each datum is in:
         
             do i=1,nd
                 icellx = int((x(i) - xo)/xcs) + 1
@@ -3310,9 +3368,9 @@ subroutine declus( &
                 cellwt(icell) = cellwt(icell) + 1.0
             end do
         
-        	! The weight assigned to each datum is inversely proportional to the
-        	! number of data in the cell.  We first need to get the sum of weights
-        	! so that we can normalize the weights to sum to one:
+            ! The weight assigned to each datum is inversely proportional to the
+            ! number of data in the cell.  We first need to get the sum of weights
+            ! so that we can normalize the weights to sum to one:
         
             sumw = 0.0
             do i=1,nd
@@ -3321,24 +3379,24 @@ subroutine declus( &
             end do
             sumw = 1.0 / sumw
         
-        	! Accumulate the array of weights (that now sum to one):
+            ! Accumulate the array of weights (that now sum to one):
         
             do i=1,nd
                 ipoint = index(i)
                 wt(i) = wt(i) + (1.0/cellwt(ipoint))*sumw
             end do
         
-        	! End loop over all offsets:
+            ! End loop over all offsets:
         
         end do
 
-		deallocate( cellwt,  stat = test)
-		if(test.ne.0)then
-			error = 2    ! deallocation error
-			return 
-		end if  
+        deallocate( cellwt,  stat = test)
+        if(test.ne.0)then
+            error = 2    ! deallocation error
+            return 
+        end if  
     
-    	! compute the weighted average for this cell size:
+        ! compute the weighted average for this cell size:
     
         sumw  = 0.0
         sumwg = 0.0
@@ -3347,14 +3405,14 @@ subroutine declus( &
             sumwg = sumwg + wt(i)*vr(i)
         end do
         vrcr  = sumwg / sumw
-		
-		! this is the report for each cell size
+        
+        ! this is the report for each cell size
         rxcs(lp) = xcs
-		rycs(lp) = ycs
-		rzcs(lp) = xcs
-		rvrcr(lp) = vrcr                                                    
+        rycs(lp) = ycs
+        rzcs(lp) = xcs
+        rvrcr(lp) = vrcr                                                    
     
-    	! see if this weighting is optimal:
+        ! see if this weighting is optimal:
     
         if((min .AND. vrcr < vrop) .OR. ( .NOT. min .AND. vrcr > vrop) .OR. &
         (ncell == 1)) then
@@ -3365,12 +3423,12 @@ subroutine declus( &
             end do
         end if
     
-    	! END MAIN LOOP over all cell sizes:
+        ! END MAIN LOOP over all cell sizes:
     
     end do
  
 
-	! Get the optimal weights:
+    ! Get the optimal weights:
 
     sumw = 0.0
     do i=1,nd
@@ -3391,6 +3449,279 @@ subroutine declus( &
 
 end subroutine declus
 
+
+
+subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
+                    binval, nincls, cl, &
+                    xpt025, xlqt, xmed, xuqt, xpt975, xmin, &
+                    xmax, xcvr, xmen, xvar, xfrmx, dcl, &
+                    error)
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    !                                                                      %
+    ! Copyright (C) 1996, The Board of Trustees of the Leland Stanford     %
+    ! Junior University.  All rights reserved.                             %
+    !                                                                      %
+    ! The programs in GSLIB are distributed in the hope that they will be  %
+    ! useful, but WITHOUT ANY WARRANTY.  No author or distributor accepts  %
+    ! responsibility to anyone for the consequences of using them or for   %
+    ! whether they serve any particular purpose or work at all, unless he  %
+    ! says so in writing.  Everyone is granted permission to copy, modify  %
+    ! and redistribute the programs in GSLIB, but only under the condition %
+    ! that this notice and the above copyright notice remain intact.       %
+    !                                                                      %
+    !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    !-----------------------------------------------------------------------
+
+    !                           Histogram Plot
+    !                           **************
+
+    ! This program generates a PostScript file with a histogram and summary
+    ! statistics.
+
+    ! INPUT Parameters:
+
+    !   hmin,hmax   plotting limts (will choose automatically if hmax<hmin)
+    !   ncl         the number of classes
+    !   ilog        1=log scale, 0=arithmetic
+    !   icum        1=cumulative histogram, 0=frequency
+    !   iwt         use weight variable?
+
+    ! OUTPUT:
+    !  xpt025, xlqt, xmed, xuqt, xpt975, xmin, xmax, xcvr, xmean, xvarm xfrmx
+    !  ar3,ar4
+
+    ! PROGRAM NOTES:
+
+
+
+    ! The following Parameters control static dimensioning:
+
+    !   MAXDAT    maximum number of data
+    !   MAXCLS    maximum number of histogram classes
+
+
+
+    !-----------------------------------------------------------------------
+    
+    implicit none    
+
+    ! input 
+    real*8, intent(in), dimension(nd) :: va, wt
+    integer, intent(in) ::  ncl, nd,  ilog, icum, iwt
+    real*8, intent(in) :: hmin, hmax
+
+    ! output
+    integer, intent(out) :: error
+    ! the statistics
+    real*8, intent(out) :: xpt025, xlqt, xmed, xuqt, xpt975, xmin, xmax, xcvr, xmen, xvar, xfrmx, dcl
+    ! the actual histogram
+    real*8, intent(out), dimension(ncl) :: binval, nincls, cl
+
+    ! internal 
+    logical ::  reghist,cumhist,connum
+    real*8 :: EPSLON, vrmin, vrmax, art, xtwti, wt1, oldcp,cp, xtwt, thmin, thmax
+    real*8, dimension (1) :: h, g, f, e, d, c
+
+    real*8::       xh(5),yh(5), ar1(nd),ar2(nd)
+    integer ::     j, i
+
+    ! ar1 ==> data, ar2 ==> wight, binval 
+
+    EPSLON=1.0e-20
+    vrmin = 1.0e21
+    vrmax =-1.0e21
+    reghist = .TRUE. 
+    cumhist = .FALSE. 
+    connum  = .FALSE. 
+    error = 0
+    xtwt = 0.0
+    xmen = 0.0
+    thmin = hmin
+    thmax = hmax
+
+    if(icum /= 0) reghist = .FALSE. 
+    if(icum == 1) cumhist = .TRUE.  
+    if( .NOT. cumhist .AND. .NOT. connum) reghist = .TRUE. 
+
+
+    if(nd <= 1) then 
+        error = 1  ! 'ERROR: there is less than one datum ',nd
+        return
+    endif
+    
+    if(ncl < 1) then
+        error = 100           ! ncl >=1 required 
+        return
+    endif
+
+    ! Assign the defaults if necessary:
+
+    if(hmax <= hmin) then
+        thmin = vrmin
+        thmax = vrmax
+    endif
+
+    do j=1, nd 
+    
+        ar1(j) = va(j)
+        vrmin = min(ar1(nd),vrmin)
+        vrmax = max(ar1(nd),vrmax)
+
+        if(iwt >= 1) then
+            ! Invalid wight?
+            if(wt(j) <= EPSLON) then
+                error = 10           ! weight too low, filter low wight before
+                return
+            endif
+            ar2(j) = wt(j)
+        else
+            ar2(j) = 1.0
+        endif
+
+        xmen = xmen + ar1(j)*ar2(j)
+        xtwt = xtwt + ar2(j)
+        
+    end do
+
+    ! Get mean and total weight:
+    xtwti = 1.0  / xtwt
+    xmen  = xmen * xtwti
+
+    ! Get the variance:
+    xvar = 0.0
+    do i=1,nd
+        xvar = xvar + (ar1(i)-xmen) * (ar1(i)-xmen) * ar2(i)
+    end do
+    xvar  = xvar * xtwti
+
+
+    ! Infer some of the histogram parameters:
+    dcl = (thmax-thmin)/real(ncl+2)
+    if(ilog == 1) then
+        if(thmin <= 0.0) thmin = vrmin
+        if(thmax <= 0.0) thmax = vrmax
+        thmin = real(int(dlog10(max(thmin,EPSLON))-0.9))
+        thmax = real(int(dlog10(max(thmax,EPSLON))+0.9))
+    endif
+    dcl  = (thmax-thmin)/real(ncl)
+    
+
+    ! Determine the histogram class structure:
+    
+    do i=1,ncl
+        binval(i) = 0.0
+        nincls(i) = 0
+        cl(i) = thmin + i*dcl
+        if(ilog == 1) cl(i) = 10**cl(i) 
+    end do
+    
+    
+    ! Here is where we build the histogram
+    do i=1,nd
+        if(ilog == 1) then
+            art = dlog10(max(ar1(i),EPSLON))
+        else
+            art = ar1(i)
+        endif
+        wt1 = ar2(i) * xtwti
+        j = ((art-thmin)/dcl)
+        if(j < 1)   j = 1
+        if(j > ncl) j = ncl
+        binval(j)    =binval(j)    + wt1
+        nincls(j) =nincls(j) + 1
+    end do
+
+    ! Sort the Data in Ascending Order:
+
+    call sortem(1,nd,ar1,1,ar2,c,d,e,f,g,h)
+
+    ! Turn the weights into a cdf:
+
+    oldcp = 0.0
+    cp    = 0.0
+    do i=1,nd
+        cp     = cp + ar2(i) * xtwti
+        ar2(i) =(cp + oldcp) * 0.5
+        oldcp  = cp
+    end do
+
+    ! Obtain the quantiles:
+
+    call locate(ar2,nd,1,nd,0.025,i)
+    if(i == 0) then
+        xpt025 = ar1(1)
+    else if(i == nd) then
+        xpt025 = ar1(nd)
+    else
+        xpt025 = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.025-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+    call locate(ar2,nd,1,nd,0.25,i)
+    if(i == 0) then
+        xlqt = ar1(1)
+    else if(i == nd) then
+        xlqt = ar1(nd)
+    else
+        xlqt = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.25-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+    call locate(ar2,nd,1,nd,0.50,i)
+    if(i == 0) then
+        xmed = ar1(1)
+    else if(i == nd) then
+        xmed = ar1(nd)
+    else
+        xmed = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.50-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+    call locate(ar2,nd,1,nd,0.75,i)
+    if(i == 0) then
+        xuqt = ar1(1)
+    else if(i == nd) then
+        xuqt = ar1(nd)
+    else
+        xuqt = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.75-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+    call locate(ar2,nd,1,nd,0.975,i)
+    if(i == 0) then
+        xpt975 = ar1(1)
+    else if(i == nd) then
+        xpt975 = ar1(nd)
+    else
+        xpt975 = ar1(i) +      (ar1(i+1)-ar1(i)) * &
+        (0.975-ar2(i))/(ar2(i+1)-ar2(i))
+    endif
+
+    ! The coeficient of variation:
+
+    xmin = ar1(1)
+    xmax = ar1(nd)
+    if(xmin < 0.0 .OR. xmen <= EPSLON) then
+        xcvr = -1.0
+    else
+        xcvr = sqrt(max(xvar,0.0))/xmen
+    endif
+
+    ! Find the Maximum Class Frequency:
+
+    xfrmx  = binval(1)
+    do i=2,ncl
+        xfrmx  = max(xfrmx,binval(i))
+    end do
+
+
+    ! Change things if we are considering a cumulative histogram:
+
+    if(cumhist) then
+        xfrmx = 1.0
+        do i=2,ncl
+            binval(i) = binval(i-1) + binval(i)
+        end do
+    end if
+
+
+end subroutine  histplt
 
 !***********************************************************************
 ! 
