@@ -879,6 +879,369 @@ subroutine sortem(ib,ie,a,iperm,b,c,d,e,f,g,h)
 end subroutine sortem
 
 
+subroutine dsortem(ib,ie,a,iperm,b,c,d,e,f,g,h)
+    !-----------------------------------------------------------------------
+
+    !                      Quickersort Subroutine
+    !                      **********************
+
+    ! This is a subroutine for sorting a real array in ascending order. This
+    ! is a Fortran translation of algorithm 271, quickersort, by R.S. Scowen
+    ! in collected algorithms of the ACM.
+
+    ! The method used is that of continually splitting the array into parts
+    ! such that all elements of one part are less than all elements of the
+    ! other, with a third part in the middle consisting of one element.  An
+    ! element with value t is chosen arbitrarily (here we choose the middle
+    ! element). i and j give the lower and upper limits of the segment being
+    ! split.  After the split a value q will have been found such that
+    ! a(q)=t and a(l)<=t<=a(m) for all i<=l<q<m<=j.  The program then
+    ! performs operations on the two segments (i,q-1) and (q+1,j) as follows
+    ! The smaller segment is split and the position of the larger segment is
+    ! stored in the lt and ut arrays.  If the segment to be split contains
+    ! two or fewer elements, it is sorted and another segment is obtained
+    ! from the lt and ut arrays.  When no more segments remain, the array
+    ! is completely sorted.
+
+
+    ! INPUT PARAMETERS:
+
+    !   ib,ie        start and end index of the array to be sorteda
+    !   a            array, a portion of which has to be sorted.
+    !   iperm        0 no other array is permuted.
+    !                1 array b is permuted according to array a
+    !                2 arrays b,c are permuted.
+    !                3 arrays b,c,d are permuted.
+    !                4 arrays b,c,d,e are permuted.
+    !                5 arrays b,c,d,e,f are permuted.
+    !                6 arrays b,c,d,e,f,g are permuted.
+    !                7 arrays b,c,d,e,f,g,h are permuted.
+    !               >7 no other array is permuted.
+
+    !   b,c,d,e,f,g,h  arrays to be permuted according to array a.
+
+    ! OUTPUT PARAMETERS:
+
+    !    a      = the array, a portion of which has been sorted.
+
+    !    b,c,d,e,f,g,h  =arrays permuted according to array a (see iperm)
+
+    ! NO EXTERNAL ROUTINES REQUIRED:
+
+    !-----------------------------------------------------------------------
+    implicit real*8 (a-h,o-z)
+    dimension a(*),b(*),c(*),d(*),e(*),f(*),g(*),h(*)
+
+    ! The dimensions for lt and ut have to be at least log (base 2) n
+
+    integer ::   lt(64),ut(64),i,j,k,m,p,q
+
+    ! Initialize:
+
+    j     = ie
+    m     = 1
+    i     = ib
+    iring = iperm+1
+    if (iperm > 7) iring=1
+
+    ! If this segment has more than two elements  we split it
+
+    10 if (j-i-1) 100,90,15
+
+    ! p is the position of an arbitrary element in the segment we choose the
+    ! middle element. Under certain circumstances it may be advantageous
+    ! to choose p at random.
+
+    15 p    = (j+i)/2
+    ta   = a(p)
+    a(p) = a(i)
+    go to (21,19,18,17,16,161,162,163),iring
+    163 th   = h(p)
+    h(p) = h(i)
+    162 tg   = g(p)
+    g(p) = g(i)
+    161 tf   = f(p)
+    f(p) = f(i)
+    16 te   = e(p)
+    e(p) = e(i)
+    17 td   = d(p)
+    d(p) = d(i)
+    18 tc   = c(p)
+    c(p) = c(i)
+    19 tb   = b(p)
+    b(p) = b(i)
+    21 continue
+
+    ! Start at the beginning of the segment, search for k such that a(k)>t
+
+    q = j
+    k = i
+    20 k = k+1
+    if(k > q)     go to 60
+    if(a(k) <= ta) go to 20
+
+    ! Such an element has now been found now search for a q such that a(q)<t
+    ! starting at the end of the segment.
+
+    30 continue
+    if(a(q) < ta) go to 40
+    q = q-1
+    if(q > k)     go to 30
+    go to 50
+
+    ! a(q) has now been found. we interchange a(q) and a(k)
+
+    40 xa   = a(k)
+    a(k) = a(q)
+    a(q) = xa
+    go to (45,44,43,42,41,411,412,413),iring
+    413 xh   = h(k)
+    h(k) = h(q)
+    h(q) = xh
+    412 xg   = g(k)
+    g(k) = g(q)
+    g(q) = xg
+    411 xf   = f(k)
+    f(k) = f(q)
+    f(q) = xf
+    41 xe   = e(k)
+    e(k) = e(q)
+    e(q) = xe
+    42 xd   = d(k)
+    d(k) = d(q)
+    d(q) = xd
+    43 xc   = c(k)
+    c(k) = c(q)
+    c(q) = xc
+    44 xb   = b(k)
+    b(k) = b(q)
+    b(q) = xb
+    45 continue
+
+    ! Update q and search for another pair to interchange:
+
+    q = q-1
+    go to 20
+    50 q = k-1
+    60 continue
+
+    ! The upwards search has now met the downwards search:
+
+    a(i)=a(q)
+    a(q)=ta
+    go to (65,64,63,62,61,611,612,613),iring
+    613 h(i) = h(q)
+    h(q) = th
+    612 g(i) = g(q)
+    g(q) = tg
+    611 f(i) = f(q)
+    f(q) = tf
+    61 e(i) = e(q)
+    e(q) = te
+    62 d(i) = d(q)
+    d(q) = td
+    63 c(i) = c(q)
+    c(q) = tc
+    64 b(i) = b(q)
+    b(q) = tb
+    65 continue
+
+    ! The segment is now divided in three parts: (i,q-1),(q),(q+1,j)
+    ! store the position of the largest segment in lt and ut
+
+    if (2*q <= i+j) go to 70
+    lt(m) = i
+    ut(m) = q-1
+    i = q+1
+    go to 80
+    70 lt(m) = q+1
+    ut(m) = j
+    j = q-1
+
+    ! Update m and split the new smaller segment
+
+    80 m = m+1
+    go to 10
+
+    ! We arrive here if the segment has  two elements we test to see if
+    ! the segment is properly ordered if not, we perform an interchange
+
+    90 continue
+    if (a(i) <= a(j)) go to 100
+    xa=a(i)
+    a(i)=a(j)
+    a(j)=xa
+    go to (95,94,93,92,91,911,912,913),iring
+    913 xh   = h(i)
+    h(i) = h(j)
+    h(j) = xh
+    912 xg   = g(i)
+    g(i) = g(j)
+    g(j) = xg
+    911 xf   = f(i)
+    f(i) = f(j)
+    f(j) = xf
+    91 xe   = e(i)
+    e(i) = e(j)
+    e(j) = xe
+    92 xd   = d(i)
+    d(i) = d(j)
+    d(j) = xd
+    93 xc   = c(i)
+    c(i) = c(j)
+    c(j) = xc
+    94 xb   = b(i)
+    b(i) = b(j)
+    b(j) = xb
+    95 continue
+
+    ! If lt and ut contain more segments to be sorted repeat process:
+
+    100 m = m-1
+    if (m <= 0) go to 110
+    i = lt(m)
+    j = ut(m)
+    go to 10
+    110 continue
+    return
+
+end subroutine dsortem
+
+
+real*8 function acorni(ixv, KORDEI)
+    !-----------------------------------------------------------------------
+
+    ! Fortran implementation of ACORN random number generator of order less
+    ! than or equal to 12 (higher orders can be obtained by increasing the
+    ! parameter value MAXORD).
+
+
+    ! NOTES: 1. The common block
+    !           IACO is used to transfer data into the function.
+
+    !        2. Before the first call to ACORN the common block IACO must
+    !           be initialised by the user, as follows. The values of
+    !           variables in the common block must not subsequently be
+    !           changed by the user.
+
+    !             KORDEI - order of generator required ( must be =< MAXORD)
+
+    !             ixv(1) - seed for random number generator
+    !                      require 0 < ixv(1) < MAXINT
+
+    !             (ixv(I+1),I=1,KORDEI)
+    !                    - KORDEI initial values for generator
+    !                      require 0 =< ixv(I+1) < MAXINT
+
+    !        3. After initialisation, each call to ACORN generates a single
+    !           random number between 0 and 1.
+
+    !        4. An example of suitable values for parameters is
+
+    !             KORDEI   = 10
+    !             MAXINT   = 2**30
+    !             ixv(1)   = an odd integer in the (approximate) range
+    !                        (0.001 * MAXINT) to (0.999 * MAXINT)
+    !             ixv(I+1) = 0, I=1,KORDEI
+
+
+    ! Author: R.S.Wikramaratna,                           Date: October 1990
+    
+    ! Note: 
+    
+    ! This function was modified in 2015 by Adrian Martinez (opengeostat)
+    ! * the common block data transference was replaced by parameter transference
+    ! * the function definition is different, before it was 
+    !   double precision function acorni(idum), with idum as dummy variable. 
+    ! 
+    ! Warning: you may update the way you call this function in preexisting gslib code
+    !-----------------------------------------------------------------------
+
+    implicit none
+
+
+    ! input 
+    integer, intent(in) :: KORDEI
+
+    !inout
+    real*8, intent(inout), dimension (KORDEI+1) :: ixv
+
+    ! internal 
+    integer i, MAXINT
+
+    MAXINT = 2**30
+
+    do i=1,KORDEI
+        ixv(i+1)=(ixv(i+1)+ixv(i))
+        if(ixv(i+1) >= MAXINT) ixv(i+1)=ixv(i+1)-MAXINT
+    end do
+
+    acorni=dble(ixv(KORDEI+1))/MAXINT
+
+    return
+
+
+end function acorni
+
+subroutine gauinv(p,xp,ierr)
+	!-----------------------------------------------------------------------
+
+	! Computes the inverse of the standard normal cumulative distribution
+	! function with a numerical approximation from : Statistical Computing,
+	! by W.J. Kennedy, Jr. and James E. Gentle, 1980, p. 95.
+
+
+
+	! INPUT/OUTPUT:
+
+	!   p    = double precision cumulative probability value: dble(psingle)
+	!   xp   = G^-1 (p) in single precision
+	!   ierr = 1 - then error situation (p out of range), 0 - OK
+
+
+	!-----------------------------------------------------------------------
+    real*8 :: p0,p1,p2,p3,p4,q0,q1,q2,q3,q4,y,pp,lim,p
+    save   p0,p1,p2,p3,p4,q0,q1,q2,q3,q4,lim
+
+	! Coefficients of approximation:
+
+    data lim/1.0e-10/
+    data p0/-0.322232431088/,p1/-1.0/,p2/-0.342242088547/, &
+    p3/-0.0204231210245/,p4/-0.0000453642210148/
+    data q0/0.0993484626060/,q1/0.588581570495/,q2/0.531103462366/, &
+    q3/0.103537752850/,q4/0.0038560700634/
+
+	! Check for an error situation:
+
+    ierr = 1
+    if(p < lim) then
+        xp = -1.0e10
+        return
+    end if
+    if(p > (1.0-lim)) then
+        xp =  1.0e10
+        return
+    end if
+    ierr = 0
+
+	! Get k for an error situation:
+
+    pp   = p
+    if(p > 0.5) pp = 1 - pp
+    xp   = 0.0
+    if(p == 0.5) return
+
+	! Approximate the function:
+
+    y  = dsqrt(dlog(1.0/(pp*pp)))
+    xp = real( y + ((((y*p4+p3)*y+p2)*y+p1)*y+p0) / &
+    ((((y*q4+q3)*y+q2)*y+q1)*y+q0) )
+    if(real(p) == real(pp)) xp = -xp
+
+	! Return with G^-1(p):
+
+    return
+end subroutine gauinv
 
 !*********************************************************************************
 !     Subroutines for GSLIB datafile 
@@ -3144,6 +3507,102 @@ end subroutine kt3d_getmatrix_size
 ! 
 ! 
 !***********************************************************************
+
+!---------------------------------------------------------------------------
+!     Subroutine ns_ttable (this one part of the nscore program)
+!---------------------------------------------------------------------------
+subroutine ns_ttable(va,wt, nd, transin, transout)
+    ! 
+    ! This code is based on GSLIB nscore  
+    !
+    !-----------------------------------------------------------------------
+
+    !                Compute Normal Scores transformation table
+    !                ***********************************
+
+    ! PROGRAM NOTES:
+
+    !   1. Create a transformation table from data or reference distribution
+
+    ! Version from Adrian martinez Vargas, 2015
+
+    !-----------------------------------------------------------------------
+
+
+    ! input 
+    real*8, intent(in), dimension (nd) :: va, wt
+    integer, intent(in) :: nd
+
+    ! output
+    real*8, intent (out), dimension (nd)  :: transin, transout
+
+    ! internal
+    real*8 :: EPSLON
+    real*8 :: ixv (12)
+    real*8, dimension (nd) :: vr, wt_ns
+    real*8 ::  twt,wtfac,w,cp,oldcp,vrg,acorni, p
+    real*8, dimension(1) :: c,d,e,f,g,h    ! these are dummies for dsortem
+    integer :: KORDEI, MAXOP1
+   
+
+    EPSLON=1.0e-6
+
+    ! ACORN parameters:
+    KORDEI=12 ! this is hard coded... ixv (KORDEI=12)
+    MAXOP1 = KORDEI+1
+
+
+    do i=1,MAXOP1
+        ixv(i) = 0.0
+    end do
+    ixv(1) = 69069
+    do i=1,1000
+        p = real(acorni(ixv, KORDEI))
+    end do
+
+
+    ! calculat total wight
+    twt=0
+    do i=1, nd
+        if(wt(nd) <= 1.0e-10) then
+               error = 10         ! Wight too small review your data and try again  
+            return 
+        end if
+        wt_ns(i) = wt(i)
+        vr(i) = va(i)
+        twt = twt + wt_ns(i)
+    end do
+
+    if(nd <= 1 .OR. real(twt) <= EPSLON) then
+        error = 100       !'ERROR: too few data'
+        return
+    endif
+
+    ! Sort data by value:
+
+    istart = 1
+    iend   = nd
+    call dsortem(istart,iend,vr,1,wt_ns,c,d,e,f,g,h)
+
+    ! Compute the cumulative probabilities and write transformation table
+
+    wtfac = 1.0/twt
+    oldcp = 0.0
+    cp    = 0.0
+    do j=istart,iend
+        w     =  wtfac*wt_ns(j)
+        cp    =  cp + w
+        wt_ns(j) = (cp + oldcp)/2.0
+        call gauinv(wt_ns(j),vrrg,ierr)
+        vrg = dble(vrrg)
+        transin(j) = vr(j)
+        transout(j) = vrg
+        oldcp =  cp
+        ! Now, reset the weight to the normal scores value:
+        ! wt_ns(j) = vrg   
+    end do
+
+end subroutine ns_ttable
 
 !---------------------------------------------------------------------------
 !     Subroutine declus (this is the declus program for declustering)
