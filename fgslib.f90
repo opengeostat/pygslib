@@ -1243,6 +1243,95 @@ subroutine gauinv(p,xp,ierr)
     return
 end subroutine gauinv
 
+
+real*8 function dpowint(xlow,xhigh,ylow,yhigh,xval,pow)
+	!-----------------------------------------------------------------------
+
+	! Power interpolate the value of y between (xlow,ylow) and (xhigh,yhigh)
+	!                 for a value of x and a power pow.
+
+	!-----------------------------------------------------------------------
+    implicit real*8 (a-h,o-z)
+
+    parameter(EPSLON=1.0e-20)
+
+    if((xhigh-xlow) < EPSLON) then
+        dpowint = (yhigh+ylow)/2.0
+    else
+        dpowint = ylow + (yhigh-ylow)* &
+        (((xval-xlow)/(xhigh-xlow))**pow)
+    end if
+
+    return
+end function
+
+subroutine dlocate(xx,n,is,ie,x,j)
+	!-----------------------------------------------------------------------
+
+	! Given an array "xx" of length "n", and given a value "x", this routine
+	! returns a value "j" such that "x" is between xx(j) and xx(j+1).  xx
+	! must be monotonic, either increasing or decreasing.  j=0 or j=n is
+	! returned to indicate that x is out of range.
+
+	! Modified to set the start and end points by "is" and "ie"
+
+	! Bisection Concept From "Numerical Recipes", Press et. al. 1986  pp 90.
+	!-----------------------------------------------------------------------
+    implicit real*8 (a-h,o-z)
+    dimension xx(n)
+
+	! Initialize lower and upper methods:
+
+    jl = is-1
+    ju = ie
+
+	! If we are not done then compute a midpoint:
+
+    10 if(ju-jl > 1) then
+        jm = (ju+jl)/2
+    
+    	! Replace the lower or upper limit with the midpoint:
+    
+        if((xx(ie) > xx(is)).eqv.(x > xx(jm))) then
+            jl = jm
+        else
+            ju = jm
+        endif
+        go to 10
+    endif
+
+	! Return with the array index:
+
+    j = jl
+    return
+end subroutine dlocate
+
+real function gcum(x)
+	!-----------------------------------------------------------------------
+
+	! Evaluate the standard normal cdf given a normal deviate x.  gcum is
+	! the area under a unit normal curve to the left of x.  The results are
+	! accurate only to about 5 decimal places.
+
+
+	!-----------------------------------------------------------------------
+    z = x
+    if(z < 0.) z = -z
+    t    = 1./(1.+ 0.2316419*z)
+    gcum = t*(0.31938153   + t*(-0.356563782 + t*(1.781477937 + &
+    t*(-1.821255978 + t*1.330274429))))
+    e2   = 0.
+
+	!  6 standard deviations out gets treated as infinity:
+
+    if(z <= 6.) e2 = exp(-z*z/2.)*0.3989422803
+    gcum = 1.0- e2 * gcum
+    if(x >= 0.) return
+    gcum = 1.0 - gcum
+    return
+end function gcum
+
+
 !*********************************************************************************
 !     Subroutines for GSLIB datafile 
 !*********************************************************************************
@@ -3511,7 +3600,7 @@ end subroutine kt3d_getmatrix_size
 !---------------------------------------------------------------------------
 !     Subroutine ns_ttable (this one part of the nscore program)
 !---------------------------------------------------------------------------
-subroutine ns_ttable(va,wt, nd, transin, transout)
+subroutine ns_ttable(va,wt, nd, transin, transout, error)
     ! 
     ! This code is based on GSLIB nscore  
     !
@@ -3528,6 +3617,7 @@ subroutine ns_ttable(va,wt, nd, transin, transout)
 
     !-----------------------------------------------------------------------
 
+	implicit none	
 
     ! input 
     real*8, intent(in), dimension (nd) :: va, wt
@@ -3535,14 +3625,16 @@ subroutine ns_ttable(va,wt, nd, transin, transout)
 
     ! output
     real*8, intent (out), dimension (nd)  :: transin, transout
+	integer, intent(out) :: error
 
     ! internal
     real*8 :: EPSLON
     real*8 :: ixv (12)
     real*8, dimension (nd) :: vr, wt_ns
     real*8 ::  twt,wtfac,w,cp,oldcp,vrg,acorni, p
+	real :: vrrg
     real*8, dimension(1) :: c,d,e,f,g,h    ! these are dummies for dsortem
-    integer :: KORDEI, MAXOP1
+    integer :: KORDEI, MAXOP1, i, istart, iend, ierr, j
    
 
     EPSLON=1.0e-6
@@ -3569,7 +3661,7 @@ subroutine ns_ttable(va,wt, nd, transin, transout)
             return 
         end if
         wt_ns(i) = wt(i)
-        vr(i) = va(i)
+        vr(i) = va(i) + acorni(ixv, KORDEI)*dble(EPSLON)
         twt = twt + wt_ns(i)
     end do
 
@@ -3603,6 +3695,82 @@ subroutine ns_ttable(va,wt, nd, transin, transout)
     end do
 
 end subroutine ns_ttable
+
+subroutine nscore(va, nd, transin, transout, nt, getrank , nsc) 
+
+	!-----------------------------------------------------------------------
+
+	!                Compute Normal Scores of a Data Set
+	!                ***********************************
+
+	! PROGRAM NOTES:
+
+	!   2. Random Despiking (THIS IS WHY WE NEED A RANDOM NUMBER GENERATOR)
+
+
+
+	!-----------------------------------------------------------------------
+
+	implicit none
+
+	! input 
+	integer, intent(in) :: nd, nt
+	logical, intent(in):: getrank
+	real*8, intent (in), dimension (nt)  :: transin, transout
+	real*8, intent(in), dimension (nd) :: va
+
+	! output
+	real*8, intent(out), dimension(nd):: nsc
+	
+
+	! internal 
+	real*8 :: doubone, dpowint
+	real*8 :: EPSLON
+    real*8 :: ixv (12)
+	integer :: KORDEI, MAXOP1, i, j
+    real*8 :: vrg,acorni, p, yy, vrr
+	real :: gcum, pp
+    
+	doubone=1.0
+    EPSLON=1.0e-6
+
+    ! ACORN parameters:
+    KORDEI=12 ! this is hard coded... ixv (KORDEI=12)
+    MAXOP1 = KORDEI+1
+
+	! TODO: review this part... ixv was suppose to be in shared memory space (use inout instad?)
+    do i=1,MAXOP1
+        ixv(i) = 0.0
+    end do
+    ixv(1) = 69069
+    do i=1,1000
+        p = real(acorni(ixv, KORDEI))
+    end do
+
+	! Normal Scores Transform:	 
+	do i=1, nd 
+	
+	    vrr = dble(va(i))+acorni(ixv, KORDEI)*dble(EPSLON)
+	
+		! Now, get the normal scores value for "vrr"
+	
+	    call dlocate(transin,nt,1,nt,vrr,j)
+	    j   = min(max(1,j),(nd-1))
+	    vrg = dpowint(transin(j),transin(j+1),transout(j),transout(j+1),vrr,doubone)
+
+		! Write the rank order instead of the rank?
+
+		if(getrank) then
+		    pp  = real(vrg)
+		    yy  = gcum(pp)
+		    vrg = dble(yy)
+		end if
+	
+		nsc(i) = vrg
+
+	end do
+
+end subroutine nscore
 
 !---------------------------------------------------------------------------
 !     Subroutine declus (this is the declus program for declustering)
