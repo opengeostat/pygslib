@@ -1308,7 +1308,7 @@ subroutine dlocate(xx,n,is,ie,x,j)
     return
 end subroutine dlocate
 
-real*8 function gcum(x)
+real function gcum(x)
 	!-----------------------------------------------------------------------
 
 	! Evaluate the standard normal cdf given a normal deviate x.  gcum is
@@ -1318,7 +1318,7 @@ real*8 function gcum(x)
 
 	!-----------------------------------------------------------------------
     
-    real*8 :: x, z, e2
+    real :: x, z, e2
     
     z = x
     if(z < 0.) z = -z
@@ -3755,8 +3755,8 @@ subroutine nscore(va, nd, transin, transout, nt, getrank , nsc)
 	real*8 :: EPSLON
     real*8 :: ixv (12)
 	integer :: KORDEI, MAXOP1, i, j
-    real*8 :: vrg,acorni, p, yy, vrr, gcum
-	real ::  pp
+    real*8 :: vrg,acorni, p, yy, vrr
+	real ::  pp, gcum
     
 	doubone=1.0
     EPSLON=1.0e-6
@@ -3830,7 +3830,8 @@ real*8 function backtr(vrgs,nt,vr,vrg,zmin,zmax,ltail,ltpar, utail,utpar)
 
     real*8, dimension(nt) :: vr, vrg
     real*8 ::    ltpar,utpar,lambda, EPSLON, vrgs,zmin,zmax, powint, &
-				 cdflo, cdfbt, cpow, cdfhi, gcum
+				 cdflo, cdfbt, cpow, cdfhi
+    real:: gcum
     integer ::   ltail,utail, nt
 
 	EPSLON=1.0e-20
