@@ -4792,7 +4792,158 @@ subroutine probplt( iwt, nd, va, wt,  &
 
 end subroutine probplt
 
+subroutine qpplt(qqorpp, npts, &
+				 n1, n2, va1,va2,wt1, wt2, &
+				 vr1,vr2, error)
+	!-----------------------------------------------------------------------
 
+	!                        Q-Q, or P-P Plots
+	!                        *****************
+
+	! This program generates values for Q-Q or P-P plot
+
+	! INPUT Parameters:
+
+	!   va1,wt1     variable and the weight
+	!   va2,wt2     variable and the weight
+	!   qqorpp      0 = Q-Q plot, 1 = P-P plot
+	!   npts        number of points to label
+
+	! Output 
+
+	!   vr1, vr2   (npts), arrays with Q & Q or P & P, depending on qqorpp option
+
+	!-----------------------------------------------------------------------
+
+    implicit none
+
+
+	! input 
+	integer, intent(in) :: qqorpp, npts, n1, n2
+	real*8, intent(in), dimension(n1) :: va1, wt1
+	real*8, intent(in), dimension(n2) :: va2, wt2
+
+	! output
+	integer, intent(out) :: error
+	real*8, intent(out), dimension(npts) :: vr1, vr2
+
+
+	! internal
+	real*8 :: EPSLON, ccdf, cp1, cp2, cpinc, & 
+			 oldcp, cp, zz1,zz2, zz, zmin, zmax, zinc
+	real*8,  dimension(n1) :: z1, p1
+	real*8,  dimension(n2) :: z2, p2
+	integer :: i, j, j1, j2, nd, npoints
+	real*8, dimension (1) :: h, g, f, e, d, c  ! this are not used but required in sortem
+
+
+	EPSLON=1.0e-20
+
+	npoints = npts
+
+    npoints = min(npoints,n1,n2)
+	
+	if (npoints /= npts) then 
+		error = 100  ! the number of points may be equal or lowr than the number of points in the smaller dataset
+		return
+	end if
+
+	! using internal coppy of the input data to avoid inout variables
+	do i=1, n1
+		z1(i) = va1(i)
+		p1(i) = wt1(i)
+    end do
+	do i=1, n2
+		z2(i) = va2(i)
+		p2(i) = wt2(i)
+    end do
+
+
+! Create Cumulative Probabilities out of Variables:
+
+
+! CDF for first data set:
+
+    call sortem(1,n1,z1,1,p1,c,d,e,f,g,h)
+    ccdf = 0
+    do i=1,n1
+        ccdf = ccdf + p1(i)
+    end do
+    if(ccdf < EPSLON) then
+		error = 10  ! 'Cumulative Probability too LOW'
+		return  
+	end if
+    oldcp = 0.0
+    cp    = 0.0
+    do i=1,n1
+        cp    = cp + p1(i)/ccdf
+        p1(i) = 0.5*(cp+oldcp)
+        oldcp = cp
+    end do
+
+	! CDF for second data set:
+
+    call sortem(1,n2,z2,1,p2,c,d,e,f,g,h)
+    ccdf = 0
+    do i=1,n2
+        ccdf = ccdf + p2(i)
+    end do
+    if(ccdf < EPSLON) stop 'Cumulative Probability too LOW'
+    oldcp = 0.0
+    cp    = 0.0
+    do i=1,n2
+        cp    = cp + p2(i)/ccdf
+        p2(i) = 0.5*(cp+oldcp)
+        oldcp = cp
+    end do
+
+	! Set up either a Q-Q or a P-P plot:
+
+    nd = 0
+    if(qqorpp == 0) then
+    
+    	! Q-Q plot:
+    
+        cpinc = 1.0 / real(npoints)
+        cp    = -0.5*cpinc
+        do i=1,npoints
+            cp = cp + cpinc
+            call locate(p2,n2,1,n2,cp,j2)
+            call locate(p1,n1,1,n1,cp,j1)
+            j2 = min((n2-1),max(1,j2))
+            j1 = min((n1-1),max(1,j1))
+            zz1 = z1(j1)+(z1(j1+1)-z1(j1))*(cp-p1(j1)) &
+            / (p1(j1+1)-p1(j1))
+            zz2 = z2(j2)+(z2(j2+1)-z2(j2))*(cp-p2(j2)) &
+            / (p2(j2+1)-p2(j2))
+            nd = nd + 1
+            vr1(nd) = zz1
+            vr2(nd) = zz2
+        end do
+    
+    else
+		! P-P plot
+        zmin = max(z1(1), z2(1) )
+        zmax = min(z1(n1),z2(n2))
+        zinc = (zmax-zmin) / real(npoints+1)
+        zz   = zmin - 0.5*zinc
+        do i=1,npoints
+            zz = zz + zinc
+            call locate(z1,n1,1,n1,zz,j1)
+            call locate(z2,n2,1,n2,zz,j2)
+            j2 = min((n2-1),max(1,j2))
+            j1 = min((n1-1),max(1,j1))
+            cp1 = p1(j1)+(p1(j1+1)-p1(j1))*(zz-z1(j1)) &
+            / (z1(j1+1)-z1(j1))
+            cp2 = p2(j2)+(p2(j2+1)-p2(j2))*(zz-z2(j2)) &
+            / (z2(j2+1)-z2(j2))
+            nd = nd + 1
+            vr1(nd) = cp1
+            vr2(nd) = cp2
+        end do
+    end if
+
+end subroutine qpplt
 
 !***********************************************************************
 ! 
