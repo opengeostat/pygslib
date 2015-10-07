@@ -15,7 +15,15 @@ of the MIT license.  See the LICENSE.txt file for details.
 
 import os.path
 import pandas as pd
-import __fgslib
+import __rotscale
+import __block_covariance
+import __read_gslib
+import __addcoord
+import __kt3d
+import __plot
+import __declus
+import __variograms
+import __dist_transf
 import platform
 import warnings
 import numpy as np
@@ -29,12 +37,12 @@ import matplotlib.pyplot as plt
 
 def version():
     """
-    Version of the gslib fortran code and the python wrapper 
+    Return version information (only python code)
 
     Returns
     -------
     dict 
-        {'python':python wrap version, 'fortran': gslib fortran version}, [operating system] 
+        {'python':python wrap version}, [operating system] 
 
         each version have 
 
@@ -46,14 +54,6 @@ def version():
           'year': year}
     """
 
-    major, minor , maintenance, build, month, year= __fgslib.version()
-    
-    foversion={'major':major, 
-               'minor':minor , 
-               'maintenance': maintenance, 
-               'build': build, 
-               'month':month, 
-               'year': year}
     pyversion={'major':0, 
                'minor':0 , 
                'maintenance':0, 
@@ -63,8 +63,7 @@ def version():
 
     osplatform=platform.platform()
 
-    return {'fortran version': foversion, 
-            'python version': pyversion,
+    return {'python version': pyversion,
             'platform': osplatform }
 
 
@@ -104,15 +103,15 @@ def read_gslib_file(fname, maxnvar=500):
     # make sure the file exists 
     assert os.path.isfile(fname), "invalid file name"
         
-    comment_line,varnames,nvar,error = __fgslib.read_header(fname ,maxnvar)
+    comment_line,varnames,nvar,error = __read_gslib.read_header(fname ,maxnvar)
     #the var names requires this work around in f2py
     vnames=[]
     for i in varnames[0:nvar]:
         vnames.append(str.strip(i.tostring()))
 
     #now read data 
-    maxdat,error=__fgslib.read_ndata(fname, nvar)
-    table,error=__fgslib.read_data(fname, nvar, maxdat)
+    maxdat,error=__read_gslib.read_ndata(fname, nvar)
+    table,error=__read_gslib.read_data(fname, nvar, maxdat)
     
     assert error==0, "there was an error= %r importing the data" % error
     
@@ -159,7 +158,7 @@ def addcoord(nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz, grid):
 
 
     #adding columns (not inplace)
-    x,y,z = __fgslib.addcoord(nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz)   
+    x,y,z = __addcoord.addcoord(nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz)   
     tmpgrid= grid.copy(deep=True)
     tmpgrid.insert(loc=0, column='z', value=z, allow_duplicates=False)
     tmpgrid.insert(loc=0, column='y', value=y, allow_duplicates=False)
@@ -282,7 +281,7 @@ def gamv(parameters):
 
 
     The variables with prefix `p` are for directional variogram and are generated 
-    by GSLIB fortran function  `__fgslib.writeout`. This is similar to the output of 
+    by GSLIB fortran function  `writeout`. This is similar to the output of 
     the GSLIB standalone program `gamv`.
 
     The variables with prefix `cld` are for variogram cloud. The variogram cloud 
@@ -295,7 +294,7 @@ def gamv(parameters):
     
     """
 
-    np,dis, gam, hm, tm, hv, tv, cldi, cldj, cldg, cldh, l = __fgslib.gamv(**parameters)
+    np,dis, gam, hm, tm, hv, tv, cldi, cldj, cldg, cldh, l = __variograms.gamv(**parameters)
     
     if l==parameters['maxclp']:
         warnings.warn( 'Warning: l == maxclp; maximum number ' + \
@@ -315,7 +314,7 @@ def gamv(parameters):
     nlag = parameters['nlag']
 
     
-    pdis,pgam, phm,ptm,phv,ptv,pnump = __fgslib.writeout(nvarg,ndir,nlag,np,dis,gam,hm,tm,hv,tv)
+    pdis,pgam, phm,ptm,phv,ptv,pnump = __variograms.writeout(nvarg,ndir,nlag,np,dis,gam,hm,tm,hv,tv)
       
     
     
@@ -615,11 +614,11 @@ def gam(parameters):
     (nvarg, ndir, nlag+2), representing the  experimental variograms output
 
     The variables with prefix `p` are for directional variogram and are generated 
-    by GSLIB fortran function  `__fgslib.writeout`. This is similar to the output of 
+    by GSLIB fortran function  `writeout`. This is similar to the output of 
     the GSLIB standalone program `gam`.
     """
 
-    np, gam, hm, tm, hv, tv = __fgslib.gamma(**parameters)
+    np, gam, hm, tm, hv, tv = __variograms.gamma(**parameters)
     
 
     # get output like in gslib 
@@ -633,7 +632,7 @@ def gam(parameters):
     zsiz = parameters['zsiz']
 
     
-    pdis,pgam,phm,ptm,phv,ptv,pnump = __fgslib.writeout_gam(nvarg,nlag,ixd,xsiz,iyd,ysiz,izd,zsiz,np,gam,hm,tm,hv,tv)
+    pdis,pgam,phm,ptm,phv,ptv,pnump = __variograms.writeout_gam(nvarg,nlag,ixd,xsiz,iyd,ysiz,izd,zsiz,np,gam,hm,tm,hv,tv)
       
     
     
@@ -673,7 +672,7 @@ def setrot(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,maxrot=1):
         
     
     """
-    return __fgslib.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
+    return __kt3d.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
 
 
 def rotcoord(X,Y,Z,ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,invert=0):
@@ -703,7 +702,7 @@ def rotcoord(X,Y,Z,ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,invert=0):
         
     
     """
-    return __fgslib.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
+    return __kt3d.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
 
 
 
@@ -758,9 +757,9 @@ def cova3(parameters):
 
     """
       
-    # calculate this:  rotmat = gslib.__fgslib.setrot(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,maxrot=1)
+    # calculate this:  rotmat = gslib.__kt3d.setrot(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,maxrot=1)
       
-    cmax,cova = __fgslib.cova3(**parameters)
+    cmax,cova = __kt3d.cova3(**parameters)
     
     return cmax,cova
 
@@ -808,7 +807,7 @@ def block_covariance(parameters):
 
     """
 
-    unbias,cbb = __fgslib.block_covariance(**parameters)
+    unbias,cbb = __block_covariance.block_covariance(**parameters)
 
     return cbb
 
@@ -848,7 +847,7 @@ def kt3d_getmatrix_size(ktype,idrif,na):
 
     """
     
-    mdt,kneq,error = __fgslib.kt3d_getmatrix_size(ktype,idrif,na)
+    mdt,kneq,error = __kt3d.kt3d_getmatrix_size(ktype,idrif,na)
     
     if (error>0):
         warnings.warn('Error > 0, check your parameters')
@@ -940,7 +939,7 @@ def kt3d(parameters):
     
     """
 
-    est,estv,estt,estvt,w,wt,error,kmatrix,kvector,ksolution = __fgslib.kt3d(**parameters)
+    est,estv,estt,estvt,w,wt,error,kmatrix,kvector,ksolution = __kt3d.kt3d(**parameters)
     
     if (error>0):
         warnings.warn('Error > 0, check your parameters')
@@ -1003,7 +1002,7 @@ def declus(parameters):
     
     """
 
-    wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr = __fgslib.declus(**parameters)
+    wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr = __declus.declus(**parameters)
     
     if (error>0):
         warnings.warn('Error > 0, check your parameters')
@@ -1058,7 +1057,7 @@ def rotscale(parameters):
     The rotation is  {Z counter clockwise ; X clockwise; Y counter clockwise} [-ZX-Y]
     
     """
-    xr,yr,zr = __fgslib.rotscale(**parameters)
+    xr,yr,zr = __rotscale.rotscale(**parameters)
 
     return xr,yr,zr
 
