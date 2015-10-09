@@ -1,0 +1,242 @@
+running develop
+running build_scripts
+running egg_info
+running build_src
+build_src
+building extension "pygslib.__variograms" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+building extension "pygslib.__bigaus" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+  adding 'build/src.linux-x86_64-2.7/pygslib/__bigaus-f2pywrappers.f' to sources.
+building extension "pygslib.__addcoord" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+building extension "pygslib.__rotscale" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+building extension "pygslib.__read_gslib" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+building extension "pygslib.__declus" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+building extension "pygslib.__dist_transf" sources
+f2py options: ['only:', 'backtr', 'nscore', 'ns_ttable', ':']
+f2py:> build/src.linux-x86_64-2.7/pygslib/__dist_transfmodule.c
+Reading fortran codes...
+	Reading file 'for_code/dist_transf.f90' (format:free)
+	Reading file 'for_code/locate.f90' (format:free)
+	Reading file 'for_code/sortem.f90' (format:free)
+	Reading file 'for_code/acorni.f90' (format:free)
+	Reading file 'for_code/gauinv.f90' (format:free)
+	Reading file 'for_code/powint.f90' (format:free)
+	Reading file 'for_code/gcum.f90' (format:free)
+Post-processing...
+	Block: __dist_transf
+			Block: ns_ttable
+			Block: nscore
+			Block: backtr
+Post-processing (stage 2)...
+Building modules...
+	Building module "__dist_transf"...
+		Constructing wrapper function "ns_ttable"...
+		  transin,transout,error = ns_ttable(va,wt,[nd])
+		Constructing wrapper function "nscore"...
+		  nsc = nscore(va,transin,transout,getrank,[overwrite_va,overwrite_transin,overwrite_transout])
+		Constructing wrapper function "backtr"...
+		  va,error = backtr(vnsc,transin,transout,ltail,utail,ltpar,utpar,zmin,zmax,getrank,[nd,nt])
+	Wrote C/API module "__dist_transf" to file "build/src.linux-x86_64-2.7/pygslib/__dist_transfmodule.c"
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+building extension "pygslib.__block_covariance" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+  adding 'build/src.linux-x86_64-2.7/pygslib/__block_covariance-f2pywrappers.f' to sources.
+building extension "pygslib.__kt3d" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+  adding 'build/src.linux-x86_64-2.7/pygslib/__kt3d-f2pywrappers.f' to sources.
+building extension "pygslib.__plot" sources
+f2py options: []
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+build_src: building npy-pkg config files
+writing requirements to pygslib.egg-info/requires.txt
+writing pygslib.egg-info/PKG-INFO
+writing top-level names to pygslib.egg-info/top_level.txt
+writing dependency_links to pygslib.egg-info/dependency_links.txt
+writing pbr to pygslib.egg-info/pbr.json
+reading manifest file 'pygslib.egg-info/SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'pygslib.egg-info/SOURCES.txt'
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize Gnu95FCompiler
+Found executable /usr/bin/gfortran
+customize Gnu95FCompiler
+customize Gnu95FCompiler using build_ext
+building 'pygslib.__dist_transf' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -g -O2 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC
+
+compile options: '-Ibuild/src.linux-x86_64-2.7 -I/home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include -I/home/adrian/anaconda/include/python2.7 -I/home/adrian/anaconda/include/python2.7 -c'
+gcc: build/src.linux-x86_64-2.7/fortranobject.c
+In file included from /home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include/numpy/ndarraytypes.h:1804:0,
+                 from /home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include/numpy/ndarrayobject.h:17,
+                 from /home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                 from build/src.linux-x86_64-2.7/fortranobject.h:13,
+                 from build/src.linux-x86_64-2.7/fortranobject.c:2:
+/home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:15:2: warning: #warning "Using deprecated NumPy API, disable it by " "#defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+ #warning "Using deprecated NumPy API, disable it by " \
+  ^
+gcc: build/src.linux-x86_64-2.7/pygslib/__dist_transfmodule.c
+In file included from /home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include/numpy/ndarraytypes.h:1804:0,
+                 from /home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include/numpy/ndarrayobject.h:17,
+                 from /home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                 from build/src.linux-x86_64-2.7/fortranobject.h:13,
+                 from build/src.linux-x86_64-2.7/pygslib/__dist_transfmodule.c:18:
+/home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:15:2: warning: #warning "Using deprecated NumPy API, disable it by " "#defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+ #warning "Using deprecated NumPy API, disable it by " \
+  ^
+build/src.linux-x86_64-2.7/pygslib/__dist_transfmodule.c:111:12: warning: ‘f2py_size’ defined but not used [-Wunused-function]
+ static int f2py_size(PyArrayObject* var, ...)
+            ^
+compiling Fortran sources
+Fortran f77 compiler: /usr/bin/gfortran -Wall -g -ffixed-form -fno-second-underscore -fPIC -O3 -funroll-loops
+Fortran f90 compiler: /usr/bin/gfortran -Wall -g -fno-second-underscore -fPIC -O3 -funroll-loops
+Fortran fix compiler: /usr/bin/gfortran -Wall -g -ffixed-form -fno-second-underscore -Wall -g -fno-second-underscore -fPIC -O3 -funroll-loops
+compile options: '-Ibuild/src.linux-x86_64-2.7 -I/home/adrian/anaconda/lib/python2.7/site-packages/numpy/core/include -I/home/adrian/anaconda/include/python2.7 -I/home/adrian/anaconda/include/python2.7 -c'
+gfortran:f90: for_code/dist_transf.f90
+for_code/dist_transf.f90:392.31:
+
+    real*8 :: tttbacktr, p, bac
+                               1
+Warning: Unused variable 'bac' declared at (1)
+for_code/dist_transf.f90:334.95:
+
+subroutine backtr(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, zmin,zmax, getrank, va, error)
+                                                                                               1
+Warning: Unused dummy argument 'getrank' at (1)
+for_code/dist_transf.f90:394.22:
+
+    integer :: i, ierr
+                      1
+Warning: Unused variable 'ierr' declared at (1)
+for_code/dist_transf.f90:334.69:
+
+subroutine backtr(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, zmin,zmax, getrank, va, error)
+                                                                     1
+Warning: Unused dummy argument 'ltpar' at (1)
+for_code/dist_transf.f90:392.26:
+
+    real*8 :: tttbacktr, p, bac
+                          1
+Warning: Unused variable 'p' declared at (1)
+for_code/dist_transf.f90:392.23:
+
+    real*8 :: tttbacktr, p, bac
+                       1
+Warning: Unused variable 'tttbacktr' declared at (1)
+for_code/dist_transf.f90:334.99:
+
+subroutine backtr(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, zmin,zmax, getrank, va, error)
+                                                                                                   1
+Warning: Dummy argument 'va' at (1) was declared INTENT(OUT) but was not set
+for_code/dist_transf.f90:334.22:
+
+subroutine backtr(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, zmin,zmax, getrank, va, error)
+                      1
+Warning: Unused dummy argument 'vnsc' at (1)
+In file included from for_code/dist_transf.f90:50:0:
+sortem.f90: In function ‘dsortem’:
+sortem.f90:427:0: warning: ‘th’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:429:0: warning: ‘tg’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:431:0: warning: ‘tf’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:433:0: warning: ‘te’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:435:0: warning: ‘td’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:437:0: warning: ‘tc’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:439:0: warning: ‘tb’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90: In function ‘sortem’:
+sortem.f90:199:0: warning: ‘th’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:201:0: warning: ‘tg’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:203:0: warning: ‘tf’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:205:0: warning: ‘te’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:207:0: warning: ‘td’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:209:0: warning: ‘tc’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+sortem.f90:211:0: warning: ‘tb’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+/usr/bin/gfortran -Wall -g -Wall -g -shared build/temp.linux-x86_64-2.7/build/src.linux-x86_64-2.7/pygslib/__dist_transfmodule.o build/temp.linux-x86_64-2.7/build/src.linux-x86_64-2.7/fortranobject.o build/temp.linux-x86_64-2.7/for_code/dist_transf.o -L/home/adrian/anaconda/lib -lpython2.7 -lgfortran -o pygslib/__dist_transf.so
+Creating /home/adrian/anaconda/lib/python2.7/site-packages/pygslib.egg-link (link to .)
+pygslib 0.0.0.3.3 is already the active version in easy-install.pth
+
+Installed /home/adrian/bitbucket/public/pygslib
+Processing dependencies for pygslib==0.0.0.3.3
+Searching for mock==1.3.0
+Best match: mock 1.3.0
+Adding mock 1.3.0 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for nose==1.3.7
+Best match: nose 1.3.7
+Adding nose 1.3.7 to easy-install.pth file
+Installing nosetests script to /home/adrian/anaconda/bin
+Installing nosetests-2.7 script to /home/adrian/anaconda/bin
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for matplotlib==1.4.3
+Best match: matplotlib 1.4.3
+Adding matplotlib 1.4.3 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for pandas==0.16.2
+Best match: pandas 0.16.2
+Adding pandas 0.16.2 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for numpy==1.9.3
+Best match: numpy 1.9.3
+Adding numpy 1.9.3 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for funcsigs==0.4
+Best match: funcsigs 0.4
+Adding funcsigs 0.4 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for six==1.9.0
+Best match: six 1.9.0
+Adding six 1.9.0 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for pbr==1.6.0
+Best match: pbr 1.6.0
+Adding pbr 1.6.0 to easy-install.pth file
+Installing pbr script to /home/adrian/anaconda/bin
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for pyparsing==2.0.3
+Best match: pyparsing 2.0.3
+Adding pyparsing 2.0.3 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for pytz==2015.6
+Best match: pytz 2015.6
+Adding pytz 2015.6 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Searching for python-dateutil==2.4.2
+Best match: python-dateutil 2.4.2
+Adding python-dateutil 2.4.2 to easy-install.pth file
+
+Using /home/adrian/anaconda/lib/python2.7/site-packages
+Finished processing dependencies for pygslib==0.0.0.3.3

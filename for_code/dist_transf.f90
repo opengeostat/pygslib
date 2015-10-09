@@ -180,13 +180,19 @@ subroutine nscore(va, nd, transin, transout, nt, getrank , nsc)
 
     ! input 
     integer, intent(in) :: nd, nt
+    !f2py intent(in,copy) :: transin, transout
+    !f2py integer intent(hide),depend(transin) :: nt=shape(transin,0)  
+    
+    
     logical, intent(in):: getrank
-    real*8, intent (in), dimension (nt)  :: transin, transout
+    real*8, intent (in), dimension (nt) :: transin, transout
     real*8, intent(in), dimension (nd) :: va
+    !f2py intent(in,copy) :: va
+    !f2py integer intent(hide),depend(va) :: nd=shape(va,0) 
 
     ! output
     real*8, intent(out), dimension(nd):: nsc
-    
+
 
     ! internal 
     real*8 :: doubone, dpowint
@@ -237,7 +243,7 @@ subroutine nscore(va, nd, transin, transout, nt, getrank , nsc)
 
 end subroutine nscore
 
-real*8 function backtr(vrgs,nt,vr,vrg,zmin,zmax,ltail,ltpar, utail,utpar)
+double precision function tttbacktr(vrgs,nt,vr,vrg,zmin,zmax,ltail,ltpar, utail,utpar)
     !-----------------------------------------------------------------------
 
     !           Back Transform Univariate Data from Normal Scores
@@ -265,42 +271,48 @@ real*8 function backtr(vrgs,nt,vr,vrg,zmin,zmax,ltail,ltpar, utail,utpar)
 
 
     !-----------------------------------------------------------------------
+    
+    implicit none
 
-    real*8, dimension(nt) :: vr, vrg
-    real*8 ::    ltpar,utpar,lambda, EPSLON, vrgs,zmin,zmax, dpowint, &
-                 cdflo, cdfbt, cpow, cdfhi
-    real:: gcum
-    integer ::   ltail,utail, nt
+    ! input
+    real*8, intent(in), dimension(nt) :: vr, vrg
+    real*8, intent(in) ::    ltpar,utpar, vrgs,zmin,zmax
+    integer, intent(in) ::   ltail,utail, nt
+    
+    ! internal
+    real*8 :: cdflo, cdfbt, cpow, cdfhi,lambda, EPSLON, dpowint, dgcum
+    integer :: j
+
 
     EPSLON=1.0e-20
 
     ! Value in the lower tail?    1=linear, 2=power, (3 and 4 are invalid):
 
     if(vrgs <= vrg(1)) then
-        backtr = vr(1)
-        cdflo  = gcum(vrg(1))
-        cdfbt  = gcum(vrgs)
+        tttbacktr = vr(1)
+        cdflo  = dgcum(vrg(1))
+        cdfbt  = dgcum(vrgs)
         if(ltail == 1) then
-            backtr = dpowint(dble(0.0),cdflo,zmin,vr(1),cdfbt,dble(1.0))
+            tttbacktr = dpowint(dble(0.0),cdflo,zmin,vr(1),cdfbt,dble(1.0))
         else if(ltail == 2) then
             cpow   = 1.0 / ltpar
-            backtr = dpowint(dble(0.0),cdflo,zmin,vr(1),cdfbt,cpow)
+            tttbacktr = dpowint(dble(0.0),cdflo,zmin,vr(1),cdfbt,cpow)
         endif
     
     ! Value in the upper tail?     1=linear, 2=power, 4=hyperbolic:
     
     else if(vrgs >= vrg(nt)) then
-        backtr = vr(nt)
-        cdfhi  = gcum(vrg(nt))
-        cdfbt  = gcum(vrgs)
+        tttbacktr = vr(nt)
+        cdfhi  = dgcum(vrg(nt))
+        cdfbt  = dgcum(vrgs)
         if(utail == 1) then
-            backtr = dpowint(cdfhi,dble(1.0),vr(nt),zmax,cdfbt,dble(1.0))
+            tttbacktr = dpowint(cdfhi,dble(1.0),vr(nt),zmax,cdfbt,dble(1.0))
         else if(utail == 2) then
             cpow   = 1.0 / utpar
-            backtr = dpowint(cdfhi,dble(1.0),vr(nt),zmax,cdfbt,cpow)
+            tttbacktr = dpowint(cdfhi,dble(1.0),vr(nt),zmax,cdfbt,cpow)
         else if(utail == 4) then
-            lambda = (vr(nt)**utpar)*(1.0-gcum(vrg(nt)))
-            backtr = (lambda/(1.0-gcum(vrgs)))**(1.0/utpar)
+            lambda = (vr(nt)**utpar)*(1.0-dgcum(vrg(nt)))
+            tttbacktr = (lambda/(1.0-dgcum(vrgs)))**(1.0/utpar)
         endif
     else
     
@@ -308,18 +320,18 @@ real*8 function backtr(vrgs,nt,vr,vrg,zmin,zmax,ltail,ltpar, utail,utpar)
     
         call dlocate(vrg,nt,1,nt,vrgs,j)
         j = max(min((nt-1),j),1)
-        backtr = dpowint(vrg(j),vrg(j+1),vr(j),vr(j+1),vrgs,dble(1.0))
+        tttbacktr = dpowint(vrg(j),vrg(j+1),vr(j),vr(j+1),vrgs,dble(1.0))
     endif
 
     return 
 
-end function backtr
+end function tttbacktr
 
 
 !---------------------------------------------------------------------------
 !     Subroutine bacnscore (this is the bactr program for bac transformation of normal score variables)
 !---------------------------------------------------------------------------
-subroutine bacnscore(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, zmin,zmax, getrank, va, error)
+subroutine backtr(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, zmin,zmax, getrank, va, error)
     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     !                                                                      %
     ! Copyright (C) 1996, The Board of Trustees of the Leland Stanford     %
@@ -368,21 +380,18 @@ subroutine bacnscore(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, 
     real*8,  intent(in) :: ltpar,utpar, zmin,zmax
     real*8, intent(in),   dimension(nd) :: vnsc
     real*8, intent (in), dimension (nt) :: transin, transout
-
+    !kkkf2py intent(in,copy) :: transin, transout,vnsc
+    !kkkf2py integer intent(hide),depend(transin) :: nt=shape(transin,0)
+    !kkkf2py integer intent(hide),depend(vnsc) :: nd=shape(vnsc,0)
 
     ! output
     real*8, intent(out), dimension(nd):: va
     integer, intent(out) :: error
     
     ! internal 
-    real*8 :: backtr, p, bac
+    real*8 :: tttbacktr, p, bac
     real*8 :: EPSLON
     integer :: i, ierr
-
-    
-
-    real*8, dimension(nd) :: vr,vrg
-
 
     EPSLON=0.00001
 
@@ -405,10 +414,8 @@ subroutine bacnscore(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, 
     ! Read in the transformation table:
 
     do i=1, nt
-        vr(i)  = transin(i)
-        vrg(i) = transout(i)
         if(i > 1) then
-            if(vr(i) < vr(i-1) .OR. vrg(i) < vrg(i-1)) then
+            if(transin(i) < transin(i-1) .OR. transout(i) < transout(i-1)) then
                 error = 100 ! 'ERROR transformation table must be monotonic increasing! '
                 return 
             endif
@@ -417,35 +424,35 @@ subroutine bacnscore(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, 
 
     ! Check for error situation:
 
-    if(utail == 4 .AND. vr(nt) <= 0.0) then
+    if(utail == 4 .AND. transin(nt) <= 0.0) then
         error = 200   ! 'ERROR can not use hyperbolic tail with negative values! - see manual '
         return
     endif
-    if(zmin > vr(1)) then
+    if(zmin > transin(1)) then
         error = 210   ! 'ERROR zmin should be no larger than the first entry in the transformation table '
         return
     endif
-    if(zmax < vr(nt)) then
+    if(zmax < transin(nt)) then
         error = 220   ! 'ERROR zmax should be no less than the last entry in the transformation table '
         return
     endif
 
-    ! Now do the transformation using backtr function
+    ! Now do the transformation using tttbacktr function
 
     do i=1, nd
 
         if(getrank) then
             p = vnsc(i)
-            call gauinv(p,vnsc(i),ierr)
+            call dgauinv(p,vnsc(i),ierr)
         end if
-        bac = backtr(vnsc(i),nt,vr,vrg,zmin,zmax,ltail,ltpar,utail,utpar)
+        bac = tttbacktr(vnsc(i),nt,transin,transout,zmin,zmax,ltail,ltpar,utail,utpar)
         if(bac < zmin) bac = zmin
         if(bac > zmax) bac = zmax
         
         va(i)=bac
-
+        
     end do
-    
+        
     return
 
-end subroutine bacnscore
+end subroutine backtr

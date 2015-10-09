@@ -75,7 +75,7 @@ real*8 function sqdist(x1,y1,z1,x2,y2,z2,ind,maxrot,rotmat)
     
     ! input
     integer, intent(in) ::  maxrot, ind
-    real*8, intent(in):: x1,y1,z1,x2,y2,z2
+    real, intent(in):: x1,y1,z1,x2,y2,z2
     real*8, intent(in), dimension(maxrot,3,3) ::  rotmat
 
     
@@ -101,3 +101,67 @@ real*8 function sqdist(x1,y1,z1,x2,y2,z2,ind,maxrot,rotmat)
       end do
     return
 end function sqdist
+
+
+real*8 function dsqdist(x1,y1,z1,x2,y2,z2,ind,maxrot,rotmat)
+    !-----------------------------------------------------------------------
+    !
+    !    Squared Anisotropic Distance Calculation Given Matrix Indicator
+    !    ***************************************************************
+    !
+    ! This routine calculates the anisotropic distance between two points
+    !  given the coordinates of each point and a definition of the
+    !  anisotropy.
+    !
+    !
+    ! INPUT VARIABLES:
+    !
+    !   x1,y1,z1         Coordinates of first point
+    !   x2,y2,z2         Coordinates of second point
+    !   ind              The rotation matrix to use
+    !   maxrot           The maximum number of rotation matrices dimensioned
+    !   rotmat           The rotation matrices
+    !
+    !
+    !
+    ! OUTPUT VARIABLES:
+    !
+    !   sqdis           The squared distance accounting for the anisotropy
+    !                      and the rotation of coordinates (if any).
+    !
+    !
+    ! NO EXTERNAL REFERENCES
+    !
+    !
+    !-----------------------------------------------------------------------
+     
+    implicit none
+    
+    ! input
+    integer, intent(in) ::  maxrot, ind
+    real*8, intent(in):: x1,y1,z1,x2,y2,z2
+    real*8, intent(in), dimension(maxrot,3,3) ::  rotmat
+
+    
+    ! output
+    ! real*8 :: sqdis
+
+    ! Internal 
+    real*8 :: cont,dx,dy,dz
+    integer  :: i
+
+    !
+    ! Compute component distance vectors and the squared distance:
+    !
+      dx = x1 - x2
+      dy = y1 - y2
+      dz = z1 - z2
+      dsqdist = 0.0
+      do i=1,3
+            cont   = rotmat(ind,i,1) * dx &
+                   + rotmat(ind,i,2) * dy &
+                   + rotmat(ind,i,3) * dz
+            dsqdist = dsqdist + cont * cont
+      end do
+    return
+end function dsqdist

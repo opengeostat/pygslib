@@ -34,10 +34,22 @@ declus = Extension(name = 'pygslib.__declus',
                  sources = ['for_code/declus.f90'] ) 
                  
 dist_transf = Extension(name = 'pygslib.__dist_transf',
-                 sources = ['for_code/dist_transf.f90'] ) 
+                 sources = ['for_code/dist_transf.f90'],
+                 f2py_options=[ 'only:', 'backtr', 
+                                'nscore', 'ns_ttable', ':'] ) 
+"""
+dist_transf = Extension(name = 'pygslib.__dist_transf',
+                 sources = ['for_code/dist_transf.f90'],
+                 f2py_options=[ '--debug-capi',
+                                'only:', 'backtr', 
+                                'nscore', 'ns_ttable', ':'] ) 
+"""
 
 variograms = Extension(name = 'pygslib.__variograms',
                  sources = ['for_code/variograms.f90'] ) 
+                 
+bigaus = Extension(name = 'pygslib.__bigaus',
+                 sources = ['for_code/bigaus.f90'] ) 
 
 # gere use f2py_options=['skip:']+['myfoo']+[':']
 # or       f2py_options=['only:']+['myfoo']+[':'] 
@@ -92,6 +104,7 @@ if __name__ == '__main__':
 		  cmdclass={'test': PyTest},   
 		  install_requires=['numpy', 'pandas', 'matplotlib', 'nose', 'mock'],
 		  ext_modules = [variograms,
+                         bigaus,
                          addcoord,
                          rotscale,
                          read_gslib, 

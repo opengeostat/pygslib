@@ -99,3 +99,65 @@ subroutine gauinv(p,xp,ierr)
 
     return
 end subroutine gauinv
+
+
+subroutine dgauinv(p,xp,ierr)
+    !-----------------------------------------------------------------------
+
+    ! Computes the inverse of the standard normal cumulative distribution
+    ! function with a numerical approximation from : Statistical Computing,
+    ! by W.J. Kennedy, Jr. and James E. Gentle, 1980, p. 95.
+
+
+
+    ! INPUT/OUTPUT:
+
+    !   p    = double precision cumulative probability value: dble(psingle)
+    !   xp   = G^-1 (p) in single precision
+    !   ierr = 1 - then error situation (p out of range), 0 - OK
+
+
+    !-----------------------------------------------------------------------
+    real*8:: xp
+    real*8 :: p0,p1,p2,p3,p4,q0,q1,q2,q3,q4,y,pp,lim,p
+    save   p0,p1,p2,p3,p4,q0,q1,q2,q3,q4,lim
+
+    ! Coefficients of approximation:
+
+    data lim/1.0e-10/
+    data p0/-0.322232431088/,p1/-1.0/,p2/-0.342242088547/, &
+    p3/-0.0204231210245/,p4/-0.0000453642210148/
+    data q0/0.0993484626060/,q1/0.588581570495/,q2/0.531103462366/, &
+    q3/0.103537752850/,q4/0.0038560700634/
+
+    ! Check for an error situation:
+
+    ierr = 1
+    if(p < lim) then
+        xp = -1.0e10
+        return
+    end if
+    if(p > (1.0-lim)) then
+        xp =  1.0e10
+        return
+    end if
+    ierr = 0
+
+    ! Get k for an error situation:
+
+    pp   = p
+    if(p > 0.5) pp = 1 - pp
+    xp   = 0.0
+    if(p == 0.5) return
+
+    ! Approximate the function:
+
+    y  = dsqrt(dlog(1.0/(pp*pp)))
+    xp = real( y + ((((y*p4+p3)*y+p2)*y+p1)*y+p0) / &
+    ((((y*q4+q3)*y+q2)*y+q1)*y+q0) )
+    if(real(p) == real(pp)) xp = -xp
+
+    ! Return with G^-1(p):
+
+    return
+end subroutine dgauinv

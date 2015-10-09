@@ -24,6 +24,7 @@ import __plot
 import __declus
 import __variograms
 import __dist_transf
+import __bigaus
 import platform
 import warnings
 import numpy as np
