@@ -51,6 +51,9 @@ variograms = Extension(name = 'pygslib.__variograms',
 bigaus = Extension(name = 'pygslib.__bigaus',
                  sources = ['for_code/bigaus.f90'] ) 
 
+bicalib = Extension(name = 'pygslib.__bicalib',
+                 sources = ['for_code/bicalib.f90'] ) 
+
 # gere use f2py_options=['skip:']+['myfoo']+[':']
 # or       f2py_options=['only:']+['myfoo']+[':'] 
 # or       f2py_options=['only:', 'myfoo1', 'myfoo2', ':']
@@ -105,6 +108,7 @@ if __name__ == '__main__':
 		  install_requires=['numpy', 'pandas', 'matplotlib', 'nose', 'mock'],
 		  ext_modules = [variograms,
                          bigaus,
+                         bicalib,
                          addcoord,
                          rotscale,
                          read_gslib, 
