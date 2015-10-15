@@ -1,6 +1,6 @@
-subroutine bicalib(nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
+subroutine bicalib(ndp,vval,nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
                   ssqu, avgu, umin, umax, ssqv, avgv, vmin, vmax, &
-				  ucut, vcut, pdfrep, fract, yx, em, vm, nm, b,&
+				  pdfrep, fract, yx, em, vm, nm, b,&
 				  lcdf, error)
 	!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	!                                                                      %
@@ -49,10 +49,11 @@ subroutine bicalib(nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
 	implicit none 
 
 	! input 
-	integer, intent(in) :: nd,ncutu,ncutv
-	real, intent(in), dimension(nd) :: u,v,wt
-	real, intent(in), dimension(0:ncutu+1) :: cutu
-	real, intent(in), dimension(0:ncutv+1) :: cutv
+	integer, intent(in) :: ndp,nd,ncutu,ncutv
+	real, intent(in), dimension(ndp) :: vval        !data
+    real, intent(in), dimension(nd) :: u,v,wt       !auxiliar demse file
+	real, intent(in), dimension(ncutu) :: cutu
+	real, intent(in), dimension(ncutv) :: cutv
 
 
     ! output
@@ -67,15 +68,15 @@ subroutine bicalib(nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
 	real, intent(out), dimension(ncutv+1,ncutu+1) :: pdfrep, yx
 	real, intent(out), dimension(ncutu,0:1) :: em, vm
 	integer, intent(out), dimension(ncutu,0:1) :: nm
-	real, intent(out), dimension(nd,ncutu):: lcdf
-	real, intent(out), dimension(0:ncutu+1) :: ucut
-	real, intent(out), dimension(0:ncutv+1) :: vcut
+	real, intent(out), dimension(ndp,ncutu):: lcdf    
+
 	! internal
 
     real :: pdf(ncutv+1,ncutu+1), soft(ncutu,0:1,nd), softw(ncutu,0:1,nd)
 	integer :: i, j, icls, k, n
 	real :: cum, dev, sum, xd
-
+	real, dimension(0:ncutu+1) :: ucut
+	real, dimension(0:ncutv+1) :: vcut
 
 	! Initialize for some statistics:
 
@@ -166,6 +167,7 @@ subroutine bicalib(nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
     do k=1,ncutv+1
         do j=1,ncutu+1
             pdf(k,j) = 0.0
+            pdfrep(k,j) = 0.0
         end do
     end do
     do i=1,nd
@@ -296,9 +298,9 @@ subroutine bicalib(nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
 
 	! Loop through all observations in the input file:
 
-	do j=1, nd
+	do j=1, ndp
 	    do i=1,ncutv+1
-	        if((v(j) > vcut(i-1)) .AND. (v(j) <= vcut(i))) then
+	        if((vval(j) > vcut(i-1)) .AND. (vval(j) <= vcut(i))) then
 	            icls = i
 				go to 42
 	        endif
@@ -307,7 +309,6 @@ subroutine bicalib(nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
 	    do i=1,ncutu
 	        lcdf(j,i) = yx(icls,i)
 	    end do
-
     end do
 
 end subroutine bicalib
