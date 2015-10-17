@@ -54,6 +54,11 @@ bigaus = Extension(name = 'pygslib.__bigaus',
 bicalib = Extension(name = 'pygslib.__bicalib',
                  sources = ['for_code/bicalib.f90'] ) 
 
+                 
+trans = Extension(name = 'pygslib.__trans',
+                 sources = ['for_code/trans.f90'] ) 
+
+
 # gere use f2py_options=['skip:']+['myfoo']+[':']
 # or       f2py_options=['only:']+['myfoo']+[':'] 
 # or       f2py_options=['only:', 'myfoo1', 'myfoo2', ':']
@@ -109,6 +114,7 @@ if __name__ == '__main__':
 		  ext_modules = [variograms,
                          bigaus,
                          bicalib,
+                         trans,
                          addcoord,
                          rotscale,
                          read_gslib, 
