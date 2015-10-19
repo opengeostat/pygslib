@@ -27,6 +27,7 @@ import __dist_transf
 import __bigaus
 import __bicalib
 import __trans
+import __draw
 import platform
 import warnings
 import numpy as np

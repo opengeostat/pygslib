@@ -57,6 +57,9 @@ bicalib = Extension(name = 'pygslib.__bicalib',
                  
 trans = Extension(name = 'pygslib.__trans',
                  sources = ['for_code/trans.f90'] ) 
+                 
+draw = Extension(name = 'pygslib.__draw',
+                 sources = ['for_code/draw.f90'] ) 
 
 
 # gere use f2py_options=['skip:']+['myfoo']+[':']
@@ -115,6 +118,7 @@ if __name__ == '__main__':
                          bigaus,
                          bicalib,
                          trans,
+                         draw,
                          addcoord,
                          rotscale,
                          read_gslib, 

@@ -170,8 +170,7 @@ subroutine trans(ivtype,nr,vr,wt,no,vo,wo,nx,ny,nz,wx,wy,wz, &
     tcdf = 0
     do j=1, nr
 
-        wtt = 1.0
-        if(iwt >= 1) wtt = wt(j)
+        wtt = wt(j)
 
         if(ivtype == 1) then
             ncut = ncut + 1
@@ -265,8 +264,7 @@ subroutine trans(ivtype,nr,vr,wt,no,vo,wo,nx,ny,nz,wx,wy,wz, &
         end if 
         dvr(num)  = vo(num)
         indx(num) = real(num)
-        wtt = 1.0
-        if(iwtd >= 1) wtt = vo(num)
+        wtt = wo(num)
         dcdf(num) = wtt
         tcdf      = tcdf + wtt
 
