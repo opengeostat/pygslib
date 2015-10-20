@@ -64,7 +64,7 @@ include 'sortem.f90'
 !***********************************************************************
 
 subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
-                    binval, nincls, cl, &
+                    binval, nincls, cl, clwidth, &
                     xpt025, xlqt, xmed, xuqt, xpt975, xmin, &
                     xmax, xcvr, xmen, xvar, xfrmx, dcl, &
                     error)
@@ -127,7 +127,7 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
     ! the statistics
     real*8, intent(out) :: xpt025, xlqt, xmed, xuqt, xpt975, xmin, xmax, xcvr, xmen, xvar, xfrmx, dcl
     ! the actual histogram
-    real*8, intent(out), dimension(ncl) :: binval, nincls, cl
+    real*8, intent(out), dimension(ncl) :: binval, nincls, cl, clwidth
 
     ! internal 
     logical ::  reghist,cumhist,connum
@@ -223,8 +223,17 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
     do i=1,ncl
         binval(i) = 0.0
         nincls(i) = 0
-        cl(i) = thmin + i*dcl
+        cl(i) = thmin + i*dcl            ! the cl is max bin, min bin is cl(i) = thmin + (i-1)*dcl
         if(ilog == 1) cl(i) = 10**cl(i) 
+    end do
+    
+    ! Determining the width interval (constant if not log)
+    
+    clwidth(1) = cl(1)-thmin
+    do i=2,ncl
+        binval(i) = 0.0
+        nincls(i) = 0
+        clwidth(i) = cl(i)-cl(i-1)
     end do
     
     
