@@ -1,6 +1,6 @@
 package:
   name: pygslib
-  version: "0.0.0.3.4"
+  version: "0.0.0.3.5"
 
 source:
   git_rev: v0.0.0.3

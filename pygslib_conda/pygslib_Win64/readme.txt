@@ -27,3 +27,8 @@ if is_win64():
 then run again 
 
 conda build pygslib_W64
+
+#issue with MSVC compiler
+This may not work, instead use MINGW 
+conda install mingw
+conda install libpython  # this may prevent Anaconda to use MINGW instead MSVC
