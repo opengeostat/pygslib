@@ -28,6 +28,7 @@ import __bigaus
 import __bicalib
 import __trans
 import __draw
+import __drillhole
 import platform
 import warnings
 import numpy as np

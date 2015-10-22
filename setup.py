@@ -61,6 +61,8 @@ trans = Extension(name = 'pygslib.__trans',
 draw = Extension(name = 'pygslib.__draw',
                  sources = ['for_code/draw.f90'] ) 
 
+drillhole = Extension(name = 'pygslib.__drillhole',
+                 sources = ['for_code/drillhole.f90'] ) 
 
 # gere use f2py_options=['skip:']+['myfoo']+[':']
 # or       f2py_options=['only:']+['myfoo']+[':'] 
@@ -126,4 +128,5 @@ if __name__ == '__main__':
                          dist_transf,
                          block_covariance,
                          kt3d,
-                         plot])
+                         plot,
+                         drillhole])

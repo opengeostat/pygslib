@@ -9,6 +9,7 @@
 #compiled python modeules
 *.pyc
 *.so
+*.pyd
 
 #temporary files
 *~
