@@ -75,12 +75,14 @@ subroutine cart2ang(x,y,z,azm,dip)
     pi = 3.141592654
 
     if (x/=0. .and. y/= 0.) then 
-        azm= atan2(y,x)
+        azm= atan2(x,y)
         if (azm<0) azm= azm + pi*2
         azm = azm * RAD2DEG
     else
         azm = 0
     end if 
+    
+    dip = -asin(z) * RAD2DEG
     
     return 
 
@@ -115,9 +117,9 @@ subroutine interp_ang1D(azm1,dip1,azm2,dip2,len12,d1, azm,dip)
     call ang2cart(azm2,dip2,x2,y2,z2)
     
     ! interpolate x,y,z
-    x = x1*d1/len12 + x2*(len12-d1)/len12 
-    y = y1*d1/len12 + y2*(len12-d1)/len12
-    z = z1*d1/len12 + z2*(len12-d1)/len12
+    x = x2*d1/len12 + x1*(len12-d1)/len12 
+    y = y2*d1/len12 + y1*(len12-d1)/len12
+    z = z2*d1/len12 + z1*(len12-d1)/len12
     
     ! get back the results as angles
     call cart2ang(x,y,z,azm,dip)
@@ -126,14 +128,107 @@ subroutine interp_ang1D(azm1,dip1,azm2,dip2,len12,d1, azm,dip)
     
 end subroutine interp_ang1D
 
+
 !-----------------------------------------------------------------------
 ! functions to put in assay x,y,z from collar
 !----------------------------------------------------------------------- 
-
+subroutine collr2tbl(nc,idc,xc,yc,zc,nt,idt,xt,yt,zt)
+    
+    ! this works only with sorted arrays
+    
+    implicit none
+    
+    !input
+    integer, intent(in) :: nc,nt
+    integer, intent(in), dimension(nc) :: idc
+    real, intent(in), dimension(nc) :: xc,yc,zc
+    integer, intent(in), dimension(nt) :: idt
+    
+    !output
+    real, intent(out), dimension(nt) :: xt,yt,zt
+    
+    !internal
+    integer :: i,j,actualc
+    
+    actualc=0
+    do i=0,nt
+        ! find the first collar similar to i starting from last found
+        do j=actualc,nc   ! actual will skip already found
+            if (idt(i)==idc(j)) then
+                xt(i)=xc(j)
+                yt(i)=yc(j)
+                zt(i)=zc(j)
+                actualc = j 
+                exit
+            end if
+        end do  
+    end do
+    
+end subroutine collr2tbl
 
 !-----------------------------------------------------------------------
 ! functions to put in assay az, dip from survey
 !----------------------------------------------------------------------- 
+subroutine surv2tbl(ns,ids,lengs,azs,dips,nt,idt,fromt,midt,tot, &
+                    azbs,dipbs,azms,dipms,azes,dipes)
+    
+    ! this works only with sorted arrays
+    
+    implicit none
+    
+    !input
+    integer, intent(in) :: ns,nt
+    integer, intent(in), dimension(ns) :: ids
+    real, intent(in), dimension(ns) :: azs,dips,lengs
+    integer, intent(in), dimension(nt) :: idt
+    real, intent(in), dimension(nt) :: fromt,midt,tot
+    
+    !output (anges at begin, mid and end interval)
+    real, intent(out), dimension(nt) :: azbs,dipbs,azms,dipms,azes,dipes
+    
+    !internal
+    integer :: i,j,actualt
+    real :: a, b, azm1,dip1,azm2,dip2,len12,d1
+    
+    actualt=0
+    do i=1,ns-1
+        ! get the segment [a-b] to test intervals in the table
+        if (ids(i)==ids(i+1)) then
+            a=lengs(i)
+            b=lengs(i+1)
+            azm1 = azs(i)
+            dip1 = dips(i)
+            azm2 = azs(i+1)
+            dip2 = dips(i+1)
+            len12 = lengs(i+1)-lengs(i)
+        else
+            cycle
+        end if
+        
+        ! now loop in the table to test the interval
+        do j=actualt,nt  
+            ! if we are in the right drillhole
+            if (ids(i)==idt(j)) then
+                ! test if we are in the interval, interpolate angles
+                if (fromt(j)>=a .AND. fromt(j)<=b ) then                     
+                    d1= fromt(j)- a
+                    call interp_ang1D(azm1,dip1,azm2,dip2,len12,d1,azbs(j),dipbs(j))
+                end if 
+                if (midt(j)>=a  .AND. midt(j)<=b ) then
+                    d1= midt(j)- a
+                    call interp_ang1D(azm1,dip1,azm2,dip2,len12,d1,azms(j),dipms(j))
+                end if
+                if (tot(j)>=a   .AND. tot(j)<=b ) then
+                    d1= tot(j)- a
+                    call interp_ang1D(azm1,dip1,azm2,dip2,len12,d1,azes(j),dipes(j))
+                end if
+                actualt = j 
+                cycle
+            end if
+        end do  
+    end do
+    
+end subroutine surv2tbl
 
 
 !-----------------------------------------------------------------------
