@@ -247,7 +247,7 @@ end subroutine dsmincurb
 
 
 subroutine desurv1dh(ns,lengs,azs,dips,xc,yc,zc,lpt, &
-                    azt,dipt,xt,yt,zt)
+                    azt,dipt,xt,yt,zt, error)
     ! desrurvey point in a drillhole trace and located at a depth lpt
     
     implicit none
@@ -260,6 +260,7 @@ subroutine desurv1dh(ns,lengs,azs,dips,xc,yc,zc,lpt, &
     
     !output (anges at begin, mid and end interval)
     real, intent(out) :: azt,dipt,xt,yt,zt
+	integer, intent(out) :: error
     
     !internal
     integer :: i,j
@@ -307,9 +308,31 @@ subroutine desurv1dh(ns,lengs,azs,dips,xc,yc,zc,lpt, &
             call dsmincurb(d1,azm1,dip1,azt,dipt,dz,dn,de)
             xt = xa+de
             yt = ya+dn
-            zt = za+dz                    
+            zt = za+dz 
+			
+			return
+			
         end if
   
     end do
+	
+	! the point is beyond the last survey?
+	 error= -100   ! this is a warning... point beyond the last survey point
+	a=lengs(ns)
+	azm1 = azs(ns)
+	dip1 = dips(ns)
+	azt = azm1
+	dipt = dip1
+	if (lpt>=a) then
+		d1= lpt- a
+		!desurvey at interval table 
+		call dsmincurb(d1,azm1,dip1,azt,dipt,dz,dn,de)
+		xt = xa+de
+		yt = ya+dn
+		zt = za+dz 
+		
+		return
+		
+	end if
     
 end subroutine desurv1dh
