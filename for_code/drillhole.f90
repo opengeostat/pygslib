@@ -235,97 +235,71 @@ end subroutine surv2tbl
 ! functions to desurvey assay tables (assuming you have x,y,z,az,dip)
 !----------------------------------------------------------------------- 
 
-!subroutine ds_mincurb(nc,cid,cx,cy,cz,ns,sid,saz,sdip,sleng,na,aid,afrom,ato, &
-!                    ax,ay,az, error)
-!    ! using formulas in http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf
+subroutine dsmincurb(len12,az1,dip1,az2,dip2,dz,dn,de)
+    ! using formulas in http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf
     
-!    implicit none
+    ! here we calculate the deltas only... 
     
-!    ! input
-!    !  collar 
-!    integer, intent(in) :: nc
-!    integer, intent(in), dimension(nc) ::  cid
-!    real, intent(in), dimension(nc) :: cx,cy,cz
-!    !  survey 
-!    integer, intent(in) :: ns
-!    integer, intent(in), dimension(ns) ::  sid
-!    real, intent(in), dimension(ns) :: saz,sdip,sleng !len is length from collar
-!    !  assay
-!    integer, intent(in) :: na
-!    integer, intent(in), dimension(na) ::  aid
-!    real, intent(in), dimension(na) :: afrom,ato
+    implicit none
     
-!    ! output
-!    !  assay coordinates
-!    real, intent(out), dimension(na) :: ax,ay,az, sx,sy,sz   
-
-!    ! internal 
-!    integer :: i
+    ! input
+    real, intent(in) :: len12,az1,dip1,az2,dip2  ! az2,dip2  not used but keep it for other methods
     
-    
-!    ! first desurvey at survey table (information at len 0 required)
-!    ! using formulas in http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf
-!    sx(:)=0
-!    sy(:)=0
-!    sz(:)=0
-    
+    ! output
+    real, intent(out) :: dz,dn,de 
 
 
-!end subroutine ds_mincurb
+    ! internal 
+    real :: i1, a1, i2, a2 , DEG2RAD, rf, dl
+    
+    DEG2RAD=3.141592654/180.0
+    
+    i1 = (90 - dip1) * DEG2RAD
+    a1 = az1 * DEG2RAD
+    
+    i2 = (90 - dip2) * DEG2RAD
+    a2 = az2 * DEG2RAD
+    
+    ! calculate the dog-leg (dl) and the Ratio Factor (rf)
+    dl = acos(cos(i2-i1)-sin(i1)*sin(i2)*(1-cos(a2-a1)))
+    rf = 2*tan(dl/2)/dl 
+    
+    
+    dz = 0.5*len12*(cos(i1)+cos(i2))*rf
+    dn = 0.5*len12*(sin(i1)*cos(a1)+sin(i2)*cos(a2))*rf
+    de = 0.5*len12*(sin(i1)*sin(a1)+sin(i2)*sin(a2))
+    
+    return
+    
+end subroutine dsmincurb
 
 
-!subroutine ds_tang(nc,cid,cx,cy,cz,ns,sid,saz,sdip,sleng,na,aid,afrom,ato, &
-!                    ax,ay,az)
-!    ! using formulas in http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf
+subroutine dstang(len12,az1,dip1,az2,dip2,dz,dn,de)
+    ! using formulas in http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf
     
-!    implicit none
+    ! here we calculate the deltas only... 
     
-!    ! input
-!    !  collar 
-!    integer, intent(in) :: nc
-!    integer, intent(in), dimension(nc) ::  cid
-!    real, intent(in), dimension(nc) :: cx,cy,cz
-!    !  survey 
-!    integer, intent(in) :: ns
-!    integer, intent(in), dimension(ns) ::  sid
-!    real, intent(in), dimension(ns) :: saz,sdip,sleng !len is length from collar
-!    !  assay
-!    integer, intent(in) :: na
-!    integer, intent(in), dimension(na) ::  aid
-!    real, intent(in), dimension(na) :: afrom,ato
+    implicit none
     
-!    ! output
-!    !  assay coordinates
-!    real, intent(out), dimension(na) :: ax,ay,az, sx,sy,sz   
-!    integer, intent(out) :: error
+    ! input
+    real, intent(in) :: len12,az1,dip1,az2,dip2  ! az2,dip2  not used but keep it for other methods
+    
+    ! output
+    real, intent(out) :: dz,dn,de 
 
-!    ! internal 
-!    integer :: i, nsurv, icoll
-!    real :: x,y,z
-    
-    
-    
-!    if (ns<2) then
-!        error=20
-!        return
-!    end if 
 
-!    ! using formulas in http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf
+    ! internal 
+    real :: i1, a1, DEG2RAD
     
-!    ! get collar
-!    isrv = 0
-!    do ic=1, nc
-!        nsurv=1
-!        sx(1)=0.
-!        sy(1)=0.
-!        sz(1)=0.
-!        do i=2, ns
-!            if (sid(i)==sid(i-1)) then 
-!                nsurv=nsurv+1
-!                sz(i)=
-!            end if 
-!        end do
-!    end do
+    DEG2RAD=3.141592654/180.0
     
+    i1 = (90 - dip1) * DEG2RAD
+    a1 = az1 * DEG2RAD
     
-!end subroutine ds_tang
+    dz = len12*cos(i1)
+    dn = len12*sin(i1)*cos(a1)
+    de = len12*sin(i1)*sin(a1)
+    
+    return
+    
+end subroutine dstang
