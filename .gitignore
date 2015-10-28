@@ -6,10 +6,11 @@
 /*.egg
 /*.egg-info
 
-#compiled python modeules
+#compiled python modules/cython precompiled
 *.pyc
 *.so
 *.pyd
+*.c
 
 #temporary files
 *~
