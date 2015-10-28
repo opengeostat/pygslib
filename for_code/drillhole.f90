@@ -214,38 +214,6 @@ subroutine dsmincurb(len12,az1,dip1,az2,dip2,dz,dn,de)
 end subroutine dsmincurb
 
 
-!subroutine dstang(len12,az1,dip1,az2,dip2,dz,dn,de)
-!    ! using formulas in http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf
-    
-!    ! here we calculate the deltas only... 
-    
-!    implicit none
-    
-!    ! input
-!    real, intent(in) :: len12,az1,dip1,az2,dip2  ! az2,dip2  not used but keep it for other methods
-    
-!    ! output
-!    real, intent(out) :: dz,dn,de 
-
-
-!    ! internal 
-!    real :: i1, a1, DEG2RAD
-    
-!    DEG2RAD=3.141592654/180.0
-    
-!    i1 = (90 - dip1) * DEG2RAD
-!    a1 = az1 * DEG2RAD
-    
-!    dz = len12*cos(i1)
-!    dn = len12*sin(i1)*cos(a1)
-!    de = len12*sin(i1)*sin(a1)
-    
-!    return
-    
-!end subroutine dstang
-
-
-
 subroutine desurv1dh(ns,lengs,azs,dips,xc,yc,zc,lpt, &
                     azt,dipt,xt,yt,zt, error)
     ! desrurvey point in a drillhole trace and located at a depth lpt
@@ -336,3 +304,317 @@ subroutine desurv1dh(ns,lengs,azs,dips,xc,yc,zc,lpt, &
 	end if
     
 end subroutine desurv1dh
+
+
+subroutine desurv1dhv2(ns,indbs,indes,lengs,azs,dips,xc,yc,zc,lpt, &
+                    azt,dipt,xt,yt,zt, error)
+    ! desrurvey point in a drillhole trace and located at a depth lpt
+    
+    implicit none
+    
+    !input
+    integer, intent(in) :: ns, indbs, indes            ! indbs, indes are index of the current drillhole in a survey table 
+    real, intent(in), dimension(ns) :: azs,dips,lengs  ! this zc... is from collar
+    real, intent(in) :: lpt
+    real, intent(in) :: xc,yc,zc
+    
+    !output (anges at begin, mid and end interval)
+    real, intent(out) :: azt,dipt,xt,yt,zt
+	integer, intent(out) :: error
+    
+    !internal
+    integer :: i,j
+    real :: a,b,azm1,dip1,azm2,dip2,len12,d1, &
+            EPSLON,xa,ya,za,xb,yb,zb,dz,dn,de
+    
+    EPSLON=1.0e-4
+
+    
+    if (lengs(indbs)/=0) then
+        error = 10000 ! we dont want survey without survey at zero
+        return 
+    end if 
+
+    do i=indbs,indes-1
+        ! get the segment [a-b] to test interval
+        
+        a=lengs(i)
+        b=lengs(i+1)
+        azm1 = azs(i)
+        dip1 = dips(i)
+        azm2 = azs(i+1)
+        dip2 = dips(i+1)
+        len12 = lengs(i+1)-lengs(i)
+        ! desurvey at survey table
+        if (lengs(i)>=-EPSLON .AND. lengs(i)<=EPSLON ) then !zero interval?
+            xa = xc
+            ya = yc
+            za = zc
+            ! desurvey interval at zurvey... table
+            call dsmincurb(len12,azm1,dip1,azm2,dip2,dz,dn,de)
+            xb = xa+de
+            yb = ya+dn
+            zb = za-dz
+        else
+            xa = xb
+            ya = yb
+            za = zb
+            ! desurvey interval at zurvey... table
+            call dsmincurb(len12,azm1,dip1,azm2,dip2,dz,dn,de)
+            xb = xa+de
+            yb = ya+dn
+            zb = za-dz
+        end if
+        
+        ! test if we are in the interval, interpolate angles
+        if (lpt>=a  .AND. lpt<b ) then
+            d1= lpt- a
+            call interp_ang1D(azm1,dip1,azm2,dip2,len12,d1,azt,dipt)
+            !desurvey at interval table 
+            call dsmincurb(d1,azm1,dip1,azt,dipt,dz,dn,de)
+            xt = xa+de
+            yt = ya+dn
+            zt = za+dz 
+			
+			return
+			
+        end if
+  
+    end do
+	
+	! the point is beyond the last survey?
+	error= -100   ! this is a warning... point beyond the last survey point
+	a=lengs(indes)
+	azm1 = azs(indes)
+	dip1 = dips(indes)
+	azt = azm1
+	dipt = dip1
+	if (lpt>=a) then
+		d1= lpt- a
+		!desurvey at interval table 
+		call dsmincurb(d1,azm1,dip1,azt,dipt,dz,dn,de)
+		xt = xa+de
+		yt = ya+dn
+		zt = za+dz 
+		
+		return
+		
+	end if
+    
+end subroutine desurv1dhv2
+
+subroutine desurv(nc,idc,xc,yc,zc, &
+                  ns,ids,lengs,azs,dips, &
+                  nt,idt,fromt,tot, &
+                  azbt,dipbt,xbt,ybt,zbt, &
+                  azmt,dipmt,xmt,ymt,zmt, &
+                  azet,dipet,xet,yet,zet, &
+                  isok, error)
+    ! a drillhole interval table using collar and azimuth 
+    ! this will call nt times desurv1dh
+    ! the data is sorted by id
+    
+    implicit none
+    
+    ! input 
+    !   - collar 
+    integer, intent(in) :: nc
+    integer, intent(in), dimension(nc) :: idc
+    real, intent(in), dimension(nc) :: xc,yc,zc
+    !   - survey
+    integer, intent(in) :: ns
+    integer, intent(in), dimension(ns) :: ids
+    real, intent(in), dimension(ns) :: lengs,azs,dips
+    !   - interval table
+    integer, intent(in) :: nt
+    integer, intent(in), dimension(nt) :: idt
+    real, intent(in), dimension(nt) :: fromt,tot
+
+    ! output 
+    integer, intent(out) :: error
+    integer, intent(out), dimension(nt) :: isok
+    real, intent(out), dimension(nt) :: azbt,dipbt,xbt,ybt,zbt, &
+                                       azmt,dipmt,xmt,ymt,zmt, &
+                                       azet,dipet,xet,yet,zet  
+    ! internal
+    integer :: jc,js,jt,indbs,indbt,indes,indet, inds, indt
+    real :: mid
+     
+
+    error = 0
+ 
+    indbt = 1
+    indet = 1 
+    inds = 1
+    indt = 1   
+    isok(:) = 0
+    do jc=1, nc
+        indbs = -1
+        indes = -1
+        ! get first index of the collar jc in survey 
+        do js=inds, ns
+            ! find index beging and end for the actual collar
+            if (idc(jc)==ids(js)) then 
+                inds = js
+                indbs = js
+                exit
+            end if
+        end do
+        ! get las index of the collar jc in survey 
+        do js=inds, ns
+            ! find index beging and end for the actual collar
+            if (idc(jc)/=ids(js)) then 
+                exit
+            else 
+                inds = js
+                indes = js
+            end if
+        end do
+        
+        ! print *, 'index', indbs, indes, idc(jc)
+                
+        if (indbs==-1 .OR. indes==-1) then
+            ! do not desurvey this drillhole
+            error = - 10  ! collar without survey, table not desurveyed
+            cycle
+        end if
+                
+        ! with the index indbs and indes we desurvey each collar
+        do jt=indt, nt
+            ! the table id is similar to collar? Then desurvey
+            if (idc(jc)==idt(jt)) then
+ 
+                !desurvey this point
+
+                indt = jt ! do not loop again before this index
+                isok (jt) = 1
+                ! print *, jt, indt, isok(indt), idc(jc)
+                
+                ! desurvey front
+                call desurv1dhv2(ns,indbs,indes,lengs,azs,dips, &
+                           xc(jc),yc(jc),zc(jc),fromt(jt), &
+                           azbt(jt),dipbt(jt),xbt(jt),ybt(jt),zbt(jt), &
+                           error)
+                if (error>0) return ! there was an error desurveying 
+                ! desurvey mid interv
+                mid = fromt(jt) + (tot(jt)-fromt(jt))/2.
+                call desurv1dhv2(ns,indbs,indes,lengs,azs,dips, &
+                           xc(jc),yc(jc),zc(jc),mid, &
+                           azmt(jt),dipmt(jt),xmt(jt),ymt(jt),zmt(jt), &
+                           error)
+                if (error>0) return ! there was an error desurveying 
+                ! desurvey end interv
+                call desurv1dhv2(ns,indbs,indes,lengs,azs,dips, &
+                           xc(jc),yc(jc),zc(jc),tot(jt), &
+                           azet(jt),dipet(jt),xet(jt),yet(jt),zet(jt), &
+                           error)
+                if (error>0) return ! there was an error desurveying 
+            end if 
+        
+ 
+        end do
+                
+    end do
+end subroutine desurv
+
+
+subroutine desurvmid(nc,idc,xc,yc,zc, &
+                  ns,ids,lengs,azs,dips, &
+                  nt,idt,fromt,tot, &
+                  azmt,dipmt,xmt,ymt,zmt, &
+                  isok, error)
+    ! a drillhole interval table using collar and azimuth 
+    ! this will call nt times desurv1dh
+    ! the data is sorted by id
+    
+    implicit none
+    
+    ! input 
+    !   - collar 
+    integer, intent(in) :: nc
+    integer, intent(in), dimension(nc) :: idc
+    real, intent(in), dimension(nc) :: xc,yc,zc
+    !   - survey
+    integer, intent(in) :: ns
+    integer, intent(in), dimension(ns) :: ids
+    real, intent(in), dimension(ns) :: lengs,azs,dips
+    !   - interval table
+    integer, intent(in) :: nt
+    integer, intent(in), dimension(nt) :: idt
+    real, intent(in), dimension(nt) :: fromt,tot
+
+    ! output 
+    integer, intent(out) :: error
+    integer, intent(out), dimension(nt) :: isok
+    real, intent(out), dimension(nt) :: azmt,dipmt,xmt,ymt,zmt
+    ! internal
+    integer :: jc,js,jt,indbs,indbt,indes,indet, inds, indt
+    real :: mid
+     
+
+    error = 0
+ 
+    indbt = 1
+    indet = 1 
+    inds = 1
+    indt = 1   
+    isok(:) = 0
+    do jc=1, nc
+        indbs = -1
+        indes = -1
+        ! get first index of the collar jc in survey 
+        do js=inds, ns
+            ! find index beging and end for the actual collar
+            if (idc(jc)==ids(js)) then 
+                inds = js
+                indbs = js
+                exit
+            end if
+        end do
+        ! get las index of the collar jc in survey 
+        do js=inds, ns
+            ! find index beging and end for the actual collar
+            if (idc(jc)/=ids(js)) then 
+                exit
+            else 
+                inds = js
+                indes = js
+            end if
+        end do
+        
+        ! print *, 'index', indbs, indes, idc(jc)
+                
+        if (indbs==-1 .OR. indes==-1) then
+            ! do not desurvey this drillhole
+            error = - 10  ! collar without survey, table not desurveyed
+            cycle
+        end if
+                
+        ! with the index indbs and indes we desurvey each collar
+        do jt=indt, nt
+            ! the table id is similar to collar? Then desurvey
+            if (idc(jc)==idt(jt)) then
+ 
+                !desurvey this point
+
+                indt = jt ! do not loop again before this index
+                isok (jt) = 1
+                ! print *, jt, indt, isok(indt), idc(jc)
+                
+                ! desurvey mid interv
+                mid = fromt(jt) + (tot(jt)-fromt(jt))/2.
+                call desurv1dhv2(ns,indbs,indes,lengs,azs,dips, &
+                           xc(jc),yc(jc),zc(jc),mid, &
+                           azmt(jt),dipmt(jt),xmt(jt),ymt(jt),zmt(jt), &
+                           error)
+                if (error>0) return ! there was an error desurveying 
+            end if 
+        
+ 
+        end do
+                
+    end do
+end subroutine desurvmid
+
+
+
