@@ -147,6 +147,10 @@ if __name__ == '__main__':
     from Cython.Build import cythonize
     drillhole = CYExtension( 'pygslib.drillhole', 
                             ['cython_code/drillhole.pyx']) 
+                                
+    blockmodel = CYExtension( 'pygslib.blockmodel', 
+                            ['cython_code/blockmodel.pyx']) 
+                            
     setup(name=name,
           version=version,
           description= description,
@@ -163,5 +167,5 @@ if __name__ == '__main__':
           tests_require=['numpy', 'pandas', 'nose', 'mock'],
           cmdclass={'test': PyTest},   
           install_requires=['numpy', 'pandas', 'nose', 'mock'],
-          ext_modules = cythonize(drillhole))
+          ext_modules = [drillhole, blockmodel])
 
