@@ -263,11 +263,10 @@ cdef class Blockmodel:
     """ 
     cdef readonly int nx,ny,nz
     cdef readonly double xorg,yorg,zorg,dx,dy,dz
-        
+    cdef readonly object bmtable
     
     def __cinit__(self,nx,ny,nz,xorg,yorg,zorg,dx,dy,dz):
         assert nx>0 and ny>0 and nz>0 
-        assert xorg>0 and yorg>0 and zorg
         assert dx>0 and dy>0 and dz>0
         
         self.nx=nx
@@ -281,4 +280,84 @@ cdef class Blockmodel:
         self.dx=dx
         self.dy=dy
         self.dz=dz
+        
+    cpdef set_block_size(self, float dx,float dy, float dz):
+        """
+        """
+        assert dx>0 and dy>0 and dz>0
+        self.dx=dx
+        self.dy=dy
+        self.dz=dz
+        
             
+    cpdef set_origin(self, float xorg,float yorg, float zorg):
+        """
+        """
+        assert xorg>0 and yorg>0 and zorg>0
+        self.xorg=xorg
+        self.yorg=yorg
+        self.zorg=zorg
+        
+    cpdef set_rcl(self, int nx,int ny, int nz):
+        """
+        """
+        assert nx>0 and ny>0 and nz>0
+        assert nx*ny*nz==self.nx*self.ny*self.nz
+        
+        self.nx=nx
+        self.ny=ny
+        self.nz=nz
+
+    
+    cpdef set_blocks(self, object bmtable):
+        """
+        """
+        cdef bint has_ijk, has_ixyz, has_cxyz 
+        
+        assert isinstance(bmtable, pd.DataFrame), "bmtable is not a pandas DataFrame"
+        
+        # test the type of block model
+        has_ijk = 'IJK' in bmtable.columns
+        has_ixyz = set(('IX', 'IY', 'IZ')).issubset(bmtable.columns) 
+        has_cxyz = set(('XC', 'YC', 'ZC')).issubset(bmtable.columns)
+        
+        assert has_ijk or has_ixyz or has_cxyz , "Fields IJK or IX,IY,IZ or XC,YC,ZC defined in the input bmtable"
+        
+        self.bmtable=bmtable
+
+    cpdef calc_ixyz_fromxyz(self, bint overwrite=False):
+        
+        cdef bint has_ixyz 
+        
+        assert self.bmtable!=None; 'Error: No bmtable loaded or created yet'
+        assert set(('XC', 'YC', 'ZC')).issubset(self.bmtable.columns) ; 'Error: No XC,YC,ZC coordinates in bmtable'
+        if overwrite==False:
+            has_ixyz = set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns) 
+            assert self == False, 'IX,IY,IZ already exist in bmtable, set overwrite=True to overwrite'
+
+        self.bmtable['IX']= x2ix (self.bmtable['XC'].values.astype('float'), self.xorg, self.dx)
+        self.bmtable['IY']= x2ix (self.bmtable['YC'].values.astype('float'), self.yorg, self.dy)
+        self.bmtable['IZ']= x2ix (self.bmtable['ZC'].values.astype('float'), self.zorg, self.dz)
+        
+        
+        
+    cpdef calc_ijk(self, bint overwrite=False):
+        
+        assert self.bmtable!=None; 'Error: No bmtable loaded or created yet'
+        assert set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns) ; 'Error: No IX,IY,IZ indices in bmtable'
+        if overwrite==False:
+            assert 'IJK' not in self.bmtable.columns, 'IJK already exist in bmtable, set overwrite=True to overwrite'
+        
+        self.bmtable['IJK'] =  ind2ijk(self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'], self.nx,self.ny,self.nz)
+
+    cpdef calc_ixyz_fromijk(self, bint overwrite=False):
+        
+        cdef bint has_ixyz
+
+        assert self.bmtable!=None; 'Error: No bmtable loaded or created yet'
+        assert 'IJK' in self.bmtable.columns ; 'Error: No IJK index in bmtable'
+        if overwrite==False:
+            has_ixyz = set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns) 
+            assert self == False, 'IX,IY,IZ already exist in bmtable, set overwrite=True to overwrite'
+        
+        self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'] =  ijk2ind(self.bmtable['IJK'],self.nx,self.ny,self.nz)
