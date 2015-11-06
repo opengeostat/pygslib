@@ -150,6 +150,9 @@ if __name__ == '__main__':
                                 
     blockmodel = CYExtension( 'pygslib.blockmodel', 
                             ['cython_code/blockmodel.pyx']) 
+      
+    vtktools = CYExtension( 'pygslib.vtktools', 
+                            ['cython_code/vtktools.pyx']) 
                             
     setup(name=name,
           version=version,
@@ -167,5 +170,5 @@ if __name__ == '__main__':
           tests_require=['numpy', 'pandas', 'nose', 'mock'],
           cmdclass={'test': PyTest},   
           install_requires=['numpy', 'pandas', 'nose', 'mock'],
-          ext_modules = [drillhole, blockmodel])
+          ext_modules = [drillhole, blockmodel,vtktools])
 

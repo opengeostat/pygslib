@@ -261,9 +261,13 @@ cdef class Blockmodel:
  
     
     """ 
-    cdef readonly int nx,ny,nz
-    cdef readonly double xorg,yorg,zorg,dx,dy,dz
-    cdef readonly object bmtable
+    cdef readonly int nx,ny,nz  # nrows,cols,levels
+    cdef readonly int ndx,ndy,ndz  # ndiscretization
+    cdef readonly bint randisc     # is the discretization random?
+    cdef readonly bint subcell     # has subcells? 
+    cdef readonly bint percent     # has percent?  Can be both percent+subcell 
+    cdef readonly double xorg,yorg,zorg,dx,dy,dz # origin of coordinate + block size
+    cdef readonly object bmtable    # the actual block model 
     
     def __cinit__(self,nx,ny,nz,xorg,yorg,zorg,dx,dy,dz):
         assert nx>0 and ny>0 and nz>0 
@@ -361,3 +365,6 @@ cdef class Blockmodel:
             assert self == False, 'IX,IY,IZ already exist in bmtable, set overwrite=True to overwrite'
         
         self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'] =  ijk2ind(self.bmtable['IJK'],self.nx,self.ny,self.nz)
+        
+    
+        
