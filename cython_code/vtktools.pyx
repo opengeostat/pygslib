@@ -19,6 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import vtk
 from IPython.display import Image
+from libc.math cimport sin
+from libc.math cimport cos
+cimport numpy as np
+import numpy as np
 
 
 def vtk_show(renderer, width=400, height=300, 
@@ -27,7 +31,8 @@ def vtk_show(renderer, width=400, height=300,
     """
     
     vtk_show(renderer, 
-             width=400, 
+             width=400, from libc.math cimport sin
+from libc.math cimport cos
              height=300,
              camera_position=None,
              camera_focalpoint=None)
@@ -341,3 +346,179 @@ cpdef vtk_raycasting(surface, pSource, pTarget):
         pointsIntersection.append(_tup)
 
     return intersect, pointsIntersection, pointsVTKIntersectionData
+    
+
+
+# ----------------------------------------------------------------------
+#   Functions for point querying 
+# ----------------------------------------------------------------------
+cpdef pointquering(surface, 
+                   double azm,
+                   double dip,
+                   np.ndarray [double, ndim=1] x, 
+                   np.ndarray [double, ndim=1] y,
+                   np.ndarray [double, ndim=1] z,
+                   int test):
+    """
+    pointquering(surface, azm, dip, x, y, z, test)
+    
+    Find points inside, over and below surface/solid
+        
+    
+    Parameters
+    ----------
+    surface : VTK polydata
+           this may work with any 3D object..., no necessarily triangles   
+    azm, dip: float
+           rotation defining the direction we will use to test the points
+           azm 0 will point north and dip positive meas downward direction
+           (like surface drillholes)
+    x,y,z   : 1D array of floats
+           coordinates of the points to be tested
+    test    : integer
+           1 test inside closed surface. Here we use 
+             vtkOBBTree::InsideOrOutside. Closed surface are required
+           2 test 'above' surface 
+           3 test 'below' surface 
+           4 test 'inside' surface (the surface can be open)
+    
+    Returns
+    -------
+    inside : 1D array of integers 
+        Indicator of point inclusion with values [0,1]  
+        0 means that the point is not inside, above or below surface
+        1 means that the point is inside, above or below surface
+    
+    See Also
+    --------
+    vtk_raycasting
+    
+    Notes
+    -----
+    The test 1 requires the surface to be close, to find points between
+    two surfaces you can use test=4
+    The test, 2,3 and 4 use raycasting and rays orientation are defined
+    by azm and dip values. The results will depend on this direction,
+    for example, to find the points between two open surfaces you may 
+    use ray direction perpendicular to surfaces  
+    If a surface is closed the points over and below a surface will 
+    include points inside surface
+    
+    """
+    
+    
+    assert x.shape[0]==y.shape[0]==z.shape[0]
+    
+    cdef int intersect, intersect2
+    cdef float razm
+    cdef float rdip
+    cdef float DEG2RAD
+    cdef np.ndarray [long, ndim=1] inside = np.zeros([x.shape[0]], dtype= int)
+    cdef np.ndarray [double, ndim=1] p0 = np.empty([3], dtype= float)
+    cdef np.ndarray [double, ndim=1] p1 = np.empty([3], dtype= float)
+    cdef np.ndarray [double, ndim=1] p2 = np.empty([3], dtype= float)
+    
+    
+    DEG2RAD=3.141592654/180.0
+    razm = azm * DEG2RAD
+    rdip = -dip * DEG2RAD
+    
+    
+    # construct obbTree: see oriented bounding box (OBB) trees
+    # see http://gamma.cs.unc.edu/SSV/obb.pdf    
+    obbTree = vtk.vtkOBBTree()
+    obbTree.SetDataSet(surface)
+    obbTree.BuildLocator()
+    pointsVTKintersection = vtk.vtkPoints()
+
+    # test each point
+    for i in range(x.shape[0]):
+        
+        #create vector of the point tested (target)
+        p0[0]=x[i]
+        p0[1]=y[i]
+        p0[2]=z[i]  
+
+        if test == 1:
+            # The return value is +1 if outside, -1 if inside, and 0 if undecided.
+            intersect=obbTree.InsideOrOutside(p0)
+            if intersect==-1: 
+                inside[i]=1
+            
+            continue
+
+        if test > 1:
+            # in this case we use the ray intersection from point tested
+            # and a source point located at infinit in the azm, dip dir
+            
+            # convert degree to rad and correct sign of dip
+
+
+            # calculate the coordinate of an unit vector
+            p1[0] = sin(razm) * cos(rdip)  # x
+            p1[1] = cos(razm) * cos(rdip)  # y 
+            p1[2] = sin(rdip)              # z    
+            
+            if test == 2:
+                # rescale to infinite 
+                p1[:]=p1[:]*1e+15
+                # and translate
+                p1[0]=p1[0]+x[i]
+                p1[1]=p1[1]+y[i]
+                p1[2]=p1[2]+z[i]
+                
+                # 0 if no intersections, -1 if point 'p0' lies inside 
+                # closed surface, +1 if point 'a0' lies outside the closed surface
+                intersect=obbTree.IntersectWithLine(p0, p1, None, None)
+                inside[i]=abs(intersect)
+                
+                continue
+                
+            if test == 3:
+                # invert and rescale to infinite 
+                p1[:]=-p1[:]*1e+15
+                # and translate
+                p1[0]=p1[0]+x[i]
+                p1[1]=p1[1]+y[i]
+                p1[2]=p1[2]+z[i]
+                
+                # 0 if no intersections, -1 if point 'p0' lies inside 
+                # closed surface, +1 if point 'a0' lies outside the closed surface
+                intersect=obbTree.IntersectWithLine(p0, p1, None, None)
+                inside[i]=abs(intersect)
+        
+                continue
+        
+            if test == 4:
+                # invert and rescale to infinite 
+                p1[:]=p1[:]*1e+15
+                p2[:]=-p1[:]
+                # and translate
+                p1[0]=p1[0]+x[i]
+                p1[1]=p1[1]+y[i]
+                p1[2]=p1[2]+z[i]
+                
+                p2[0]=p2[0]+x[i]
+                p2[1]=p2[1]+y[i]
+                p2[2]=p2[2]+z[i]
+                
+                # 0 if no intersections, -1 if point 'p0' lies inside 
+                # closed surface, +1 if point 'a0' lies outside the closed surface
+                intersect = obbTree.IntersectWithLine(p0, p1, None, None)
+                intersect2 = obbTree.IntersectWithLine(p0, p2, None, None)
+                if intersect!=0 and intersect2!=0: 
+                    inside[i]=1
+                else: 
+                    inside[i]=0
+                    
+                continue
+    
+    
+    # Prepare a ray to see where our rays are pointing in the output 
+    p1[0] = sin(razm) * cos(rdip)  # x
+    p1[1] = cos(razm) * cos(rdip)  # y 
+    p1[2] = sin(rdip)              # z   
+    p1[:]=p1[:]*1e+2
+    
+
+    return inside, p1
