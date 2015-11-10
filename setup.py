@@ -167,7 +167,7 @@ if __name__ == '__main__':
           packages=find_packages(exclude=['examples', 'tests']),
           include_package_data=True,
           zip_safe=False,
-          tests_require=['numpy', 'pandas', 'nose', 'mock'],
+          tests_require=['numpy', 'pandas>=0.17', 'nose', 'mock'],
           cmdclass={'test': PyTest},   
           install_requires=['numpy', 'pandas', 'nose', 'mock'],
           ext_modules = [drillhole, blockmodel,vtktools])

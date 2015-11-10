@@ -432,6 +432,7 @@ cpdef desurv1dh(int indbs,
     assert ats[indbs]<EPSLON, 'first survey > 0 at %d' % indbs
 
     for i in range (indbs,indes):
+        
         # get the segment [a-b] to test interval
         a=ats[i]
         b=ats[i+1]
@@ -446,17 +447,19 @@ cpdef desurv1dh(int indbs,
             ya = yc
             za = zc
             # desurvey interval at zurvey... table
-
+            
             dz,dn,de = dsmincurb(len12,azm1,dip1,azm2,dip2)
 
             xb = xa+de
             yb = ya+dn
             zb = za-dz
+            
         else:
             xa = xb
             ya = yb
             za = zb
             # desurvey interval at zurvey... table
+            
             dz,dn,de = dsmincurb(len12,azm1,dip1,azm2,dip2)
             xb = xa+de
             yb = ya+dn
@@ -488,9 +491,9 @@ cpdef desurv1dh(int indbs,
         d1= lpt- a
         # desurvey at interval table 
         dz,dn,de = dsmincurb(d1,azm1,dip1,azt,dipt)
-        xt = xa+de
-        yt = ya+dn
-        zt = za-dz 
+        xt = xb+de
+        yt = yb+dn
+        zt = zb-dz 
         
         warnings.warn('\n point beyond the last survey point at %s' % indes)
     else:
@@ -651,15 +654,17 @@ cdef class Drillhole:
                 
         """  
         
+        # Warning:  hasnans() is for pandas 0.16, hasnans for pandas 0.17
+        
         #check collar
         # null values in collar
-        if self.collar['BHID'].hasnans():
+        if self.collar['BHID'].hasnans:
             raise NameError('Non defined BHID in collar table')
-        if self.collar['XCOLLAR'].hasnans():
+        if self.collar['XCOLLAR'].hasnans:
             raise NameError('Non defined XCOLLAR in collar table')
-        if self.collar['YCOLLAR'].hasnans():
+        if self.collar['YCOLLAR'].hasnans:
             raise NameError('Non defined YCOLLAR in collar table')
-        if self.collar['ZCOLLAR'].hasnans():
+        if self.collar['ZCOLLAR'].hasnans:
             raise NameError('Non defined ZCOLLAR in collar table')
         if self.collar['XCOLLAR'].dtypes!='float64':
             raise NameError('XCOLLAR in collar table != float64')            
@@ -669,14 +674,15 @@ cdef class Drillhole:
             raise NameError('ZCOLLAR in collar table != float64')
 
         #check SURVEY
-        # null values in survey
-        if self.survey['BHID'].hasnans():
+        # null values in survey   
+        
+        if self.survey['BHID'].hasnans:
             raise NameError('Non defined BHID in survey table')
-        if self.survey['AT'].hasnans():
+        if self.survey['AT'].hasnans:
             raise NameError('Non defined AT in survey table')
-        if self.survey['AZ'].hasnans():
+        if self.survey['AZ'].hasnans:
             raise NameError('Non defined AZ in survey table')
-        if self.survey['DIP'].hasnans():
+        if self.survey['DIP'].hasnans:
             raise NameError('Non defined DIP in survey table')
         if self.survey['AT'].dtypes!='float64':
             raise NameError('AT in survey table != float64')            
@@ -685,8 +691,12 @@ cdef class Drillhole:
         if self.survey['AZ'].dtypes!='float64':
             raise NameError('AZ in survey table != float64')
         
+        #Check using same data type for BHID
+        if self.survey['BHID'].dtypes!=self.collar['BHID'].dtypes:
+            raise NameError("self.survey['BHID'].dtypes!=self.collar['BHID'].dtypes")
+        
         #check survey without values: at=0
-        self.survey.sort(columns=['BHID','AT'], inplace=True)
+        self.survey.sort_values(by=['BHID','AT'], inplace=True)
         error = self.__checkAt0(self.survey['BHID'].values, self.survey['AT'].values)
         if error>-1:
             raise NameError('Firts inteval AT!=0 at survey table, positiom %d' %error) 
@@ -756,17 +766,21 @@ cdef class Drillhole:
         
         #check table
         # null values in table bhid
-        if self.table[table_name]['BHID'].hasnans():
+        if self.table[table_name]['BHID'].hasnans:
             raise NameError('Non defined BHID in %s' % table_name)
         # null values in From/To
-        if self.table[table_name]['FROM'].hasnans():
+        if self.table[table_name]['FROM'].hasnans:
             raise NameError('Non defined FROM in %s' % table_name)
-        if self.table[table_name]['TO'].hasnans():
+        if self.table[table_name]['TO'].hasnans:
             raise NameError('Non defined TO in %s' % table_name)
         if self.table[table_name]['FROM'].dtypes!='float64':
             raise NameError('FROM in table %s != float64' % table_name)
         if self.table[table_name]['TO'].dtypes!='float64':
             raise NameError('TO in table %s != float64' % table_name)
+
+        #Check using same data type for BHID
+        if self.table[table_name]['BHID'].dtypes!=self.collar['BHID'].dtypes:
+            raise NameError("self.table[%s]['BHID'].dtypes!=self.collar['BHID'].dtypes" % table_name)
 
         # TODO: check overlaps and table relationship
 
@@ -887,15 +901,15 @@ cdef class Drillhole:
         assert table_name in self.table, "table %s not exist" % table_name
         
         
-        cdef np.ndarray[object, ndim=1] idc = self.collar['BHID'].values
+        cdef idc = self.collar['BHID'].values
         cdef np.ndarray[double, ndim=1] xc = self.collar['XCOLLAR'].values
         cdef np.ndarray[double, ndim=1] yc = self.collar['YCOLLAR'].values
         cdef np.ndarray[double, ndim=1] zc = self.collar['ZCOLLAR'].values
-        cdef np.ndarray[object, ndim=1] ids = self.survey['BHID'].values
+        cdef ids = self.survey['BHID'].values
         cdef np.ndarray[double, ndim=1] ats = self.survey['AT'].values
         cdef np.ndarray[double, ndim=1] azs = self.survey['AZ'].values
         cdef np.ndarray[double, ndim=1] dips = self.survey['DIP'].values
-        cdef np.ndarray[object, ndim=1] idt =self.table[table_name]['BHID'].values
+        cdef idt =self.table[table_name]['BHID'].values
         cdef np.ndarray[double, ndim=1] fromt = self.table[table_name]['FROM'].values
         cdef np.ndarray[double, ndim=1] tot = self.table[table_name]['TO'].values 
                          
