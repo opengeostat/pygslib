@@ -17,11 +17,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 '''
 
-
+import vtk
 cimport numpy as np
 import numpy as np
 import pandas as pd
 import warnings
+import pygslib
 
 #-------------------------------------------------------------------
 #  General functions
@@ -54,7 +55,7 @@ cpdef x2ix(np.ndarray [double, ndim=1] x,
     Returns
     -------
     ix : 1D array of integers
-        Index of the blocks where points with coordinets x are located
+        Index of the blocks where points with coordinates x are located
     
     See Also
     --------
@@ -77,6 +78,7 @@ cpdef x2ix(np.ndarray [double, ndim=1] x,
     
     assert  xorg < x.min(), '\nError:\n x.min < xorg, values out of grid. Redefine xorg<= %f ' %  x.min()
     
+    
     # output 
     cdef np.ndarray [long, ndim=1, cast=True] ix= np.empty([x.shape[0]], dtype= int) 
     
@@ -85,6 +87,58 @@ cpdef x2ix(np.ndarray [double, ndim=1] x,
                        # 
 
     return ix
+
+cpdef ix2x(np.ndarray [long, ndim=1] ix,
+           double xorg,
+           double dx):
+    """
+    ix2x(ix, xorg,dx)
+    
+    Calculates the block coordinate (x, y or z) 
+    
+    Return array of coordinates x calculated from indices ix.    
+    
+    
+    Parameters
+    ----------
+    ix   : 1D array of positive integers 
+           arbitrary index ix (or iy, or iz)
+    xorg : float
+           origin of coordinate (lower left corner of the block) 
+    dx   : float 
+           size of the block
+    
+    Returns
+    -------
+    x  : 1D array of floats
+        Coordinates x corresponding to index ix 
+    
+    See Also
+    --------
+    x2ix
+    
+    Notes
+    -----
+    The index start at zero (first block)
+    If there is a point i with coordinate x[i] < xorg  and error will be 
+    raised
+    
+    
+    Examples
+    --------
+  
+
+    """
+    
+    assert  ix.min()>=0 , '\nError: ix<0' 
+    
+    # output 
+    cdef np.ndarray [double, ndim=1, cast=True] x= np.empty([ix.shape[0]], dtype= float) 
+    
+    x = ix[:]*dx+xorg+dx/2
+                        
+
+    return x
 
 
 cpdef ind2ijk(np.ndarray [long, ndim=1] ix,
@@ -287,7 +341,19 @@ cdef class Blockmodel:
         
     cpdef set_block_size(self, float dx,float dy, float dz):
         """
-        """
+        set_block_size(dx,dy,dz) 
+                
+        Set block sizes  
+                        
+        Examples
+        --------
+        
+        >>> myblockmodel.set_block_size(dx=10,dy=10,dz=5)
+                
+        """   
+        
+        
+        
         assert dx>0 and dy>0 and dz>0
         self.dx=dx
         self.dy=dy
@@ -296,7 +362,17 @@ cdef class Blockmodel:
             
     cpdef set_origin(self, float xorg,float yorg, float zorg):
         """
-        """
+        set_origin(xorg,yorg, zorg)
+                
+        Set the block model origin of coordinate. This is the lower 
+        left corner of the lower left block (not-the centroid). 
+                        
+        Examples
+        --------
+        
+        >>> myblockmodel.set_origin(xorg=-5,yorg=-5, zorg=0)
+                
+        """   
         assert xorg>0 and yorg>0 and zorg>0
         self.xorg=xorg
         self.yorg=yorg
@@ -304,9 +380,28 @@ cdef class Blockmodel:
         
     cpdef set_rcl(self, int nx,int ny, int nz):
         """
-        """
-        assert nx>0 and ny>0 and nz>0
-        assert nx*ny*nz==self.nx*self.ny*self.nz
+        set_rcl(nx,ny,nz)
+                
+        Set number of blocks at row, call, level
+        
+        Two conditions apply: 
+        a)  nx,ny and nz may be greater than zero   
+        b)  nx*ny*nz may be equal to the actual number of blocks
+        
+        Note
+        ----
+        This function basically reorder the blocks along rows, columns  
+        and levels without changing the total number of blocks. 
+                        
+        Examples
+        --------
+        
+        >>> myblockmodel.set_rcl(nx=10,ny=10,nz=10)
+        >>> myblockmodel.set_rcl(nx=10,ny=100,nz=1)
+                
+        """ 
+        assert nx>0 and ny>0 and nz>0, 'nx<=0 or ny<=0 or nz<=0'
+        assert nx*ny*nz==self.nx*self.ny*self.nz, 'nx*ny*nz may be equal to {}'.format(self.nx*self.ny*self.nz)
         
         self.nx=nx
         self.ny=ny
@@ -315,7 +410,35 @@ cdef class Blockmodel:
     
     cpdef set_blocks(self, object bmtable):
         """
-        """
+        set_blocks(bmtable)
+                
+        Assign an external block model stored in a Pandas DataFrame
+        table.  
+        
+        One or many conditions apply 
+        a)  The blockmodel has IJK field  
+        b)  Or/And has IX,IY and IZ fields
+        b)  Or/And has XC,YC and ZC fields
+        
+        Note
+        ----
+        One or the above conditions is required. In case that two or 
+        more of the special fields mentioned above are defined the 
+        validity of the fields is not verified, for example the
+        valid IJK representation of fields IX,IY and IZ is not tested.
+        
+        Parameters
+        ----------
+        bmtable : Pandas DataFrame object 
+            block model with special coordinate or index fields
+           
+                        
+        Examples
+        --------
+        >>> bmtable=pd.DataFrame({'IJK':[1,2,3,4]})
+        >>> myblockmodel.set_blocks(bmtable)
+                
+        """ 
         cdef bint has_ijk, has_ixyz, has_cxyz 
         
         assert isinstance(bmtable, pd.DataFrame), "bmtable is not a pandas DataFrame"
@@ -328,43 +451,227 @@ cdef class Blockmodel:
         assert has_ijk or has_ixyz or has_cxyz , "Fields IJK or IX,IY,IZ or XC,YC,ZC defined in the input bmtable"
         
         self.bmtable=bmtable
+        
+    cpdef delete_blocks(self):
+        """
+        delete_blocks()
+                
+        Delete the block model table   
+        
+        
+        Note
+        ----
+        This functions makes Blockmodel.bmtable=None. The data will
+        be preserved in any external instance of bmtable.   
+                                   
+        Examples
+        --------
+        >>> myblockmodel.delete_blocks()
+        >>> print myblockmodel.bmtable
+        None
+                
+        """ 
+               
+        self.bmtable=None
 
     cpdef calc_ixyz_fromxyz(self, bint overwrite=False):
+        """
+        calc_ixyz_fromxyz(overwrite=False)
+                
+        Calculate the IX, IY, IZ fields from XC, YC, ZC coordinates
+        If IX, IY, IZ exist and overwrite=True the existing values 
+        will be overwritten. 
         
+        
+        Parameters
+        ----------
+        overwrite : Boolean, default False           
+                        
+        Examples
+        --------
+        >>> myblockmodel.calc_ixyz_fromxyz()
+        >>> myblockmodel.calc_ixyz_fromxyz(overwrite=True)
+                
+        """ 
         cdef bint has_ixyz 
         
-        assert self.bmtable!=None; 'Error: No bmtable loaded or created yet'
-        assert set(('XC', 'YC', 'ZC')).issubset(self.bmtable.columns) ; 'Error: No XC,YC,ZC coordinates in bmtable'
+        assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
+        assert set(('XC', 'YC', 'ZC')).issubset(self.bmtable.columns), 'Error: No XC,YC,ZC coordinates in bmtable'
         if overwrite==False:
             has_ixyz = set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns) 
-            assert self == False, 'IX,IY,IZ already exist in bmtable, set overwrite=True to overwrite'
+            assert has_ixyz==False, 'IX,IY,IZ already exist in bmtable, set overwrite=True to overwrite'
 
         self.bmtable['IX']= x2ix (self.bmtable['XC'].values.astype('float'), self.xorg, self.dx)
         self.bmtable['IY']= x2ix (self.bmtable['YC'].values.astype('float'), self.yorg, self.dy)
         self.bmtable['IZ']= x2ix (self.bmtable['ZC'].values.astype('float'), self.zorg, self.dz)
         
+    cpdef calc_xyz_fromixyz(self, bint overwrite=False):
+        """
+        calc_xyz_fromixyz(overwrite=False)
+                
+        Calculate the XC, YC, ZC coordinates from IX, IY, IZ indices
+        If XC, YC, ZC exist and overwrite=True the existing values 
+        will be overwritten. 
         
+        
+        Parameters
+        ----------
+        overwrite : Boolean, default False           
+                        
+        Examples
+        --------
+        >>> myblockmodel.calc_xyz_fromixyz()
+        >>> myblockmodel.calc_xyz_fromixyz(overwrite=True)
+                
+        """ 
+        cdef bint has_xyz 
+        
+        assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
+        assert set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns), 'Error: No IX,IY,IZ coordinates in bmtable'
+        if overwrite==False:
+            has_ixyz = set(('XC', 'YC', 'ZC')).issubset(self.bmtable.columns) 
+            assert has_ixyz==False, 'XC,YC,ZC already exist in bmtable, set overwrite=True to overwrite'
+
+        self.bmtable['XC']= ix2x (self.bmtable['IX'].values.astype('int'), self.xorg, self.dx)
+        self.bmtable['YC']= ix2x (self.bmtable['IY'].values.astype('int'), self.yorg, self.dy)
+        self.bmtable['ZC']= ix2x (self.bmtable['IZ'].values.astype('int'), self.zorg, self.dz)
         
     cpdef calc_ijk(self, bint overwrite=False):
+        """
+        calc_ijk(overwrite=False)
+                
+        Calculate the IJK field from IX, IY, IZ indices
+        If IJK exist and overwrite=True the existing values 
+        will be overwritten. 
         
-        assert self.bmtable!=None; 'Error: No bmtable loaded or created yet'
-        assert set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns) ; 'Error: No IX,IY,IZ indices in bmtable'
+        
+        Parameters
+        ----------
+        overwrite : Boolean, default False           
+                        
+        Examples
+        --------
+        >>> myblockmodel.calc_ijk()
+        >>> myblockmodel.calc_ijk(overwrite=True)
+                
+        """         
+        assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
+        assert set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns),  'Error: No IX,IY,IZ indices in bmtable'
         if overwrite==False:
             assert 'IJK' not in self.bmtable.columns, 'IJK already exist in bmtable, set overwrite=True to overwrite'
         
         self.bmtable['IJK'] =  ind2ijk(self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'], self.nx,self.ny,self.nz)
 
     cpdef calc_ixyz_fromijk(self, bint overwrite=False):
+        """
+        calc_ixyz_fromijk(overwrite=False)
+                
+        Calculate the IX, IY, IZ fields from IJK index
+        If IX, IY, IZ exist and overwrite=True the existing values 
+        will be overwritten. 
         
+        
+        Parameters
+        ----------
+        overwrite : Boolean, default False           
+                        
+        Examples
+        --------
+        >>> myblockmodel.calc_ixyz_fromijk()
+        >>> myblockmodel.calc_ixyz_fromijk(overwrite=True)
+                
+        """         
         cdef bint has_ixyz
 
-        assert self.bmtable!=None; 'Error: No bmtable loaded or created yet'
-        assert 'IJK' in self.bmtable.columns ; 'Error: No IJK index in bmtable'
+        assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
+        assert 'IJK' in self.bmtable.columns, 'Error: No IJK index in bmtable'
         if overwrite==False:
             has_ixyz = set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns) 
-            assert self == False, 'IX,IY,IZ already exist in bmtable, set overwrite=True to overwrite'
+            assert has_ixyz==False, 'IX,IY,IZ already exist in bmtable, set overwrite=True to overwrite'
         
-        self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'] =  ijk2ind(self.bmtable['IJK'],self.nx,self.ny,self.nz)
+        self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'] =  ijk2ind(self.bmtable['IJK'].values,self.nx,self.ny,self.nz)
+
+    cpdef create_IJK(self, bint overwrite=False):
         
-    
+        """
+        create_IJK(overwrite=False)
+                
+        Creates a new block set consisting in IJK indices.  
+          
+        Notes
+        -----        
+        A new set of blocks will be created if there is not block 
+        defined. If there are blocks in the model and overwrite==True
+        the blocks will be removed first. 
+        
+        Examples
+        --------
+        >>> create_IJK(overwrite=True)
+                
+        """        
+        
+        if overwrite==False:
+             assert self.bmtable is None, 'Error: bmtable already exist, set overwrite=True to overwrite'
+        
+        self.bmtable=pd.DataFrame({'IJK': np.arange(self.nx*self.ny*self.nz, dtype=int)})
+
+        
+    cpdef blockinsurface(self, 
+                    object surface,
+                    str field, 
+                    double azm=0, 
+                    double dip =90,  
+                    int test=1, 
+                    bint overwrite=False):
+        
+        """
+        blockinsurface(surface, field, azm, dip, test, overwrite=False)
+                
+        Creates blocks given a VTK surface (polydata) depending on a 
+        test criteria: 
+          
+        Parameters
+        ----------
+        surface : VTK polydata
+               this may work with any 3D object..., no necessarily triangles   
+        field : str
+               Name of the new field with selection results
+        azm, dip: float, default 0, 90
+               rotation defining the direction we will use to test the points
+               azm 0 will point north and dip positive meas downward direction
+               (like surface drillholes)
+        test    : integer, default 1
+               1 test inside closed surface. Here we use 
+                 vtkOBBTree::InsideOrOutside. Closed surface are required
+               2 test 'above' surface 
+               3 test 'below' surface 
+               4 test 'inside' surface (the surface can be open)
+         overwrite : boolean
+               overwrite flag, if true and field exist in bmtable the 
+               values will be overwritten
+        
+        Notes
+        -----
+        This function calls vtktools.pointquering for all the points 
+        existing in the block model. The function is not optimized
+        for large model. 
+        
+        A new set of blocks will be created if there is not block 
+        defined. If there are blocks in the model and overwrite==True
+        the blocks will be removed first. 
+        
+        Examples
+        --------
+        >>> fillblocks(surface, azm, dip, test, overwrite=False)
+                
+        """         
+        
+        assert isinstance(surface, vtk.vtkPolyData), 'Error: No bmtable loaded or created yet'
+        assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
+        assert set(('XC', 'YC', 'ZC')).issubset(self.bmtable.columns), 'Error: No XC,YC,ZC coordinates in bmtable'
+        
+        if overwrite==False:
+             assert field not in self.bmtable.columns, 'Error: field {} already exist in bmtable, set overwrite=True to overwrite'.format(field)
+        
+        self.bmtable[field], p1=pygslib.vtktools.pointquering(surface, azm, dip, self.bmtable['XC'].values, self.bmtable['YC'].values, self.bmtable['ZC'].values, test)
         

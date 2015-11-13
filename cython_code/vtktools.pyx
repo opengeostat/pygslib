@@ -25,14 +25,13 @@ cimport numpy as np
 import numpy as np
 
 
-def vtk_show(renderer, width=400, height=300, 
+cpdef vtk_show(renderer, width=400, height=300, 
              camera_position=None, 
              camera_focalpoint=None):
     """
     
     vtk_show(renderer, 
-             width=400, from libc.math cimport sin
-from libc.math cimport cos
+             width=400, 
              height=300,
              camera_position=None,
              camera_focalpoint=None)
@@ -89,7 +88,7 @@ from libc.math cimport cos
     return Image(data)
 
 
-def loadSTL(filenameSTL):
+cpdef loadSTL(filenameSTL):
     """
     
     loadSTL(filenameSTL)
@@ -127,7 +126,7 @@ def loadSTL(filenameSTL):
     
     return polydata
     
-def polydata2renderer(polydata, color=(1.,0.,0.), 
+cpdef polydata2renderer(polydata, color=(1.,0.,0.), 
                       opacity=1, background=(1.,1.,1.)):    
     """
     
@@ -180,7 +179,7 @@ def polydata2renderer(polydata, color=(1.,0.,0.),
     return VtkRenderer
 
 
-def addPoint(renderer, p, radius=1.0, color=(0.0, 0.0, 0.0)):
+cpdef addPoint(renderer, p, radius=1.0, color=(0.0, 0.0, 0.0)):
     """
     addPoint(renderer, 
              p, 
@@ -230,9 +229,12 @@ def addPoint(renderer, p, radius=1.0, color=(0.0, 0.0, 0.0)):
     renderer.AddActor(actor)
     
     return renderer
+
+
+
     
     
-def addLine(renderer, p1, p2, color=(0.0, 0.0, 1.0)):
+cpdef addLine(renderer, p1, p2, color=(0.0, 0.0, 1.0)):
     """
     addLine(renderer, 
              p1,
@@ -522,3 +524,26 @@ cpdef pointquering(surface,
     
 
     return inside, p1
+
+
+cpdef getbounds(polydata):    
+    """
+    
+    boundingbox(polydata)
+    
+    Returns the bounding box limits x,y,z minimum and maximum
+    
+    
+    Parameters
+    ----------
+    polydata : VTK polydata
+    
+        
+    Returns
+    -------
+    xmin,xmax, ymin,ymax, zmin,zmax : float
+        The geometry bounding box 
+    
+    """
+    
+    return polydata.GetBounds()
