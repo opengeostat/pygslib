@@ -675,3 +675,42 @@ cdef class Blockmodel:
         
         self.bmtable[field], p1=pygslib.vtktools.pointquering(surface, azm, dip, self.bmtable['XC'].values, self.bmtable['YC'].values, self.bmtable['ZC'].values, test)
         
+    cpdef blocks2vtkRectilinearGrid(self, str path):
+        """
+        blocks2vtkRectilinearGrid(self, str path)
+                
+        Export blocks of a full grid to a vtkRectilinearGrid file. 
+          
+        Parameters
+        ----------
+        path : string 
+               file name and path, without extension. The file extension
+               (*.vtr) will be added automatically.  
+ 
+        Notes
+        -----
+        This will only work for full grid, in other words, if all the 
+        nx*ny*nz are defined.
+        
+        All the fields defined in the block model will be exported
+        
+        Examples
+        --------
+        >>> blocks2vtkRectilinearGrid('myfile')
+                
+        """   
+        cdef np.ndarray [double, ndim=1] x,y,z
+        
+        assert  self.bmtable.shape[0]==self.nx*self.ny*self.nz, 'Error: this work only with full grid, ex. bmtable.shape[0]==nx*ny*nz'
+                
+        x= np.linspace(self.xorg, self.xorg+self.nx*self.dx, self.nx+1)
+        y= np.linspace(self.yorg, self.yorg+self.ny*self.dy, self.ny+1)
+        z= np.linspace(self.zorg, self.zorg+self.nz*self.dz, self.nz+1)
+        
+        data = {}
+            
+        for i in self.bmtable.columns:
+            data[i]=self.bmtable[i].values
+        
+        pygslib.vtktools.grid2vtkfile(path, x, y, z, data)
+        

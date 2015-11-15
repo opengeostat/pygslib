@@ -23,7 +23,7 @@ from libc.math cimport sin
 from libc.math cimport cos
 cimport numpy as np
 import numpy as np
-
+import pyevtk.hl
 
 cpdef vtk_show(renderer, width=400, height=300, 
              camera_position=None, 
@@ -547,3 +547,56 @@ cpdef getbounds(polydata):
     """
     
     return polydata.GetBounds()
+
+
+cpdef points2vtkfile(str path,                    
+                   np.ndarray [double, ndim=1] x, 
+                   np.ndarray [double, ndim=1] y,
+                   np.ndarray [double, ndim=1] z,
+                   data):
+    """
+    
+    bpoints2vtkfile(path, x,y,z, data)
+    
+    Save points in vtk file
+    
+    
+    Parameters
+    ----------
+    
+    
+        
+    Returns
+    -------
+    
+    
+    """
+    
+    pyevtk.hl.pointsToVTK(path, x, y, z, data = data) 
+    
+    
+cpdef grid2vtkfile(str path,                    
+                   np.ndarray [double, ndim=1] x, 
+                   np.ndarray [double, ndim=1] y,
+                   np.ndarray [double, ndim=1] z,
+                   data):
+    """
+    
+    grid2vtkfile(path, x,y,z, data)
+    
+    save grid in vtk file if x,y,z are 1D it saves VtkRectilinearGrid,
+    if are 3D it saves VtkStructuredGrid
+    
+    
+    Parameters
+    ----------
+    
+    
+        
+    Returns
+    -------
+    
+    
+    """
+
+    pyevtk.hl.gridToVTK(path, x, y, z, cellData=data)
