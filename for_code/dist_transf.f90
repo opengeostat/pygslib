@@ -62,10 +62,112 @@ include 'gcum.f90'
 ! 
 !***********************************************************************
 
+
+
+subroutine anatbl(va,wt, nd, despike, transin, transout, error)
+    !-----------------------------------------------------------------------
+
+    !                Compute Normal Scores transformation table
+    !                for gaussian anamorphosis
+    !                ***********************************
+
+    ! PROGRAM NOTES:
+
+    !   1. Create a transformation table from data or reference distribution
+    !   2. This is almost the same to ns_ttable but:
+    !         - wight factor: wtfac = 1.0/(twt+1) 
+    !         - y is calculated upper bin: wt_ns(j) = cp
+
+    ! Version from Adrian martinez Vargas, 2015
+
+    !-----------------------------------------------------------------------
+
+    implicit none    
+
+    ! input 
+    real*8, intent(in), dimension (nd) :: va, wt
+    integer, intent(in) :: nd
+    integer, optional :: despike   ! warning present(despike) is always true
+
+    ! output
+    real*8, intent (out), dimension (nd)  :: transin, transout
+    integer, intent(out) :: error
+
+
+    ! internal
+    real*8 :: EPSLON
+    real*8 :: ixv (12)
+    real*8, dimension (nd) :: vr, wt_ns
+    real*8 ::  twt,wtfac,w,cp,vrg,acorni, p
+    real :: vrrg
+    real*8, dimension(1) :: c,d,e,f,g,h    ! these are dummies for dsortem
+    integer :: KORDEI, MAXOP1, i, istart, iend, ierr, j
+   
+    if (.NOT. present(despike)) despike=-1
+
+    EPSLON=1.0e-6
+
+
+    do i=1,MAXOP1
+        ixv(i) = 0.0
+    end do
+    ixv(1) = 69069
+    do i=1,1000
+        p = real(acorni(ixv, KORDEI))
+    end do
+
+
+    ! calculat total wight
+    twt=0
+    do i=1, nd
+        if(wt(nd) <= 1.0e-10) then
+               error = 10         ! Wight too small review your data and try again  
+            return 
+        end if
+        wt_ns(i) = wt(i)
+        
+        if (despike>0) then 
+            vr(i) = va(i) + acorni(ixv, KORDEI)*dble(EPSLON)
+        else 
+            vr(i) = va(i) 
+        end if
+        twt = twt + wt_ns(i)
+    end do
+
+    if(nd <= 1 .OR. real(twt) <= EPSLON) then
+        error = 100       !'ERROR: too few data'
+        return
+    endif
+
+    ! Sort data by value:
+
+    istart = 1
+    iend   = nd
+    call dsortem(istart,iend,vr,1,wt_ns,c,d,e,f,g,h)
+
+    ! Compute the cumulative probabilities and write transformation table
+
+    wtfac = 1.0/(twt+1)
+    cp    = 0.0
+    do j=istart,iend
+        w     =  wtfac*wt_ns(j)
+        cp    =  cp + w
+        wt_ns(j) = cp
+        call gauinv(wt_ns(j),vrrg,ierr)
+        vrg = dble(vrrg)
+        transin(j) = vr(j)
+        transout(j) = vrg 
+    end do
+
+end subroutine anatbl
+
+
+
+
 !---------------------------------------------------------------------------
 !     Subroutine ns_ttable (this one part of the nscore program)
 !---------------------------------------------------------------------------
-subroutine ns_ttable(va,wt, nd, transin, transout, error)
+subroutine ns_ttable(va,wt, nd, despike, transin, transout, error)
     ! 
     ! This code is based on GSLIB nscore  
     !
@@ -87,6 +189,7 @@ subroutine ns_ttable(va,wt, nd, transin, transout, error)
     ! input 
     real*8, intent(in), dimension (nd) :: va, wt
     integer, intent(in) :: nd
+    integer, optional :: despike   ! warning present(despike) is always true
 
     ! output
     real*8, intent (out), dimension (nd)  :: transin, transout
@@ -101,6 +204,7 @@ subroutine ns_ttable(va,wt, nd, transin, transout, error)
     real*8, dimension(1) :: c,d,e,f,g,h    ! these are dummies for dsortem
     integer :: KORDEI, MAXOP1, i, istart, iend, ierr, j
    
+    if (.NOT. present(despike)) despike=-1
 
     EPSLON=1.0e-6
 
@@ -126,7 +230,11 @@ subroutine ns_ttable(va,wt, nd, transin, transout, error)
             return 
         end if
         wt_ns(i) = wt(i)
-        vr(i) = va(i) + acorni(ixv, KORDEI)*dble(EPSLON)
+        if (despike>0) then 
+            vr(i) = va(i) + acorni(ixv, KORDEI)*dble(EPSLON)
+        else 
+            vr(i) = va(i) 
+        end if
         twt = twt + wt_ns(i)
     end do
 
@@ -160,6 +268,9 @@ subroutine ns_ttable(va,wt, nd, transin, transout, error)
     end do
 
 end subroutine ns_ttable
+
+
+
 
 subroutine nscore(va, nd, transin, transout, nt, getrank , nsc) 
 
@@ -456,3 +567,4 @@ subroutine backtr(vnsc, nd, transin, transout, nt, ltail,utail, ltpar,utpar, zmi
     return
 
 end subroutine backtr
+

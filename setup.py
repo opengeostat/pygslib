@@ -81,7 +81,7 @@ if __name__ == '__main__':
                      
     dist_transf = Extension(name = 'pygslib.__dist_transf',
                      sources = ['for_code/dist_transf.f90'],
-                     f2py_options=[ 'only:', 'backtr', 
+                     f2py_options=[ 'only:', 'backtr', 'anatbl',
                                     'nscore', 'ns_ttable', ':'] ) 
     # to exclude some fortran code use this: f2py_options=['only:', 'myfoo1', 'myfoo2', ':']  
     """
