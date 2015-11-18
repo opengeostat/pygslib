@@ -34,6 +34,7 @@ requirements:
     - matplotlib
     - nose
     - mock
+    - scipy
 
   run:
     - python
@@ -42,6 +43,7 @@ requirements:
     - matplotlib
     - nose
     - mock
+    - scipy
 
 test:
   # Python imports
@@ -63,6 +65,7 @@ test:
     - nose
     - numpy
     - pandas
+    - scipy
     # Put any additional test requirements here.  For example
     # - nose
 

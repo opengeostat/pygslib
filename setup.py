@@ -153,6 +153,10 @@ if __name__ == '__main__':
       
     vtktools = CYExtension( 'pygslib.vtktools', 
                             ['cython_code/vtktools.pyx']) 
+
+    nonlinear = CYExtension( 'pygslib.nonlinear', 
+                            ['cython_code/nonlinear.pyx']) 
+
                             
     setup(name=name,
           version=version,
@@ -167,8 +171,8 @@ if __name__ == '__main__':
           packages=find_packages(exclude=['examples', 'tests']),
           include_package_data=True,
           zip_safe=False,
-          tests_require=['numpy', 'pandas>=0.17', 'nose', 'mock'],
+          tests_require=['numpy', 'pandas>=0.17', 'nose', 'mock', 'scipy'],
           cmdclass={'test': PyTest},   
-          install_requires=['numpy', 'pandas', 'nose', 'mock'],
-          ext_modules = [drillhole, blockmodel,vtktools])
+          install_requires=['numpy', 'pandas', 'nose', 'mock', 'scipy'],
+          ext_modules = [drillhole, blockmodel,vtktools,nonlinear])
 

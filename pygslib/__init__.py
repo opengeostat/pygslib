@@ -31,6 +31,7 @@ import __draw
 import drillhole
 import blockmodel
 import vtktools
+import nonlinear
 import platform
 import warnings
 import numpy as np
