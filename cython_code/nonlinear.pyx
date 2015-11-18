@@ -229,27 +229,107 @@ cpdef expand_anamor(np.ndarray [double, ndim=1] PCI,
     
     return Z
 
-cpdef Y2Z(np.ndarray [double, ndim=1] Y,
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# from here fix it and test it 
+cpdef ctrpoints(np.ndarray [double, ndim=1] z,
+                np.ndarray [double, ndim=1] y,
+                np.ndarray [double, ndim=1] ze):
+    """
+    zamin, yamin, zamax, yamax, zpmin, ypmin, zpmax, ypmax = ctrpoints (z, y, ze)
+
+    Infer some control point using the following rules:
+       The admissible minimum and maximum are just logic values defined 
+       by user or nature of the problem, ex. grade between 0 and 100 
+       percent. Here we define it as the data maximum and minimum. 
+
+       The practical minimum and maximum are selected as follow
+
+         - are within admissible interval
+         - are within data minimum and maximum values
+         - are within interval where ze do not fluctuates
+    
+    Parameters
+    ----------
+    z, y : 1D array of floats
+        experimental transformation table 
+    ze : 1D array of floats
+        z values obtained with polynomial expansion of y, in other 
+        ze may be calculated as expand_anamor(PCI,H,r=1) 
+
+    Returns
+    -------
+    zamin, yamin, zamax, yamax, zpmin, ypmin, zpmax, ypmax : floats
+        Control points
+      
+    
+    """
+
+    cdef float zamax, yamax, zamin, yamin
+    cdef float zpmax, ypmax, zpmin, ypmin
+
+
+    # initialize authorized interval as data max, min 
+    zamax=z[y.shape[0]-1]
+    yamax=y[y.shape[0]-1]
+    zamin=z[0]
+    yamin=y[0]
+
+    # get the practical maximum interval
+    zpmax=z[y.shape[0]-1]
+    ypmax=y[y.shape[0]-1]
+    for i in range (np.argmin(abs(y)), y.shape[0]-1):
+        if ze[i]>ze[i+1]:
+            zpmax=z[i]
+            ypmax=y[i]
+            break 
+
+    # get the practical minimum interval
+    zpmin=z[0]
+    ypmin=y[0]
+    for i in range(np.argmin(abs(y)), 1, -1):
+        if ze[i-1]>ze[i]:
+            zpmin=z[i]
+            ypmin=y[i]
+            break 
+
+    return  zamin, yamin, zamax, yamax, zpmin, ypmin, zpmax, ypmax 
+     
+
+
+cpdef Y2Z(np.ndarray [double, ndim=1] y,
         np.ndarray [double, ndim=1] PCI,
+        float ypmin,
+        float zpmin,
+        float ypmax,
+        float zpmax,
+        float yamin,
+        float zamin,
+        float yamax,
+        float zamax,
         float r=1):
     """ 
-    Y2Z( Y, PCI, r=1)
+    Y2Z( y, PCI, ypmin,zpmin,ypmax,zpmax,yamin,zamin,yamax,zamax, r=1)
     
     Gaussian (Y) to raw (Z) transformation 
     
     This is a convenience functions. It calls H=recurrentH(K,Y) and
     then returns Z = expand_anamor(PCI,H,r). K is deduced from 
-    PCI.shape[0].
+    PCI.shape[0]. It also linearly interpolate the values
+    out of the control points. 
     
     
     Parameters
     ----------
     PCI : 1D array of floats
         hermite coefficient
-    Y : 1D array of floats
+    y : 1D array of floats
         Gaussian values
     r : float, default 1
         the support effect
+    ypmin, zpmin, ypmax, zpmax : float
+         z, y practical minimum and maximum
+    yamin, zamin, yamax,zamax : float
+         z, y authorized minimum and maximum
 
     Returns
     -------
@@ -267,37 +347,61 @@ cpdef Y2Z(np.ndarray [double, ndim=1] Y,
     
     cdef int K
     cdef np.ndarray [double, ndim=2] H
+    cdef np.ndarray [double, ndim=1] Z
+    cdef np.ndarray [double, ndim=1] zapmin= np.array([zamin,zpmin])
+    cdef np.ndarray [double, ndim=1] yapmin= np.array([yamin,ypmin])
+    cdef np.ndarray [double, ndim=1] zapmax= np.array([zpmax,zamax])
+    cdef np.ndarray [double, ndim=1] yapmax= np.array([ypmax,yamax])
+
     
     K=PCI.shape[0]-1
-    H=recurrentH(Y,K)
+    H=recurrentH(y,K)
+    Z=expand_anamor(PCI,H,r)
     
+    # fix some values based on the control points
+    for i in range(y.shape[0]): 
+        if y[i]<=ypmin:  
+            Z[i]=np.interp(y[i], xp=yapmin, fp=zapmin)
+            continue 
+            
+        if y[i]>=ypmax:  
+            Z[i]=np.interp(y[i], xp=yapmax, fp=zapmax)
+            continue 
+        
     #and the new Z values with the existing PCI
-    return expand_anamor(PCI,H,r)
+    return Z
 
-# Test from here
 
 cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
                  np.ndarray [double, ndim=1] zm,
                  np.ndarray [double, ndim=1] ym,
-                 float zmin,
-                 float zmax):
+                 float ypmin,
+                 float zpmin,
+                 float ypmax,
+                 float zpmax,
+                 float yamin,
+                 float zamin,
+                 float yamax,
+                 float zamax):
     """ 
-    Z2Y_linear(z,zm,ym,zmin=None,zmax=None)
+    Z2Y_linear(z,zm,ym,ypmin,zpmin,ypmax,zpmax,yamin,zamin,yamax,zamax)
      
     Raw (Z) to Gaussian (Y) transformation 
     
     Given a set of pairs [zm,ym] representing an experimental 
-    gaussian anamorphosis, this functions linearly y values 
-    corresponding to z within the [zmin, zmax] interval
+    gaussian anamorphosis, this functions linearly interpolate y values 
+    corresponding to z within the [zamin, zamax] intervals
     
     Parameters
     ----------
-    PCI : 1D array of floats
-        hermite coefficient
-    Y : 1D array of floats
-        Gaussian values
-    r : float, default 1
-        the support effect
+    z : 1D array of floats
+        raw (Z) values where we want to know Gaussian (Y) equivalent
+    zm,ym : 1D array of floats
+        tabulated [Z,Y] values
+    ypmin, zpmin, ypmax, zpmax : float
+         z, y practical minimum and maximum
+    yamin, zamin, yamax,zamax : float
+         z, y authorized minimum and maximum
 
     Returns
     -------
@@ -313,10 +417,29 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
   
     """    
     
-    #assert this if not created internally... (zm has to be an increasing sequence)
-    assert np.all(np.diff(zm) >= 0), 'zm has to be an increasing sequence'
+    cdef np.ndarray [double, ndim=1] Y=np.zeros(z.shape[0])
+    cdef np.ndarray [double, ndim=1] zapmin= np.array([zamin,zpmin])
+    cdef np.ndarray [double, ndim=1] yapmin= np.array([yamin,ypmin])
+    cdef np.ndarray [double, ndim=1] zapmax= np.array([zpmax,zamax])
+    cdef np.ndarray [double, ndim=1] yapmax= np.array([ypmax,yamax])
+
     
-    return np.interp(z, zm, ym, left=zmin, right=zmax)
+    # fix some values based on the control points
+    for i in range(z.shape[0]): 
+        if z[i]<=zpmin:  
+            Y[i]=np.interp(z[i], xp=zapmin, fp=yapmin)
+            continue 
+            
+        if z[i]>=zpmax:  
+            Y[i]=np.interp(z[i], xp=zapmax, fp=yapmax)
+            continue 
+        
+        if zpmax>z[i]>zpmin:  
+            Y[i]=np.interp(z[i], xp=zm, fp=ym)
+            continue
+        
+    return Y
+    
 
 # ----------------------------------------------------------------------
 #   Extra Functions for support and information effect  
