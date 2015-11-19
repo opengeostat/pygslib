@@ -126,7 +126,8 @@ subroutine block_covariance(xdb,ydb,zdb, ndb, &
     
     ! get the rotation matrix
     do is=1,nst
-        call setrot(ang1(is),ang2(is),ang3(is),anis1(is),anis2(is), &
+        ! bug fixed: setrot with doubles require dsetrot 
+        call dsetrot(ang1(is),ang2(is),ang3(is),anis1(is),anis2(is), &
         is,nst,rotmat)
         if(it(is) == 4) then
             covmax = covmax + PMX
@@ -136,7 +137,8 @@ subroutine block_covariance(xdb,ydb,zdb, ndb, &
     end do
 
     ! Calculate Block Covariance. Check for point kriging.
-    call cova3(xdb(1),ydb(1),zdb(1),xdb(1),ydb(1),zdb(1),1,nst, &
+    ! bug fixed: dcova3 with doubles require dsetrot
+    call dcova3(xdb(1),ydb(1),zdb(1),xdb(1),ydb(1),zdb(1),1,nst, &
                 c0,it,cc,aa,1,nst,rotmat,cmax,cov)
 
     ! Set the 'unbias' variable so that the matrix solution is more stable
@@ -147,7 +149,7 @@ subroutine block_covariance(xdb,ydb,zdb, ndb, &
         cbb = 0.0
         do i=1,ndb
             do j=1,ndb
-                call cova3(xdb(i),ydb(i),zdb(i),xdb(j),ydb(j),zdb(j), &
+                call dcova3(xdb(i),ydb(i),zdb(i),xdb(j),ydb(j),zdb(j), &
                            1,nst,c0,it,cc,aa,1,nst,rotmat,cmax,cov)
                 if(i == j) cov = cov - c0 (1)
                 cbb = cbb + dble(cov)

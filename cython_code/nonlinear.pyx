@@ -229,8 +229,7 @@ cpdef expand_anamor(np.ndarray [double, ndim=1] PCI,
     
     return Z
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# from here fix it and test it 
+
 cpdef ctrpoints(np.ndarray [double, ndim=1] z,
                 np.ndarray [double, ndim=1] y,
                 np.ndarray [double, ndim=1] ze):
@@ -277,35 +276,34 @@ cpdef ctrpoints(np.ndarray [double, ndim=1] z,
     # get the practical maximum interval
     zpmax=z[y.shape[0]-1]
     ypmax=y[y.shape[0]-1]
-    for i in range (np.argmin(abs(y)), y.shape[0]-1):
-        if ze[i]>ze[i+1]:
-            zpmax=z[i]
-            ypmax=y[i]
+    for i in range (np.argmin(abs(y)), y.shape[0]-1):  # np.argmin(abs(y)) is around 50% prob. or y~0
+        if ze[i]>ze[i+1] or ze[i]> zamax:
+            zpmax=z[i-1]
+            ypmax=y[i-1]
             break 
 
     # get the practical minimum interval
     zpmin=z[0]
     ypmin=y[0]
     for i in range(np.argmin(abs(y)), 1, -1):
-        if ze[i-1]>ze[i]:
-            zpmin=z[i]
-            ypmin=y[i]
+        if ze[i-1]>ze[i] or ze[i]<zamin:
+            zpmin=z[i+1]
+            ypmin=y[i+1]
             break 
 
-    return  zamin, yamin, zamax, yamax, zpmin, ypmin, zpmax, ypmax 
+    return  zamin, yamin, zpmin, ypmin, zpmax, ypmax, zamax, yamax
      
-
 
 cpdef Y2Z(np.ndarray [double, ndim=1] y,
         np.ndarray [double, ndim=1] PCI,
-        float ypmin,
-        float zpmin,
-        float ypmax,
-        float zpmax,
-        float yamin,
-        float zamin,
+        float zamin, 
+        float yamin, 
+        float zpmin, 
+        float ypmin, 
+        float zpmax, 
+        float ypmax, 
+        float zamax, 
         float yamax,
-        float zamax,
         float r=1):
     """ 
     Y2Z( y, PCI, ypmin,zpmin,ypmax,zpmax,yamin,zamin,yamax,zamax, r=1)
@@ -371,18 +369,19 @@ cpdef Y2Z(np.ndarray [double, ndim=1] y,
     #and the new Z values with the existing PCI
     return Z
 
-
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# from here fix it and test it 
 cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
                  np.ndarray [double, ndim=1] zm,
                  np.ndarray [double, ndim=1] ym,
-                 float ypmin,
-                 float zpmin,
-                 float ypmax,
-                 float zpmax,
-                 float yamin,
-                 float zamin,
-                 float yamax,
-                 float zamax):
+                 float zamin, 
+                 float yamin, 
+                 float zpmin, 
+                 float ypmin, 
+                 float zpmax, 
+                 float ypmax, 
+                 float zamax, 
+                 float yamax):
     """ 
     Z2Y_linear(z,zm,ym,ypmin,zpmin,ypmax,zpmax,yamin,zamin,yamax,zamax)
      
@@ -426,6 +425,15 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
     
     # fix some values based on the control points
     for i in range(z.shape[0]): 
+        
+        if z[i]<=zamin:  
+            Y[i]=yamin
+            continue 
+
+        if z[i]>=zamax:  
+            Y[i]=yamax
+            continue 
+        
         if z[i]<=zpmin:  
             Y[i]=np.interp(z[i], xp=zapmin, fp=yapmin)
             continue 
@@ -434,7 +442,7 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
             Y[i]=np.interp(z[i], xp=zapmax, fp=yapmax)
             continue 
         
-        if zpmax>z[i]>zpmin:  
+        if z[i]<zpmax and z[i]>zpmin:  
             Y[i]=np.interp(z[i], xp=zm, fp=ym)
             continue
         

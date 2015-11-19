@@ -260,7 +260,6 @@ subroutine dcova3(x1,y1,z1,x2,y2,z2,ivarg,nst,c0,it,cc,aa, &
     !external references
     real*8:: dsqdist
 
-
     ! input
     real*8, intent(in) :: x1,y1,z1,x2,y2,z2
     integer, intent(in) :: ivarg, irot,maxrot

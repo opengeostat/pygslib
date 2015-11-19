@@ -103,9 +103,9 @@ subroutine anatbl(va,wt, nd, despike, transin, transout, error)
     real*8, dimension(1) :: c,d,e,f,g,h    ! these are dummies for dsortem
     integer :: KORDEI, MAXOP1, i, istart, iend, ierr, j
    
-    if (.NOT. present(despike)) despike=-1
+    if (.NOT. present(despike)) despike= 1   ! we make despiking the default option
 
-    EPSLON=1.0e-6
+    EPSLON=1.0e-4
 
 
     do i=1,MAXOP1
