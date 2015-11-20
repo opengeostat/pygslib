@@ -130,7 +130,7 @@ cpdef fit_PCI(np.ndarray [double, ndim=1] z,
     Notes
     -----  
     PCI[0]=mean(z) and the sum=(PCI[1...n]^2). To validate the fit 
-    calculate the variance with var_PCI funtion and compare it with the 
+    calculate the variance with var_PCI function and compare it with the 
     experimental variance of z. You may also validate the fit by 
     calculating the error= z-PHI(y), where PHI(y) are the z' values
     calculated with the hermite polynomial expansion.  
@@ -575,7 +575,7 @@ cpdef get_r(float Var_Zv,
     get_r(Var_Zv,PCI)
      
     This function deduces the value of the support effect coefficient r
-    or the informattion effect coefficient, smoothing component, s 
+    or the information effect coefficient, smoothing component, s 
     defined by the equations: 
     
     
