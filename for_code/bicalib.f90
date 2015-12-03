@@ -40,71 +40,71 @@
 !-----------------------------------------------------------------------
 subroutine bicalib(ndp,vval,nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
                   ssqu, avgu, umin, umax, ssqv, avgv, vmin, vmax, &
-				  pdfrep, fract, yx, em, vm, nm, b,&
-				  lcdf, error)
-	!-----------------------------------------------------------------------
+                  pdfrep, fract, yx, em, vm, nm, b,&
+                  lcdf, error)
+    !-----------------------------------------------------------------------
 
-	!               Calibration for Markov/Bayes Simulation
-	!               ***************************************
+    !               Calibration for Markov/Bayes Simulation
+    !               ***************************************
 
-	! This program calibrates a set of primary and secondary data for input
-	! to the ``mbsim'' program.  Collocated primary (u) and secondary (v)
-	! samples are input data and the output is the local prior cdfs for the
-	! primary variable (u) given that the secondary variable (v) belongs to
-	! specific classes.  Other calibration information is also written
-	! to the output file.
-
-
-	! The program is executed with no command line arguments.  The user
-	! will be prompted for the name of a parameter file.  The parameter
-	! file is described in the documentation (see the example bicalib.par)
+    ! This program calibrates a set of primary and secondary data for input
+    ! to the ``mbsim'' program.  Collocated primary (u) and secondary (v)
+    ! samples are input data and the output is the local prior cdfs for the
+    ! primary variable (u) given that the secondary variable (v) belongs to
+    ! specific classes.  Other calibration information is also written
+    ! to the output file.
 
 
-
-	! DIMENSIONING PARAMETERS:
-
-	!      nDAT       maximum number of calibration data
-	!      nUCUT       maximum number of cutoffs on u
-	!      nVCUT       maximum number of cutoffs on v
+    ! The program is executed with no command line arguments.  The user
+    ! will be prompted for the name of a parameter file.  The parameter
+    ! file is described in the documentation (see the example bicalib.par)
 
 
 
-	! Original: H. Zhu                                   Date:     July 1990
-	!-----------------------------------------------------------------------
+    ! DIMENSIONING PARAMETERS:
 
-	implicit none 
+    !      nDAT       maximum number of calibration data
+    !      nUCUT       maximum number of cutoffs on u
+    !      nVCUT       maximum number of cutoffs on v
 
-	! input 
-	integer, intent(in) :: ndp,nd,ncutu,ncutv
-	real, intent(in), dimension(ndp) :: vval        !data
+
+
+    ! Original: H. Zhu                                   Date:     July 1990
+    !-----------------------------------------------------------------------
+
+    implicit none 
+
+    ! input 
+    integer, intent(in) :: ndp,nd,ncutu,ncutv
+    real, intent(in), dimension(ndp) :: vval        !data
     real, intent(in), dimension(nd) :: u,v,wt       !auxiliar demse file
-	real, intent(in), dimension(ncutu) :: cutu
-	real, intent(in), dimension(ncutv) :: cutv
+    real, intent(in), dimension(ncutu) :: cutu
+    real, intent(in), dimension(ncutv) :: cutv
 
 
     ! output
-	!   primary
-	real, intent (out) :: ssqu, avgu, umin, umax !variance, average, minimum, maximum
-	!   secundary
-	real, intent (out) :: ssqv, avgv, vmin, vmax !variance, average, minimum, maximum
-	!  error 
-	integer, intent(out) :: error
-	!  report output table
-	real, intent(out), dimension(ncutu):: fract, b 
-	real, intent(out), dimension(ncutv+1,ncutu+1) :: pdfrep, yx
-	real, intent(out), dimension(ncutu,0:1) :: em, vm
-	integer, intent(out), dimension(ncutu,0:1) :: nm
-	real, intent(out), dimension(ndp,ncutu):: lcdf    
+    !   primary
+    real, intent (out) :: ssqu, avgu, umin, umax !variance, average, minimum, maximum
+    !   secundary
+    real, intent (out) :: ssqv, avgv, vmin, vmax !variance, average, minimum, maximum
+    !  error 
+    integer, intent(out) :: error
+    !  report output table
+    real, intent(out), dimension(ncutu):: fract, b 
+    real, intent(out), dimension(ncutv+1,ncutu+1) :: pdfrep, yx
+    real, intent(out), dimension(ncutu,0:1) :: em, vm
+    integer, intent(out), dimension(ncutu,0:1) :: nm
+    real, intent(out), dimension(ndp,ncutu):: lcdf    
 
-	! internal
+    ! internal
 
     real :: pdf(ncutv+1,ncutu+1), soft(ncutu,0:1,nd), softw(ncutu,0:1,nd)
-	integer :: i, j, icls, k, n
-	real :: cum, dev, sum, xd
-	real, dimension(0:ncutu+1) :: ucut
-	real, dimension(0:ncutv+1) :: vcut
+    integer :: i, j, icls, k, n
+    real :: cum, dev, sum, xd
+    real, dimension(0:ncutu+1) :: ucut
+    real, dimension(0:ncutv+1) :: vcut
 
-	! Initialize for some statistics:
+    ! Initialize for some statistics:
 
     avgu = 0.0
     avgv = 0.0
@@ -116,26 +116,26 @@ subroutine bicalib(ndp,vval,nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
     vmax =-1.0e10
     sum  = 0.0
 
-	do i=1, ncutu
-		ucut (i) = cutu(i)
-	end do
-	do i=1, ncutv
-		vcut (i) = cutv(i)
-	end do
+    do i=1, ncutu
+        ucut (i) = cutu(i)
+    end do
+    do i=1, ncutv
+        vcut (i) = cutv(i)
+    end do
 
 
     ! Read in as much data as the allocated storage will allow:
 
     do i=1, nd 
-		sum  = sum  + wt(i)
-		avgu = avgu + u(i)*wt(i)
-		avgv = avgv + v(i)*wt(i)
-		ssqv = ssqv + v(i)*v(i)*wt(i)
-		ssqu = ssqu + u(i)*u(i)*wt(i)
-		if(u(i) < umin) umin = u(i)
-		if(v(i) < vmin) vmin = v(i)
-		if(u(i) > umax) umax = u(i)
-		if(v(i) > vmax) vmax = v(i)
+        sum  = sum  + wt(i)
+        avgu = avgu + u(i)*wt(i)
+        avgv = avgv + v(i)*wt(i)
+        ssqv = ssqv + v(i)*v(i)*wt(i)
+        ssqu = ssqu + u(i)*u(i)*wt(i)
+        if(u(i) < umin) umin = u(i)
+        if(v(i) < vmin) vmin = v(i)
+        if(u(i) > umax) umax = u(i)
+        if(v(i) > vmax) vmax = v(i)
     end do
 
     ! There has to be at least two data to go ahead with calibration:
@@ -215,12 +215,12 @@ subroutine bicalib(ndp,vval,nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
     do i=1,ncutv+1
         do j=1,ncutu+1
             pdf(i,j) = pdf(i,j) * xd
-			pdfrep(i,j) =pdf(i,j)
+            pdfrep(i,j) =pdf(i,j)
         end do
     end do
 
 
-	! Loop over all the v cutoffs:
+    ! Loop over all the v cutoffs:
 
     do i=1,ncutv+1
         cum = 0.0
@@ -240,8 +240,8 @@ subroutine bicalib(ndp,vval,nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
         end do
     end do
 
-	! Calculate the calibration parameters from the local prior cdf table
-	! and the input data:  First, initialize counters:
+    ! Calculate the calibration parameters from the local prior cdf table
+    ! and the input data:  First, initialize counters:
 
     do j=1,ncutu
         do k=0,1
@@ -255,8 +255,8 @@ subroutine bicalib(ndp,vval,nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
         end do
     end do
 
-	! MAIN Loop over all the u cutoffs to sort out the classification of
-	! all the data:
+    ! MAIN Loop over all the u cutoffs to sort out the classification of
+    ! all the data:
 
     do j=1,ncutu
     
@@ -288,8 +288,8 @@ subroutine bicalib(ndp,vval,nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
         end do
     end do
 
-	! Now, get some statistics on the calibration.  Loop over all the u
-	! cutoffs and then the two classication categories:
+    ! Now, get some statistics on the calibration.  Loop over all the u
+    ! cutoffs and then the two classication categories:
 
     do j=1,ncutu
         do k=0,1
@@ -315,26 +315,26 @@ subroutine bicalib(ndp,vval,nd,u,v,wt, ncutu, cutu, ncutv, cutv, &
         end do
     end do
 
-	! Hardness coefficients:
+    ! Hardness coefficients:
 
     do j=1,ncutu
         b(j)   = em(j,1) - em(j,0)
         if(nm(j,1) < 1 .OR. nm(j,0) < 1) b(j) = -9.0
     end do
 
-	! Loop through all observations in the input file:
+    ! Loop through all observations in the input file:
 
-	do j=1, ndp
-	    do i=1,ncutv+1
-	        if((vval(j) > vcut(i-1)) .AND. (vval(j) <= vcut(i))) then
-	            icls = i
-				go to 42
-	        endif
-	    end do
-	    42 continue
-	    do i=1,ncutu
-	        lcdf(j,i) = yx(icls,i)
-	    end do
+    do j=1, ndp
+        do i=1,ncutv+1
+            if((vval(j) > vcut(i-1)) .AND. (vval(j) <= vcut(i))) then
+                icls = i
+                go to 42
+            endif
+        end do
+        42 continue
+        do i=1,ncutu
+            lcdf(j,i) = yx(icls,i)
+        end do
     end do
 
 end subroutine bicalib

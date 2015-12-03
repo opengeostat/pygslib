@@ -436,7 +436,7 @@ subroutine kt3d( &
     maxrot = nst
     covmax = c0(1)    
     do is=1,nst
-        call setrot(ang1(is),ang2(is),ang3(is),anis1(is),anis2(is), &
+        call dsetrot(ang1(is),ang2(is),ang3(is),anis1(is),anis2(is), &
         is,MAXROT,rotmat)
         if(it(is) == 4) then
             covmax = covmax + PMX
@@ -504,7 +504,7 @@ subroutine kt3d( &
     !
     ! Calculate point Covariance. The block covariance is calculated externally
     !
-    call cova3(xdb(1),ydb(1),zdb(1),xdb(1),ydb(1),zdb(1),1,nst, &
+    call dcova3(xdb(1),ydb(1),zdb(1),xdb(1),ydb(1),zdb(1),1,nst, &
                c0,it,cc,aa,1,MAXROT,rotmat,cmax,cov)
     !
     ! Set the ``unbias'' variable so that the matrix solution is more stable
@@ -548,18 +548,18 @@ subroutine kt3d( &
     
         ! Handle the situation of only one sample:
     
-        call cova3(xa(1),ya(1),za(1),xa(1),ya(1),za(1),1,nst, &
+        call dcova3(xa(1),ya(1),za(1),xa(1),ya(1),za(1),1,nst, &
         c0,it,cc,aa,1,maxrot,rotmat,cmax,cb1)
     
         ! Establish Right Hand Side Covariance:
     
         if(ndb <= 1) then
-            call cova3(xa(1),ya(1),za(1),xdb(1),ydb(1),zdb(1),1, &
+            call dcova3(xa(1),ya(1),za(1),xdb(1),ydb(1),zdb(1),1, &
             nst,c0,it,cc,aa,1,maxrot,rotmat,cmax,cb)
         else
             cb  = 0.0
             do i=1,ndb
-                call cova3(xa(1),ya(1),za(1),xdb(i),ydb(i), &
+                call dcova3(xa(1),ya(1),za(1),xdb(i),ydb(i), &
                 zdb(i),1,nst,c0,it,cc,aa,1, &
                 MAXROT,rotmat,cmax,cov)
                 cb = cb + cov
@@ -610,7 +610,7 @@ subroutine kt3d( &
 
     do i=1,na
         do j=i,na
-            call cova3(xa(i),ya(i),za(i),xa(j),ya(j),za(j),1,nst, &
+            call dcova3(xa(i),ya(i),za(i),xa(j),ya(j),za(j),1,nst, &
             c0,it,cc,aa,1,maxrot,rotmat,cmax,cov)
             a(neq*(i-1)+j) = dble(cov)
             a(neq*(j-1)+i) = dble(cov)
@@ -632,13 +632,13 @@ subroutine kt3d( &
     do i=1,na
         if(ndb <= 1) then  ! point kriging
             ! print *, 'doing point kriging'
-            call cova3(xa(i),ya(i),za(i),xdb(1),ydb(1),zdb(1),1, &
+            call dcova3(xa(i),ya(i),za(i),xdb(1),ydb(1),zdb(1),1, &
             nst,c0,it,cc,aa,1,MAXROT,rotmat,cmax,cb)
         else
             ! print *, 'doing block kriging'
             cb  = 0.0
             do j=1,ndb
-                call cova3(xa(i),ya(i),za(i),xdb(j),ydb(j), &
+                call dcova3(xa(i),ya(i),za(i),xdb(j),ydb(j), &
                 zdb(j),1,nst,c0,it,cc,aa,1, &
                 MAXROT,rotmat,cmax,cov)
                 cb = cb + cov

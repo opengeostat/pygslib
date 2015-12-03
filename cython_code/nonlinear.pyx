@@ -33,11 +33,103 @@ http://www.ccgalberta.com/ccgresources/report06/2004-112-inference_under_mg.pdf
 Mining Geostatistics: A. G. Journel, Andre G. Journel, C. J
 '''
 
-
+cimport cython
 cimport numpy as np
 import numpy as np
 from scipy.stats import norm
 from scipy.optimize import brentq
+from libc.math cimport sqrt
+from libc.math cimport exp
+
+# General 
+
+# almost C version of stnormal 
+@cython.boundscheck(False)
+cdef float stnormpdf(float x):
+    cdef float denom = (2*3.1415926)**.5
+    cdef float num = exp(-x**2/2)
+    return num/denom
+
+
+# ----------------------------------------------------------------------
+#   Transformation table
+# ----------------------------------------------------------------------
+cpdef ttable(np.ndarray [double, ndim=1] z, 
+             np.ndarray [double, ndim=1] w, 
+             long despkn=50, 
+             double despks=0.001, 
+             bint despkm=True):
+    """
+    Todo 
+    """
+
+    cdef long n
+    cdef np.ndarray [double, ndim=1] ff, yy, zz, ww, wc, e, h
+    cdef np.ndarray [long, ndim=1] I
+    
+    # size of the input array
+    n= z.shape[0]
+    eps = 2.2204e-16  # octave constant... 
+    
+    # if no weight provided
+    #if w == None:
+    #    w = np.ones(n)
+        
+    
+    # add despikes, this is recommended 
+    # this is based on http://cg.ensmp.fr/bibliotheque/public/DERAISME_Communication_02158.pdf
+    if despkn>1:
+        e = np.ones(n)
+        h = np.ones(n)
+        h[:] = w[:] 
+        
+        for j in range (despkn):  # add a set of despkn Gaussian values along atoms
+            for i in range(n): 
+                if despkm:
+                    e[i] = z[i] + np.random.normal(loc=0.0, scale=despks*z[i]) # mudulating despikes
+                else:
+                    e[i] = z[i] + np.random.normal(loc=0.0, scale=despks) # mudulating despikes
+                    
+            # append the despikes to the original data
+            z=np.append(z,e)
+            w=np.append(w,h)
+
+    # vector sorting the input array
+    I = np.lexsort((w,z)) # sort by z, then by w
+    
+    # sort with vector
+    zz = z[I]
+    ww = w[I]
+    
+    # Remove tied values 
+    # this is based in code: hist_tra.m from Xavier Emery, at 
+    # paper: "A disjunctive kriging program..."
+    for i in range(n-1):
+      if zz[i+1]-zz[i]<eps:
+        ww[i+1] = ww[i+1]+ww[i]
+        ww[i] = 0
+          
+    # some cleanup
+    zz = zz[ww>0]
+    ww = ww[ww>0]
+    n= ww.shape[0]
+    
+    #normalize 
+    ww = ww/ww.sum()
+    wc = ww.cumsum()
+    
+    # calculate cdf as mean interval [f(y[i]), f(y[i+1])]
+    ff = np.zeros(n)
+    ff[0]= ww[0]/2.
+    for i in range(1,n):
+        ff[i] = wc[i] - (wc[i]-wc[i-1])/2
+    
+    # now we get corresponding y values
+    yy = norm.ppf(ff)
+    
+    return zz, yy, ff, ww
+        
+
 
 # ----------------------------------------------------------------------
 #   Functions for punctual gaussian anamorphosis 
@@ -122,6 +214,8 @@ cpdef fit_PCI(np.ndarray [double, ndim=1] z,
     -------
     PCI : 1D array of floats
         Hermite coefficients or PCI 
+    g   : 1D array of floats
+        pdf value (g[i]) corresponding to each gaussian value (y[i])
       
     See Also
     --------
@@ -140,19 +234,24 @@ cpdef fit_PCI(np.ndarray [double, ndim=1] z,
     assert y.shape[0]==z.shape[0]==H.shape[1], 'Error: wrong shape on input array'
     
     cdef np.ndarray [double, ndim=1] PCI
+    cdef np.ndarray [double, ndim=1] g
+    
+    cdef unsigned int i, p, j, n=H.shape[0], m=H.shape[1]
     
     # if no mean provided
     if np.isnan(meanz):
         meanz = np.mean(z)
     
-    PCI=np.zeros(H.shape[0])
+    PCI=np.zeros([H.shape[0]])
+    g=np.zeros([H.shape[1]])
     PCI[0]=np.mean(z)
     
-    for p in range(1,H.shape[0]):
-        for i in range(1,H.shape[1]):
-            PCI[p]+=(z[i-1]-z[i])*1/np.sqrt(p)*H[p-1,i]*norm.pdf(y[i])
+    for p in range(1,n):
+        for i in range(1,m):
+            g[i]= stnormpdf(y[i])
+            PCI[p]=PCI[p] + (z[i-1]-z[i])*1/sqrt(p)*H[p-1,i]*g[i]
     
-    return PCI
+    return PCI, g
 
 
 #get variance from PCI
@@ -224,7 +323,8 @@ cpdef expand_anamor(np.ndarray [double, ndim=1] PCI,
     cdef int p
         
     Z=np.zeros(H.shape[1])
-    for p in range(len(PCI)):
+    Z[:]=PCI[0]
+    for p in range(1,len(PCI)):
         Z+=PCI[p]*H[p,:]*r**p
     
     return Z
@@ -369,8 +469,7 @@ cpdef Y2Z(np.ndarray [double, ndim=1] y,
     #and the new Z values with the existing PCI
     return Z
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# from here fix it and test it 
+
 cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
                  np.ndarray [double, ndim=1] zm,
                  np.ndarray [double, ndim=1] ym,
@@ -621,7 +720,7 @@ cpdef get_r(float Var_Zv,
     return brentq(f=f_var_Zv, a=0, b=1, args=(PCI,Var_Zv))
 
 #calculate information effect coefficient ro
-def get_ro(float Covar_ZvZv,
+cpdef get_ro(float Covar_ZvZv,
            np.ndarray [double, ndim=1] PCI,
            float r,
            float s):
@@ -669,3 +768,49 @@ def get_ro(float Covar_ZvZv,
     return brentq(f=f_covar_ZvZv, a=0, b=1, args=(s,r,PCI,Covar_ZvZv))
 
 
+
+# ----------------------------------------------------------------------
+#   Uniform conditioning functions
+# ----------------------------------------------------------------------
+
+#cpdef recurrentU(np.ndarray [double, ndim=2] H, float yc):
+    
+#    U =  H 
+"""
+cpdef ucondit(np.ndarray [double, ndim=1] ZV,
+              np.ndarray [double, ndim=1] PCI, 
+              float zc,
+              float r=1., 
+              float R=1., 
+              float ro=1.): 
+    
+    
+    # r block support, R panel support, ro info effect  
+    
+    
+    cdef float t
+    cdef int K
+    cdef np.ndarray [double, ndim=1] T, Q, M
+    cdef np.ndarray [double, ndim=2] H
+    
+    # get general parameters 
+    t=R/(r*ro)       # info and support effect (for no info make ro=1)
+    K = PCI.shape[0]
+    yc = Z2Y_linear 
+    YV = Z2Y_linear
+    
+    H = recurrentH(YV, K)
+    
+    T[:] = 1- norm.pdf((yc-t*YV)/np.sqrt(1-t**2))
+    
+    Q = np.zeros ([ZV.shape[0]])
+    
+    for i in range(K):
+        for j in range(K): 
+            Q = Q + t**i*H[i][:] * PCI[j]*r**j*ro**j
+    
+    #M = Q / T
+    
+    return T, Q, M
+    
+"""

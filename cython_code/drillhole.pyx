@@ -350,7 +350,8 @@ cpdef desurv1dh(int indbs,
                float xc,
                float yc,
                float zc,
-               float lpt):
+               float lpt,
+               bint warns=True):
 
     """
     desurv1dh(indbs, indes, ats, azs, dips, xc, xy, zc, lpt)
@@ -495,9 +496,11 @@ cpdef desurv1dh(int indbs,
         yt = yb+dn
         zt = zb-dz 
         
-        warnings.warn('\n point beyond the last survey point at %s' % indes)
+        if warns==True: 
+            warnings.warn('\n point beyond the last survey point at %s' % indes)
     else:
-        warnings.warn('\n not interval found at survey, at %s' % indes)
+        if warns==True: 
+            warnings.warn('\n not interval found at survey, at %s' % indes)
 
     return   azt, dipt, xt, yt, zt
 
@@ -627,11 +630,12 @@ cdef class Drillhole:
         - check existence of Null values
         - check survey without values AT=0
         - check that coordinates and direction angles dtypes are float64
+        - check survey without collar and collar without survey 
         
         Notes
         -----
         a) You may run this validation before doing desurvey
-        b) Ony few minimum validation are implemented for now
+        b) Only few minimum validation are implemented for now
         c) No value is returned, it raises an error 
         
         TODO
@@ -657,6 +661,15 @@ cdef class Drillhole:
         # Warning:  hasnans() is for pandas 0.16, hasnans for pandas 0.17
         
         #check collar
+        
+        #check repeated collar BHID
+        if len(self.collar.loc[self.collar.duplicated(['BHID'])])>0:
+            raise NameError('There are duplicated BHID at collar')
+
+        #check repeated survey BHID,AT
+        if len(self.survey.loc[self.survey.duplicated(['BHID','AT'])])>0:
+            raise NameError('There are duplicated BHID,AT at survey')
+        
         # null values in collar
         if self.collar['BHID'].hasnans:
             raise NameError('Non defined BHID in collar table')
@@ -684,6 +697,8 @@ cdef class Drillhole:
             raise NameError('Non defined AZ in survey table')
         if self.survey['DIP'].hasnans:
             raise NameError('Non defined DIP in survey table')
+        
+        #check dtypes 
         if self.survey['AT'].dtypes!='float64':
             raise NameError('AT in survey table != float64')            
         if self.survey['DIP'].dtypes!='float64':
@@ -700,6 +715,19 @@ cdef class Drillhole:
         error = self.__checkAt0(self.survey['BHID'].values, self.survey['AT'].values)
         if error>-1:
             raise NameError('Firts inteval AT!=0 at survey table, positiom %d' %error) 
+        
+        #check survey without collar
+        cID = self.collar['BHID'].values
+        for i in self.survey['BHID'].unique(): 
+            if i not in cID:
+                warnings.warn('! survey without collar at BHID: {}'.format(i) )    
+        
+        #check collar without survey
+        sID = self.survey['BHID'].unique()
+        for i in self.collar['BHID'].values: 
+            if i not in sID:
+                warnings.warn('! collar without survey at BHID: {}'.format(i) )    
+    
             
         return None
         # TODO: check table relationship
@@ -765,6 +793,12 @@ cdef class Drillhole:
         assert table_name in self.table, '%s not exist in this drillhole database' % table_name
         
         #check table
+
+        #check repeated BHID,FROM
+        if len(self.table[table_name][self.table[table_name].duplicated(['BHID','FROM'])])>0:
+            raise NameError('There are duplicated BHID,FROM at table')
+
+
         # null values in table bhid
         if self.table[table_name]['BHID'].hasnans:
             raise NameError('Non defined BHID in %s' % table_name)
@@ -782,6 +816,20 @@ cdef class Drillhole:
         if self.table[table_name]['BHID'].dtypes!=self.collar['BHID'].dtypes:
             raise NameError("self.table[%s]['BHID'].dtypes!=self.collar['BHID'].dtypes" % table_name)
 
+        #check table without collar
+        cID = self.collar['BHID'].values
+        for i in self.table[table_name]['BHID'].unique(): 
+            if i not in cID:
+                warnings.warn('Warning on table {}: BHID: {} not in collar'.format(table_name, i) )    
+        
+        #check collar without table
+        tID = self.table[table_name]['BHID'].unique()
+        for i in self.collar['BHID'].values: 
+            if i not in tID:
+                warnings.warn('Info : collar BHID {} not at table {}'.format(i,table_name) )    
+
+        
+        
         # TODO: check overlaps and table relationship
 
     
@@ -857,7 +905,8 @@ cdef class Drillhole:
 
 
 
-    cpdef desurvey(self, str table_name, bint endpoints=False):
+    cpdef desurvey(self, str table_name, bint endpoints=False, 
+                   bint warns=True):
         """
         desurvey(table_name, endpoints=False)
         
@@ -961,13 +1010,14 @@ cdef class Drillhole:
             
             # get las index of the collar jc in survey 
             for js in range(inds, ns):
-                # find index beging and end for the actual collar
+                # find index begin and end for the actual collar
                 if idc[jc]!=ids[js]:
                     break
                 else: 
                     inds = js
                     indes = js
-
+            
+            # this is not working but check included in validation 
             if indbs==-1 or indes==-1:
                 # do not desurvey this drillhole
                 warnings.warn('! collar without survey, table not desurveyed')
@@ -985,13 +1035,13 @@ cdef class Drillhole:
                     mid = fromt[jt] + (tot[jt]-fromt[jt])/2.
                     
                     azmt[jt],dipmt[jt],xmt[jt],ymt[jt],zmt[jt] = \
-                    desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],mid)
+                    desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],mid,warns)
                     
                     if endpoints==True:
                         tmpaz,tmpdip,xbt[jt],ybt[jt],zbt[jt] = \
-                        desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],fromt[jt])
+                        desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],fromt[jt],warns)
                         tmpaz,tmpdip,xet[jt],yet[jt],zet[jt] = \
-                        desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],tot[jt])  
+                        desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],tot[jt],warns)  
         
         self.table[table_name]['azm'] = azmt
         self.table[table_name]['dipm']= dipmt
@@ -1005,4 +1055,173 @@ cdef class Drillhole:
             self.table[table_name]['xe']= xet
             self.table[table_name]['ye']= yet
             self.table[table_name]['ze']= zet
+
+
+    cpdef to_vtk_line(self, str table_name, str field, double nanval=0):
+        """
+        to_vtk_point(table_name, field, nanval=0)
+        
+        Export desurveyed drillhole table to vtk lines. Endpoints 
+        are required.
+        
+        
+        Parameters
+        ----------
+        table_name : str
+        file_name : str 
+        
+        See Also
+        --------
+        to_vtk_points
+        
+        
+        Notes
+        -----
+
+        
+        Examples
+        --------
+        
+        >>> mydrillhole.to_vtk_line('assay', 'field', nanval=0)
+        
+        """  
+        #check that table exists      
+        assert table_name in self.table, '%s not exist in this drillhole database' % table_name
+        
+        #check columns 
+        #check we have the rigth naming in collar columns 
+        assert 'xe' in self.table[table_name].columns, "table without xe column"
+        assert 'ye' in self.table[table_name].columns, "table without ye column"
+        assert 'ze' in self.table[table_name].columns, "table without ze column"
+        assert 'xb' in self.table[table_name].columns, "table without xb column"
+        assert 'yb' in self.table[table_name].columns, "table without yb column"
+        assert 'zb' in self.table[table_name].columns, "table without zb column"
+        assert self.table[table_name][field].dtype!=object, "dtype object not supported in field"
+        
+        
+        cdef int i, n = self.table[table_name].values.shape[0]
+        
+        cdef np.ndarray[double, ndim=1] xb = self.table[table_name]['xb'].values
+        cdef np.ndarray[double, ndim=1] yb = self.table[table_name]['yb'].values
+        cdef np.ndarray[double, ndim=1] zb = self.table[table_name]['zb'].values
+        cdef np.ndarray[double, ndim=1] xe = self.table[table_name]['xe'].values
+        cdef np.ndarray[double, ndim=1] ye = self.table[table_name]['ye'].values
+        cdef np.ndarray[double, ndim=1] ze = self.table[table_name]['ze'].values
+        
+        cdef np.ndarray data = self.table[table_name][field].values
+        
+        data[np.isnan(data)]= nanval  # nan non supported by vtk/paraview
+        
+        txt =  '# vtk DataFile Version 4.0\n'
+        txt+=  'Generated by pygslib\n'
+        txt+=  'ASCII\n'
+        txt+=  'DATASET POLYDATA\n'
+        txt+=  'POINTS ' + str(n*2) + ' ' + 'double\n'
+        
+        for i in range(n):
+            txt+= str(xb[i]) + ' ' + str(yb[i]) + ' ' + str(zb[i]) + ' ' \
+                + str(xe[i]) + ' ' + str(ye[i]) + ' ' + str(ze[i]) + '\n'
+
+        txt+= 'LINES ' + str(n) + ' ' + str(3*n) +'\n'
+        
+        for i in range(0,n*2,2):
+            txt+= '2 ' + str(i) + ' ' + str(i+1) + '\n'
+        
+        txt+= 'CELL_DATA ' + str(n) + '\n'     
+        txt+= 'FIELD FieldData 1\n'     
+        
+        #crete dtype mapping
+        dt={'in':' int', '|S':' string', 'fl': ' double'}
+        tid = str(data.dtype)
+        
+        tid = tid[:2]
+        
+        txt+= field + ' 1 ' + str(n) +  dt[tid] + '\n'
+        for i in range(n):
+            txt+= str(data[i]) + '\n'
             
+        return txt    
+
+    cpdef to_vtk_point(self, str table_name, str field, double nanval=0):
+        """
+        to_vtk_point(table_name, field, nanval=0)
+        
+        Export desurveyed drillhole table to vtk points. Only center 
+        points are exported
+        
+        
+        Parameters
+        ----------
+        table_name : str
+        file_name : str 
+        
+        See Also
+        --------
+        to_vtk_points
+        
+        
+        Notes
+        -----
+
+        
+        Examples
+        --------
+        
+        >>> mydrillhole.to_vtk_point('assay', 'field', nanval=0)
+        
+        """        
+        
+        #check that table exists      
+        assert table_name in self.table, '%s not exist in this drillhole database' % table_name
+        
+        #check columns 
+        #check we have the rigth naming in collar columns 
+        assert 'xm' in self.table[table_name].columns, "table without xm column"
+        assert 'ym' in self.table[table_name].columns, "table without ym column"
+        assert 'zm' in self.table[table_name].columns, "table without zm column"
+        assert self.table[table_name][field].dtype!=object, "dtype object not supported in field"
+        
+        
+        cdef int i, n = self.table[table_name].values.shape[0]
+        
+        cdef np.ndarray[double, ndim=1] xm = self.table[table_name]['xm'].values
+        cdef np.ndarray[double, ndim=1] ym = self.table[table_name]['ym'].values
+        cdef np.ndarray[double, ndim=1] zm = self.table[table_name]['zm'].values
+
+        
+        cdef np.ndarray data = self.table[table_name][field].values
+        
+        data[np.isnan(data)]= nanval  # nan non supported by vtk/paraview
+        
+        
+        
+        txt =  '# vtk DataFile Version 4.0\n'
+        txt+=  'Generated by pygslib\n'
+        txt+=  'ASCII\n'
+        txt+=  'DATASET POLYDATA\n'
+        txt+=  'POINTS ' + str(n) + ' ' + 'double\n'
+        
+        for i in range(n):
+            txt+= str(xm[i]) + ' ' + str(ym[i]) + ' ' + str(zm[i]) + '\n'
+
+        txt+= 'VERTICES 1 ' + str(n+1) + '\n' 
+        txt+= str(n) + ' ' 
+        
+        for i in range(n):
+            txt+= str(i) + ' '
+
+        txt+= '\n' 
+        txt+= 'POINT_DATA ' + str(n) + '\n'     
+        txt+= 'FIELD FieldData 1\n'     
+        
+        #crete dtype mapping
+        dt={'in':' int', '|S':' string', 'fl': ' double'}
+        tid = str(data.dtype)
+        
+        tid = tid[:2]
+        
+        txt+= field + ' 1 ' + str(n) +  dt[tid] + '\n'
+        for i in range(n):
+            txt+= str(data[i]) + '\n'
+            
+        return txt  

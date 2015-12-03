@@ -68,8 +68,8 @@ subroutine anatbl(va,wt, nd, despike, transin, transout, error)
     !-----------------------------------------------------------------------
 
     !                Compute Normal Scores transformation table
-    !                for gaussian anamorphosis
-    !                ***********************************
+    !                for gaussian anamorphosis (no weight implemented)
+    !                *************************************************
 
     ! PROGRAM NOTES:
 
@@ -79,6 +79,8 @@ subroutine anatbl(va,wt, nd, despike, transin, transout, error)
     !         - y is calculated upper bin: wt_ns(j) = cp
 
     ! Version from Adrian martinez Vargas, 2015
+
+    ! TODO: remove tied values ex. z(i+1)-z(i)<eps (see Xavier paper: A disjunctive kriging program for assessing point-support conditional distributions)
 
     !-----------------------------------------------------------------------
 
