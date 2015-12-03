@@ -1057,6 +1057,71 @@ cdef class Drillhole:
             self.table[table_name]['ze']= zet
 
 
+    #-------------------------------------------------------------------
+    #       Table gap, compositing and processing 
+    #-------------------------------------------------------------------
+    cpdef add_gaps(self, str table_name, double tolerance=0.01):
+        
+        # some warning if desurveyed
+        if 'xm' in self.table[table_name].columns:
+            warnings.warn('The desurveyed info table {} was removed: '.format(table_name) )
+        
+        assert tolerance>=0, 'Negative values of tolerance'  
+        assert self.table[table_name]['FROM'].all>=0, 'Negative values at FROM, you may review and validate your data'       
+        assert self.table[table_name]['TO'].all>=0, 'Negative values at TO, you may review and validate your data'       
+
+        #clean desurvey data to avoid errors
+        sfield= ['xm','ym','zm','xe','ye','ze', 'xb','yb','zb', 'dipm','azm']
+        for i in sfield:
+            if i in self.table[table_name].columns:
+                self.table[table_name].drop(i, inplace=True)
+        
+        
+        # iterate to find gaps
+        addf=[]
+        addt=[]
+        addd=[]
+        for dhole in self.collar['BHID'].unique():
+            FROM = self.table[table_name][self.table[table_name]['BHID']==dhole]['FROM'].values
+            TO = self.table[table_name][self.table[table_name]['BHID']==dhole]['TO'].values
+            n= FROM.shape[0]
+            if n==0: 
+                continue
+                            
+            if FROM[0] > tolerance:
+                addf.append(0)
+                addt.append(FROM[0])
+                addd.append(dhole)
+            for i in range(n-1):
+                # ok but we fix small gaps
+                if FROM[i+1]-TO[i]<tolerance and FROM[i+1]-TO[i]>-tolerance:
+                    # fix small gaps
+                    FROM[i+1]=TO[i]
+                #this is an overlap, we warm and do nothing
+                if FROM[i+1]-TO[i]<-tolerance:
+                    warnings.warn('Overlap at DHOLE: {}, FROM: {} '.format(dhole, FROM[i+1]) )   
+
+                #this is a gap
+                if FROM[i+1]-TO[i]>tolerance:   
+                    addd.append(dhole)
+                    addf.append(TO[i])     #from 
+                    addt.append(FROM[i+1]) #to
+                    
+        
+        # Here we create a pandas dataframe with gaps
+        gaps=pd.DataFrame({'BHID':addd, 'FROM': addf, 'TO': addt})
+        
+        # and we append to the table (other fields will be blank or nan)
+        self.table[table_name]=self.table[table_name].append(gaps, ignore_index=True)
+        
+        # finally we sort in place
+        self.table[table_name].sort_values(by=['BHID','FROM'], inplace=True)
+        # and reindex
+        self.table[table_name].index = np.arange(self.table[table_name].shape[0])
+
+    #-------------------------------------------------------------------
+    #       VTK export 
+    #-------------------------------------------------------------------
     cpdef to_vtk_line(self, str table_name, str field, double nanval=0):
         """
         to_vtk_point(table_name, field, nanval=0)
