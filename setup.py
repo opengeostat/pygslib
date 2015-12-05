@@ -3,6 +3,20 @@ pygslib: GSLIB in python
 
 Copyright 2015, Adrian Martinez Vargas.
 Licensed under MIT.
+
+Note: 
+
+In windows 64 bits use MinGW 64.
+
+install dependencies: 
+
+Microsoft Visual C++ Compiler for Python 2.7 at https://www.microsoft.com/en-ca/download/details.aspx?id=44266
+
+c:\>conda install MinGW
+c:\>conda install libpython
+
+c:\>python setup.py config --compiler=mingw32 build --compiler=mingw32 install
+
 """
 
 import sys
@@ -144,18 +158,24 @@ if __name__ == '__main__':
     #-------------------------------------------------------------------
     from distutils.core import setup    # this is the standard setup
     from distutils.extension import Extension as CYExtension
-    from Cython.Build import cythonize
+    #from Cython.Build import cythonize
+    import numpy
+	
     drillhole = CYExtension( 'pygslib.drillhole', 
-                            ['cython_code/drillhole.pyx']) 
+                            ['cython_code/drillhole.pyx'], 
+							include_dirs=[numpy.get_include()]) 
                                 
     blockmodel = CYExtension( 'pygslib.blockmodel', 
-                            ['cython_code/blockmodel.pyx']) 
+                            ['cython_code/blockmodel.pyx'],
+							include_dirs=[numpy.get_include()]) 
       
     vtktools = CYExtension( 'pygslib.vtktools', 
-                            ['cython_code/vtktools.pyx']) 
+                            ['cython_code/vtktools.pyx'],
+							include_dirs=[numpy.get_include()]) 
 
     nonlinear = CYExtension( 'pygslib.nonlinear', 
-                            ['cython_code/nonlinear.pyx']) 
+                            ['cython_code/nonlinear.pyx'],
+							include_dirs=[numpy.get_include()]) 
 
                             
     setup(name=name,
