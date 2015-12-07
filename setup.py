@@ -18,10 +18,21 @@ c:\>conda install libpython
 c:\>python setup.py config --compiler=mingw32 build --compiler=mingw32 install
 
 """
-
+import warnings
 import sys
 from setuptools.command.test import test as TestCommand
 from numpy.distutils.core import Extension
+
+
+# check some dependencies
+
+try:
+ import vtk
+except ImportError, e:
+ warnings.warn('\nWarning:\n pygslib uses vtk but vtk is not installed!')
+
+
+
 
 # This is a plug-in for setuptools that will invoke py.test
 # when you run python setup.py test
@@ -35,7 +46,8 @@ class PyTest(TestCommand):
         import pytest  
         sys.exit(pytest.main(self.test_args))
 
-""" using this convention 
+# define properties for setup
+""" Note: using this convention for version 
  major.minor[.build[.revision]]
  with development status at third position as follow: 
     0 for alpha (status)
@@ -43,9 +55,7 @@ class PyTest(TestCommand):
     2 for release candidate
     3 for (final) release
 """
-
-# define properties for setup
-version = '0.0.0.3.3'
+version = '0.0.0.3.6'
 description = 'Python wrap of GSLIB modified code and general geostatistical package'
 name='pygslib'
 long_description=open("README.rst").read()
@@ -138,7 +148,7 @@ if __name__ == '__main__':
           zip_safe=False,
           tests_require=['numpy', 'pandas', 'matplotlib', 'nose', 'mock'],
           cmdclass={'test': PyTest},   
-          install_requires=['numpy', 'pandas', 'matplotlib', 'nose', 'mock'],
+          install_requires=['numpy', 'pandas', 'matplotlib'],
           ext_modules = [variograms,
                          bigaus,
                          bicalib,
@@ -193,6 +203,6 @@ if __name__ == '__main__':
           zip_safe=False,
           tests_require=['numpy', 'pandas>=0.17', 'nose', 'mock', 'scipy'],
           cmdclass={'test': PyTest},   
-          install_requires=['numpy', 'pandas', 'nose', 'mock', 'scipy'],
+          install_requires=['numpy', 'pandas', 'scipy'],
           ext_modules = [drillhole, blockmodel,vtktools,nonlinear])
 

@@ -1,6 +1,6 @@
 package:
   name: pygslib
-  version: "0.0.0.3.5"
+  version: "0.0.0.3.6"
 
 source:
   path: /home/adrian/bitbucket/public/pygslib
@@ -29,11 +29,9 @@ requirements:
   build:
     - python
     - setuptools
-    - numpy
+    - numpy 
     - pandas
     - matplotlib
-    - nose
-    - mock
     - scipy
 
   run:
@@ -41,9 +39,10 @@ requirements:
     - numpy
     - pandas
     - matplotlib
-    - nose
-    - mock
     - scipy
+    - vtk
+    - ipython
+    - pyevtk
 
 test:
   # Python imports
@@ -64,7 +63,7 @@ test:
     - mock
     - nose
     - numpy
-    - pandas
+    - pandas >=0.17
     - scipy
     # Put any additional test requirements here.  For example
     # - nose

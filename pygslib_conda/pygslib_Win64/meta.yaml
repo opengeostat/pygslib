@@ -1,9 +1,10 @@
-#require custom channels
-# conda config --add channels https://conda.binstar.org/ioos  for mingwpy   - mingwpy
-# if you have MS compiler install mingw and type conda install libpython
+#install dependencies: 
+#Microsoft Visual C++ Compiler for Python 2.7 at https://www.microsoft.com/en-ca/download/details.aspx?id=44266
+#c:\>conda install MinGW
+#c:\>conda install libpython
 package:
   name: pygslib
-  version: "0.0.0.3.5"
+  version: "0.0.0.3.6"
 
 source:
   path: c:/OG_Python/pygslib/
@@ -31,11 +32,11 @@ source:
 
 requirements:
   build:
-    - mingwpy
+    - mingw
     - libpython
     - python
     - setuptools
-    - numpy <1.10.0
+    - numpy 
     - pandas
     - matplotlib
     - nose
@@ -50,13 +51,15 @@ requirements:
     - nose
     - mock
     - scipy
+    - vtk
+    - ipython
+    - pyevtk
 
 test:
   # Python imports
   imports:
     - pygslib
     - pygslib.tests
-    
 
   # commands:
     # You can put test commands to be run here.  Use this to test that the

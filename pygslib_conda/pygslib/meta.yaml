@@ -1,0 +1,81 @@
+package:
+  name: pygslib
+  version: "0.0.0.3.6"
+
+source:
+  fn: pygslib-0.0.0.3.6.tar.gz
+  url: https://pypi.python.org/packages/source/p/pygslib/pygslib-0.0.0.3.6.tar.gz
+  md5: e633ce69651e4ca4d8c119297130fc74
+#  patches:
+   # List any patch files here
+   # - fix.patch
+
+# build:
+  # noarch_python: True
+  # preserve_egg_dir: True
+  # entry_points:
+    # Put any entry points (scripts to be generated automatically) here. The
+    # syntax is module:function.  For example
+    #
+    # - pygslib = pygslib:main
+    #
+    # Would create an entry point called pygslib that calls pygslib.main()
+
+
+  # If this is a new build for the same version, increment the build
+  # number. If you do not include this key, it defaults to 0.
+  # number: 1
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - numpy
+    - pandas
+    - nose
+    - mock
+    - scipy
+    - vtk
+    - ipython
+
+  run:
+    - python
+    - numpy
+    - pandas
+    - nose
+    - mock
+    - scipy
+    - vtk
+    - ipython
+
+test:
+  # Python imports
+  imports:
+    - pygslib
+    - pygslib.tests
+
+  # commands:
+    # You can put test commands to be run here.  Use this to test that the
+    # entry points work.
+
+
+  # You can also put a file called run_test.py in the recipe that will be run
+  # at test time.
+
+  requires:
+    - mock
+    - nose
+    - numpy
+    - pandas >=0.17
+    - scipy
+    # Put any additional test requirements here.  For example
+    # - nose
+
+about:
+  home: https://github.com/opengeostat/pygslib
+  license: MIT License
+  summary: 'Python wrap of GSLIB modified code and general geostatistical package'
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml

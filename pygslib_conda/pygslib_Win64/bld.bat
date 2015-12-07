@@ -1,4 +1,6 @@
-conda config --add channels https://conda.binstar.org/ioos
+:: pip install pyevtk
+
+conda config --add channels opengeostat
 
 "%PYTHON%" setup.py config --compiler=mingw32 build --compiler=mingw32 install
 if errorlevel 1 exit 1

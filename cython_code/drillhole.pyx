@@ -1119,6 +1119,24 @@ cdef class Drillhole:
         # and reindex
         self.table[table_name].index = np.arange(self.table[table_name].shape[0])
 
+
+    # TODO: develop this: 
+    # compositing
+    cpdef downh_composite(self, str table_name, double tolerance=0.01):
+        print 'we are working on that'
+
+    cpdef bench_composite(self, str table_name, 
+                         double zmax,
+                         double bench,
+                         double tolerance=0.01):
+        print 'we are working on that'
+
+
+    # TODO: develop this: 
+    cpdef merge_table(self, str table1, str table2, double tolerance=0.01):
+        print 'we are working on that'
+    
+
     #-------------------------------------------------------------------
     #       VTK export 
     #-------------------------------------------------------------------

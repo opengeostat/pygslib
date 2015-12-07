@@ -1,7 +1,5 @@
 #!/bin/bash
 
-conda config --add channels opengeostat
-
 $PYTHON setup.py install
 
 # Add more build steps here, if they are necessary.
