@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 '''
 
-
+import vtk
 cimport numpy as np
 import numpy as np
 from libc.math cimport sin
@@ -31,7 +31,7 @@ import pandas as pd
 import warnings
 
 #-------------------------------------------------------------------
-#  General functions
+#  General functions for desurvey 
 #-------------------------------------------------------------------
 cpdef ang2cart( float azm,
                 float dip):
@@ -74,15 +74,17 @@ cpdef ang2cart( float azm,
 
     """
 
-    # output 
-    cdef float x
-    cdef float y
-    cdef float z
+    # output
+    cdef: 
+        float x
+        float y
+        float z
 
     # internal
-    cdef float razm
-    cdef float rdip
-    cdef float DEG2RAD
+    cdef:
+        float razm
+        float rdip
+        float DEG2RAD
 
     DEG2RAD=3.141592654/180.0
 
@@ -140,15 +142,17 @@ cpdef cart2ang( float x,
     """
 
     # out 
-    cdef float azm
-    cdef float dip
+    cdef:
+        float azm
+        float dip
 
 
     # internal
-    cdef float razm
-    cdef float rdip
-    cdef float RAD2DEG
-    cdef float pi
+    cdef:
+        float razm
+        float rdip
+        float RAD2DEG
+        float pi
 
     RAD2DEG=180.0/3.141592654
     pi = 3.141592654
@@ -220,19 +224,21 @@ cpdef interp_ang1D( float azm1,
 
     """
     # output
-    cdef float azm
-    cdef float dip
+    cdef:
+        float azm
+        float dip
 
     # internal
-    cdef float x1
-    cdef float y1
-    cdef float z1
-    cdef float x2
-    cdef float y2
-    cdef float z2
-    cdef float x
-    cdef float y
-    cdef float z
+    cdef:
+        float x1
+        float y1
+        float z1
+        float x2
+        float y2
+        float z2
+        float x
+        float y
+        float z
 
 
     # convert angles to coordinates
@@ -304,19 +310,21 @@ cpdef dsmincurb( float len12,
     """
 
     # output
-    cdef float dz
-    cdef float dn
-    cdef float de 
+    cdef:
+        float dz
+        float dn
+        float de 
 
 
     # internal 
-    cdef float i1
-    cdef float a1
-    cdef float i2
-    cdef float a2
-    cdef float DEG2RAD
-    cdef float rf
-    cdef float dl
+    cdef:
+        float i1
+        float a1
+        float i2
+        float a2
+        float DEG2RAD
+        float rf
+        float dl
 
     DEG2RAD=3.141592654/180.0
 
@@ -399,36 +407,37 @@ cpdef desurv1dh(int indbs,
     
    
     """
-
-
+    
     # output (anges at begin, mid and end interval)
-    cdef float azt
-    cdef float dipt
-    cdef float xt
-    cdef float yt
-    cdef float zt
+    cdef:
+        float azt
+        float dipt
+        float xt
+        float yt
+        float zt
 
     # internal
-    cdef int i
-    cdef int j
-    cdef float a,
-    cdef float b
-    cdef float azm1
-    cdef float dip1
-    cdef float azm2
-    cdef float dip2
-    cdef float len12
-    cdef float d1
-    cdef float EPSLON=1.0e-4
-    cdef float xa
-    cdef float ya
-    cdef float za
-    cdef float xb
-    cdef float yb
-    cdef float zb
-    cdef float dz
-    cdef float dn
-    cdef float de
+    cdef:
+        int i
+        int j
+        float a,
+        float b
+        float azm1
+        float dip1
+        float azm2
+        float dip2
+        float len12
+        float d1
+        float EPSLON=1.0e-4
+        float xa
+        float ya
+        float za
+        float xb
+        float yb
+        float zb
+        float dz
+        float dn
+        float de
 
     assert ats[indbs]<EPSLON, 'first survey > 0 at %d' % indbs
 
@@ -504,6 +513,354 @@ cpdef desurv1dh(int indbs,
 
     return   azt, dipt, xt, yt, zt
 
+
+#-------------------------------------------------------------------
+#  General functions for fill gaps and merge
+#-------------------------------------------------------------------
+cdef min_int(double la, 
+             double lb, 
+             double ia, 
+             double ib, 
+             double tol=0.01):
+    """
+    ia, ib, l = min_int(la, lb, ia, ib, tol=0.01)
+    
+    This is a function to be used from merge_one_dhole
+    
+    Given two complete drillholes A, B (no gaps and up to the end of the drillhole), this function returns
+    the smaller of two intervals FromA[ia] FromB[ib] and updates the 
+    indices ia and ib. There are three posible outcomes
+    
+    - FromA[ia]==FromB[ib]+/- tol. Returns mean of FromA[ia], FromB[ib] and ia+1, ib+1
+    - FromA[ia] <FromB[ib]. Returns FromA[ia] and ia+1, ib
+    - FromA[ia]> FromB[ib]. Returns FromB[ia] and ia, ib+1
+    
+    
+    
+    """
+    
+    # equal ?
+    if (lb-1)<=la<=(lb+1):
+        return ia+1, ib+1, (la+lb)/2
+        
+    # la < lb ?
+    if la<lb:
+        return ia+1, ib, la
+    
+    # lb < la ?
+    if lb<la:
+        return ia, ib+1, lb
+
+cdef merge_one_dhole(double[:] la,
+              double[:] lb, 
+              long[:] ida, 
+              long[:] idb, 
+              double tol=0.01):
+    """
+    n, lab, newida, newidb = merge_one_dhole(la,lb, ida, idb, tol=0.01)
+    
+    Function to merge one drillhole. 
+    
+    Notes: 
+    - Full drillhole is required (no gaps) and note that length are used 
+    instead From-To. 
+    - The length at the end of the drillhole must be the same
+    
+    Returns:
+    n: number of intervals
+    lab: length from collar of each interval
+    newida, newidb: Id linking data with the original tables a, b.
+    
+    """
+    
+    # general declarations
+    cdef:
+        int ia=0
+        int ib=0
+    
+        int maxia= len (la)
+        int maxib= len (lb)
+        int maxiab= len (lb) + len (la)
+        bint inhole = True
+        int n=-1 
+    
+    # prepare output as numpy arrays
+    np_newida= np.zeros(maxiab, dtype=int)
+    np_newidb= np.zeros(maxiab, dtype=int)
+    np_lab= np.zeros(maxiab, dtype=float)
+    
+    # get memory view of the numpy arrays    
+    cdef:
+        long[::1] newida = np_newida
+        long[::1] newidb = np_newidb
+        double[::1] lab = np_lab
+    
+    #check those are complete dholes
+    assert la[maxia-1]==lb[maxib-1]
+    
+    #loop on drillhole
+    while inhole: 
+        # get the next l interval and l idex for drillhole a and b
+        ia, ib, l = min_int(la[ia], lb[ib], ia, ib, tol=0.01)
+        n+=1
+        newida[n]=ida[ia-1]
+        newidb[n]=idb[ib-1]
+        lab[n]=l
+        
+        #this is the end of hole (this fails if maxdepth are not equal)
+        if ia==maxia or ib==maxib: 
+            inhole=False
+    
+    return n, np_lab[:n+1], np_newida[:n+1], np_newidb[:n+1]
+
+cdef fillgap1Dhole(double[:] in_f, 
+            double[:] in_t, 
+            long[:] id, 
+            double tol=0.01,
+            double endhole=-1):
+    """
+    np_nf,np_nt,np_nID,np_gap,np_overlap = illgap(in_f, in_t, id, tol=0.01, endhole=-1)
+    
+    Function to fill gaps in one drillhole. 
+    
+    Input:
+    in_f, in_t, id: from, to intervals and interval ID.
+        The insterval ID is required to link back sample values after
+        adding gaps
+    tol: default 0.01. Tolerance
+        gaps and overlaps <= tolerance will be ignored
+    endhole: default -1. end of hold length
+        if endhole>-1 a gap will be added if TO.last< endhole +/- tol
+        if endhole>-1 and TO.last> endhole +/- tol a warning will be raised
+    
+    Returns:
+    np_nf,np_nt,np_nID: numpy 1D arrays with new from, to and interval ID
+    np_gap,np_overlap: numpy 1D arrays with FROM position where gaps and 
+                       overlaps where detected.
+    
+    """
+    
+    cdef: 
+        int i
+        int nint=-1
+        int ngap=-1
+        int noverlap=-1
+        int ndat= len(in_f)
+    
+    #make a deep copy of the from to intervals and create a memory view
+    np_f= np.zeros(ndat, dtype=float)
+    np_t= np.zeros(ndat, dtype=float)
+    cdef:
+        double[:] f = np_f
+        double[:] t = np_t
+    for i in range(ndat):
+        f[i]=in_f[i]
+        t[i]=in_t[i]
+    
+    #make a long array (reserve memory space)
+    np_nf= np.zeros(ndat*2+4, dtype=float)
+    np_nt= np.zeros(ndat*2+4, dtype=float)
+    np_nID= np.zeros(ndat*2+4, dtype=int)
+    np_gap= np.zeros(ndat*2+4, dtype=int)
+    np_overlap= np.zeros(ndat*2+4, dtype=int)
+    cdef:
+        double[:] nt = np_nt
+        long[:] nID = np_nID
+        long[:] gap = np_gap
+        double[:] nf = np_nf
+        long[:] overlap = np_overlap
+    
+    # gap first interval 
+    if f[0]>tol:
+        nint+=1
+        nf[nint]=0.
+        nt[nint]=f[0]
+        nID[nint]=-999
+        ngap+=1
+        gap[ngap]=id[0]
+               
+    
+    for i in range(ndat-1):
+        
+        # there is no gap?
+        if -tol<=f[i+1]-t[i]<=tol: 
+            # existing sample
+            nint+=1
+            nf[nint]=f[i]
+            nt[nint]=f[i+1]
+            nID[nint]=id[i]
+            continue
+
+        # there is a gap?
+        if f[i+1]-t[i]>=tol: 
+            # existing sample
+            nint+=1
+            nf[nint]=f[i]
+            nt[nint]=t[i]
+            nID[nint]=id[i]
+            #gap
+            nint+=1
+            nf[nint]=t[i]
+            nt[nint]=f[i+1]
+            nID[nint]=-999
+            ngap+=1
+            gap[ngap]=id[i]
+            continue 
+            
+        # there is overlap?
+        if f[i+1]-t[i]<=-tol: 
+            # the overlap is smaller that the actual sample? 
+            if f[i+1]>f[i]: 
+                # existing sample
+                nint+=1
+                nt[nint]=max(f[i+1],f[i]) # ising max here to avoid negative interval from>to
+                nf[nint]=f[i]
+                nID[nint]=id[i]
+                noverlap+=1
+                overlap[noverlap]=id[i]
+                continue 
+            # large overlap?
+            else: 
+                #whe discard next interval by making it 0 length interval
+                # this will happend only in unsorted array... 
+                noverlap+=1
+                overlap[noverlap]=id[i]
+                # update to keep consistency in next loopondh
+                nint+=1
+                nt[nint]=t[i] # ising max here to avoid negative interval from>to
+                nf[nint]=f[i]
+                nID[nint]=id[i]
+                f[i+1]=t[i+1]
+               
+    # add last interval
+    # one sample drillhole? 
+    if ndat==1:
+        nint+=1
+        nt[nint]=t[0] # ising max here to avoid negative interval from>to
+        nf[nint]=f[0]
+        nID[nint]=id[0]
+        
+    # there are not problem (like a gap or an overlap)
+    if (-tol<=f[ndat-1]-t[ndat-2]<=tol) and ndat>1:
+        nint+=1
+        nt[nint]=t[ndat-1] # ising max here to avoid negative interval from>to
+        nf[nint]=f[ndat-1]
+        nID[nint]=id[ndat-1]
+    else:
+        # just add the sample (the problem was fixed in the previous sample)
+        nint+=1
+        nt[nint]=t[ndat-1] # ising max here to avoid negative interval from>to
+        nf[nint]=f[ndat-1]
+        nID[nint]=id[ndat-1]
+    
+    # add end of hole
+    if endhole>-1:
+        # there is an end of hole gap?
+        if (tol>endhole-t[ndat-2]) and ndat>1:
+            nint+=1
+            nt[nint]=endhole
+            nf[nint]=t[ndat-1]
+            nID[nint]=-999
+            ngap+=1
+            gap[ngap]=-888  # this is a gap at end of hole
+        # there is an end of hole overlap?
+        if (tol>endhole-t[ndat-2]) and ndat>1:
+            nint+=1
+            nt[nint]=endhole
+            nf[nint]=t[ndat-1]
+            nID[nint]=-999
+            noverlap+=1
+            overlap[noverlap]=-888 # this is an overlap at end of hole
+        
+        # there is no gap or overlap, good... then fix small differences
+        if (tol<endhole-t[ndat-2]) and (endhole-t[ndat-2]>-tol):
+            nt[nint]=endhole
+
+    # make first interval start at zero, if it is != to zero but close to tolerance
+    if 0<nf[0]<=tol:
+        nf[0]=0
+        
+
+
+        
+    
+    return np_nf[:nint+1],np_nt[:nint+1],np_nID[:nint+1],np_gap[:ngap+1],np_overlap[:noverlap+1]
+
+
+
+#def __intersectAB(tbla, tblb, tol = 0.01):
+    
+#    # prepare data
+    
+#    # get a set of properties from dictionary
+#    pr={}
+#    columns = tbla.columns
+#    for p in columns: 
+#        pr[p]= tbla[p].values
+    
+#    pr.keys()
+    
+#    # get the new propery table in a large array to avoid stack 
+#    npr={}
+#    ni = len(tbla)
+#    nj = len(tblb)
+#    for p in columns: 
+#        npr[p]= np.empty(ni*2+nj*2, dtype=tbla[p].dtype)
+
+#    # split table A using from / to in B
+#    n=-1
+#    for i in range(ni):
+#        # copy the intervals
+#        n+=1
+#        for p in columns:
+#            npr[p][n]=tbla[p].values[i] 
+#        for j in range(nj):
+#            # if tb < fa, interval b is above interval a, then continue
+#            if tbla['FROM'].values[i] > tblb['TO'].values[j]-tol:
+#                continue
+#            # if ta < fb interval b is below interval b, then breack (no chance of intersection)
+#            if tbla['TO'].values[i] < tblb['FROM'].values[j]+tol:
+#                break
+#            # if from to are almost coincident we make values equal
+#            if (tblb['TO'].values[j]-tol <= tbla['FROM'].values[i] <= tblb['TO'].values[j]+tol): 
+#                tbla['FROM'].values[j]= tblb['TO'].values[i]
+#            if (tblb['FROM'].values[j]-tol <= tbla['TO'].values[i] <= tblb['FROM'].values[j]+tol): 
+#                tbla['TO'].values[j]= tblb['FROM'].values[i]
+#            if (tblb['TO'].values[j]-tol <= tbla['TO'].values[i] <= tblb['TO'].values[j]+tol): 
+#                tbla['TO'].values[j]= tblb['TO'].values[i]
+#            if (tblb['FROM'].values[j]-tol <= tbla['FROM'].values[i] <= tblb['FROM'].values[j]+tol): 
+#                tbla['FROM'].values[j]= tblb['FROM'].values[i]                
+
+#            #intersect to?
+#            if tbla['FROM'].values[i]<tblb['TO'].values[j]<tbla['TO'].values[i]:
+#                # add one
+#                n+=1
+#                # copy the interval 
+#                for p in columns:
+#                    npr[p][n]=tbla[p].values[i] 
+#                # fix from-to
+#                npr['TO'][n-1]=tblb['TO'].values[j]
+#                npr['FROM'][n]=tblb['TO'].values[j]
+                
+#            #intersect from?
+#            if tbla['FROM'].values[i]<tblb['FROM'].values[j]<tbla['TO'].values[i]:
+#                # add one
+#                n+=1
+#                # copy the interval 
+#                for p in columns:
+#                    npr[p][n]=tbla[p].values[i]  
+#                # fix from-to
+#                npr['TO'][n-1]=tblb['FROM'].values[j]
+#                npr['FROM'][n]=tblb['FROM'].values[j]
+            
+#    # slice unused data and prepare dict for returns    
+#    for p in columns:
+#        npr[p]=npr[p][:n+1]
+    
+    
+#    return pd.DataFrame(npr)
+
+
 #-------------------------------------------------------------------
 #  Drillhole class
 #-------------------------------------------------------------------
@@ -519,6 +876,9 @@ cdef class Drillhole:
     collar : Pandas DataFrame 
         Collar table containing compulsory fields: BHID with any dtype
         and XCOLLAR,YCOLLAR, ZCOLLAR with dtypes float64.  
+        Collar table containing compulsory field: LENGTH with dtypes 
+        float64. This is the length of drillhole and can be used in 
+        some functions, for example, to fill gaps. 
     survey : Pandas DataFrame 
         Survey table containing compulsory fields: BHID with any dtype
         and AT,AZ, DIP with dtypes float64. 
@@ -536,6 +896,11 @@ cdef class Drillhole:
     
     Notes
     -----
+    A new copy of the input data will be created in memory. To work with 
+    shared memory in an external DataFrame you may copy back the table:
+    
+    ex. >> shared_collar = mydrillholeDB.collar 
+    
     1) To add interval tables use addtable
     2) Only the existence of compulsory fields are validated in 
        object initialization and when adding interval tables
@@ -565,6 +930,9 @@ cdef class Drillhole:
         assert 'YCOLLAR' in collar.columns, "collar don't have YCOLLAR column"
         assert 'ZCOLLAR' in collar.columns, "collar don't have ZCOLLAR column"
         
+        if 'LENGTH' not in collar.columns: 
+            warnings.warn('! Collar table without LENGTH field' ) 
+        
         #check we have the rigth naming in survey columns 
         assert 'BHID' in survey.columns, "survey don't have BHID column"
         assert 'AT' in survey.columns, "survey don't have AT column"
@@ -572,10 +940,13 @@ cdef class Drillhole:
         assert 'DIP' in survey.columns, "survey don't have DIP column"
         
         
-        self.collar = collar
-        self.survey = survey
+        self.collar = collar.copy(deep=True) # we remove external reference
+        self.survey = survey.copy(deep=True) # we remove external reference
         self.table = {}
         
+        # sort the data 
+        self.collar.sort_values(by=['BHID'], inplace=True)
+        self.survey.sort_values(by=['BHID','AT'], inplace=True)
            
     
     cpdef addtable(self,object table,str table_name,bint overwrite =False):
@@ -613,14 +984,18 @@ cdef class Drillhole:
         
         
         if table_name not in self.table:
-            self.table[table_name]=table
+            self.table[table_name]=table.copy(deep=True) # we remove external reference
         else:
             if overwrite == True: 
-                self.table[table_name]=table
+                self.table[table_name]=table.copy(deep=True) # we remove external reference
             else:
                 raise NameError('Table %s already exist, use overwrite = True to overwrite' % table_name)
             
-        
+
+        # sort the data 
+        self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
+
+
     cpdef validate(self):
         """
         validate()
@@ -685,6 +1060,13 @@ cdef class Drillhole:
             raise NameError('YCOLLAR in collar table != float64')
         if self.collar['ZCOLLAR'].dtypes!='float64':
             raise NameError('ZCOLLAR in collar table != float64')
+        
+        if 'LENGTH' in self.collar.columns:         
+            if self.collar['LENGTH'].dtypes!='float64':
+                raise NameError('LENGTH in collar table != float64') 
+            if self.collar['LENGTH'].hasnans:
+                raise NameError('Non defined LENGTH values in collar table')
+            
 
         #check SURVEY
         # null values in survey   
@@ -716,6 +1098,13 @@ cdef class Drillhole:
         if error>-1:
             raise NameError('Firts inteval AT!=0 at survey table, positiom %d' %error) 
         
+        #check survey with only one survey occurrence per drillholes: this produces error in desurvey 
+        for i in self.survey['BHID'].unique():
+            ns=self.survey['BHID'][self.survey['BHID'] == i].count()
+            if ns<2:
+                warnings.warn('! survey with one value at BHID: {}. This will produce error at desurvey'.format(i) )
+        
+        
         #check survey without collar
         cID = self.collar['BHID'].values
         for i in self.survey['BHID'].unique(): 
@@ -731,6 +1120,7 @@ cdef class Drillhole:
             
         return None
         # TODO: check table relationship
+        # TODO: check survey.AT.last > endofhole
         
     cdef __checkAt0(self,np.ndarray BHID, np.ndarray[double, ndim=1] AT):
         # this is a hide function
@@ -749,8 +1139,44 @@ cdef class Drillhole:
                 if  AT[i]>0.00001: 
                    return i
         
-        return -1
+        return -1            
+
+    # TODO: Optimize this one, it is too slow
+    cpdef fix_survey_one_interval_err(self, double dummy_at):
+        """
+        fix_survey_one_interval_err(dummy_at)
+        
+        This function add a dummy survey in records with one survey only
+        
+        The desurvey algorithm may produce unexpected results if there is only 
+        one survey interval per drillhole. This function avoid this issue
+        by duplication the survey parameter at a dummy_at position. 
+        
+        """
+        
+        
+        #check survey with only one survey occurrence per drillholes: 
+        #this produces error in desurvey 
+        for i in self.survey['BHID'].unique():
+            ns=self.survey['BHID'][self.survey['BHID'] == i].count()
+            bhid=[]
+            at = []
+            az =[]
+            dip =[]
+            if ns==1:
+                bhid.append(self.survey['BHID'][self.survey['BHID'] == i].iloc[0])
+                az.append(self.survey['AZ'][self.survey['BHID'] == i].iloc[0])
+                dip.append(self.survey['DIP'][self.survey['BHID'] == i].iloc[0])
+                at.append(dummy_at)
             
+            tmp=pd.DataFrame({'BHID':bhid, 'AZ': az, 'DIP': dip, 'AT': at })
+            
+            # append this to survey 
+            self.survey=self.survey.append(tmp)
+            
+            #sort survey
+            self.survey.sort_values(by=['BHID','AT'], inplace=True)
+                
         
     cpdef validate_table(self, table_name): 
         """
@@ -831,6 +1257,7 @@ cdef class Drillhole:
         
         
         # TODO: check overlaps and table relationship
+        # TODO: check TO.last > endofhole
 
     
     cpdef txt2intID(self, str table_name):
@@ -997,18 +1424,18 @@ cdef class Drillhole:
         indet = 0 
         inds = 0
         indt = 0   
-        for jc in range(nc):
+        for jc in range(nc): # for each collar 
             indbs = -1
             indes = -1
             # get first index of the collar jc in survey 
             for js in range(inds, ns):
-                # find index beging and end for the actual collar
+                # find index begin and end for the actual collar
                 if idc[jc]==ids[js]:
                     inds = js
                     indbs = js
                     break
             
-            # get las index of the collar jc in survey 
+            # get last index of the collar jc in survey 
             for js in range(inds, ns):
                 # find index begin and end for the actual collar
                 if idc[jc]!=ids[js]:
@@ -1020,8 +1447,15 @@ cdef class Drillhole:
             # this is not working but check included in validation 
             if indbs==-1 or indes==-1:
                 # do not desurvey this drillhole
-                warnings.warn('! collar without survey, table not desurveyed')
+                warnings.warn('! collar {} without survey, table not desurveyed'.format(idc[jc]))
                 continue
+
+            # this is not working but check included in validation 
+            if indbs==indes:
+                # do not desurvey this drillhole
+                warnings.warn('! collar {} without survey at end collar, table not desurveyed'.format(idc[jc]))
+                continue
+
             
             # with the index indbs and indes we desurvey each collar
             for jt in range(indt, nt):
@@ -1058,67 +1492,442 @@ cdef class Drillhole:
 
 
     #-------------------------------------------------------------------
-    #       Table gap, compositing and processing 
+    #       Table gap, compositing and merging
     #-------------------------------------------------------------------
-    cpdef add_gaps(self, str table_name, double tolerance=0.01):
+    cpdef add_gaps(self,  str table_name, 
+                          str new_table_name, 
+                          bint overwrite =False,
+                          double tol=0.01, 
+                          bint endhole=False,
+                          bint clean=True):
         
-        # some warning if desurveyed
-        if 'xm' in self.table[table_name].columns:
-            warnings.warn('The desurveyed info table {} was removed: '.format(table_name) )
+        """
+        mydrillhole.add_gaps(table_name, new_table_name,
+                             overwrite =False, tol=0.01,
+                             endhole=False, clean=True)
         
-        assert tolerance>=0, 'Negative values of tolerance'  
-        assert self.table[table_name]['FROM'].all>=0, 'Negative values at FROM, you may review and validate your data'       
-        assert self.table[table_name]['TO'].all>=0, 'Negative values at TO, you may review and validate your data'       
+        Fill gaps in one drillhole with new FROM-TO intervals, including 
+        the gaps at collar and at the end of drillholes. 
+        
+        _id0 will be added to the new table and the existing table, 
+        it links input table rows with the output table rows, gaps 
+        have _id0= -999
+        
+               
+        Input:
+        table_name: name of the table to add gaps
+            it must be an existing table at drillhole.table.keys()
+        new_table_name: name of the new table with gaps added
+            it can be a new name, no in drillhole.table.keys()
+            or a table name on drillhole.table.keys() if overwrite =True
+        overwrite: default True. 
+            If the table exist and overwrite = True the existing table 
+            will be overwrite. 
+        tol: default 0.01. 
+            gaps and overlays within tol will be ignore but adjusted
+            in order to impose FROM[i-1]==TO[i]
+        endhole: default False.
+            if true a gap at the end of the drillhole will be added. 
+            The end of the drillhole is calculated from 
+            drillhole.collar['LENGTH'], and error will be raised if:
+            there is no 'LENGTH' field at collar or if there are 
+            undefined values at LENGTH. Warnings will be raised is the 
+            TO  > LENGTH.
+        clean: default True.
+            Delete temporary columns created with suffix __tmp__. 
+        
+        Returns:
+        
+        gap,overlap: _id0 of the raw before the gap or the overlap was 
+                     detected. Gaps and overlaps ate the end of the 
+                     drillhole (if endhole==True) have value -888.
+        
+        """
+        
+        cdef:
+            double l_endhole
+            
+            
+        
+        # check that the table is not in the database
+        if overwrite==False:
+            assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
+        
+        if endhole==True: 
+            assert 'LENGTH' in self.collar.columns, 'There is no LENGTH field at collar, use endhole=False'
+        
+        # sort table
+        self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
+        
+        # add ID to the table
+        self.table[table_name].loc[:,'_id0']= np.arange(self.table[table_name].shape[0])[:]
+        
+        # create a group to easily iterate
+        group=self.table[table_name].groupby('BHID')
+        
+        #add gaps
+        BHID=group.groups.keys()
+        nnf=[]
+        nnt=[]
+        nnID=[]
+        nnBHID=[]
+        nngap= []
+        nnoverlap = []
+        for i in BHID:
+            if endhole:
+                l_endhole=group.get_group(i)['LENGTH'].values
+            else:
+                l_endhole=-1
+            
+            nf,nt,nID,gap,overlap=fillgap1Dhole(in_f = group.get_group(i)['FROM'].values, 
+                                          in_t = group.get_group(i)['TO'].values, 
+                                          id = group.get_group(i)['_id0'].values, 
+                                          tol=tol,
+                                          endhole=l_endhole)
+            
+            nBHID = np.empty([len(nf)], dtype=object, order='C')
+            nBHID[:]=i
+            nnf+=nf.tolist()
+            nnt+=nt.tolist()
+            nnID+=nID.tolist()
+            nnBHID+=nBHID.tolist()
+            nngap+=gap.tolist()
+            nnoverlap+=overlap.tolist()
+    
+        #create new table with gaps (only with fields )
+        newtable=pd.DataFrame({'BHID':nnBHID, 'FROM':nnf,'TO':nnt,'_id0':nnID})
+        
+        newtable=newtable.join(self.table[table_name], on='_id0', rsuffix='__tmp__')
+        
+        #clean if necessary
+        if clean:
+            newtable.drop(
+               ['BHID__tmp__', 'FROM__tmp__','TO__tmp__','_id0__tmp__'],
+               axis=1,inplace=True, errors='ignore')
+        
+        #add table to the class
+        self.addtable(newtable,new_table_name,overwrite)
+                
+        return nngap,nnoverlap
 
-        #clean desurvey data to avoid errors
-        sfield= ['xm','ym','zm','xe','ye','ze', 'xb','yb','zb', 'dipm','azm']
-        for i in sfield:
-            if i in self.table[table_name].columns:
-                self.table[table_name].drop(i, inplace=True)
+
+    cpdef merge(self,str table_A,
+                     str table_B,
+                     str new_table_name,
+                     bint overwrite =False, 
+                     double tol=0.01,
+                     bint clean=True):
+        
+        """
+        mydrillhole.merge(table_A, table_B, new_table_name,
+                          overwrite =False, tol=0.01, clean=True)
+        
+        Combine two tables in one by intersecting intervals. 
+        
+        This function requires drillholes without gaps and overlaps. 
+        run add_gaps in table_A and table_B before using this function
+        
+               
+        Input:
+        table_A: name of the first table
+            it must be an existing table at drillhole.table.keys()
+        table_B: name of the second table
+            it must be an existing table at drillhole.table.keys()
+        new_table_name: name of the new table
+            it may not exists at drillhole.table.keys()
+        overwrite: default True. 
+            If new_table_name exists and overwrite == True the existing 
+            table will be overwrite. 
+        tol: default 0.01. 
+            segments, gaps and overlays within tol will be ignore but 
+            adjusted
+        clean: default True.
+            Delete temporary columns created with suffix __tmp__. 
+        
+        Returns:
+        
+        gap,overlap: _id0 of the raw before the gap or the overlap was 
+                     detected. Gaps and overlaps ate the end of the 
+                     drillhole (if endhole==True) have value -888.
+        
+        """
         
         
-        # iterate to find gaps
-        addf=[]
-        addt=[]
-        addd=[]
-        for dhole in self.collar['BHID'].unique():
-            FROM = self.table[table_name][self.table[table_name]['BHID']==dhole]['FROM'].values
-            TO = self.table[table_name][self.table[table_name]['BHID']==dhole]['TO'].values
-            n= FROM.shape[0]
-            if n==0: 
+        # check that the table is not in the database
+        if overwrite==False:
+            assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
+
+        
+        # sort tables
+        self.table[table_A].sort_values(by=['BHID', 'FROM'], inplace=True)
+        self.table[table_B].sort_values(by=['BHID', 'FROM'], inplace=True)
+        
+        # add ID to tables
+        self.table[table_A].loc[:,'_id0']= np.arange(self.table[table_A].shape[0])[:]
+        self.table[table_B].loc[:,'_id1']= np.arange(self.table[table_B].shape[0])[:]
+        
+        # create a groups to easily iterate
+        groupA=self.table[table_A].groupby('BHID')
+        groupB=self.table[table_B].groupby('BHID')
+        
+        
+        # prepare fixed long array to send data    
+        #    input     
+        np_la=np.empty(self.table[table_A].shape[0], dtype = float)
+        np_lb=np.empty(self.table[table_B].shape[0], dtype = float)
+        np_ida=np.empty(self.table[table_A].shape[0], dtype = int)
+        np_idb=np.empty(self.table[table_B].shape[0], dtype = int)
+        
+        ll = self.table[table_A].shape[0] +  self.table[table_B].shape[0] +10
+        
+        nBHID = np.empty(ll, dtype=object, order='C')
+        
+        cdef:
+            double[::1] la = np_la
+            double[::1] lb = np_lb
+            long[::1] ida  = np_ida
+            long[::1] idb  = np_idb
+            double[::1] lab
+            long[::1] newida
+            long[::1] newidb 
+            
+            int k
+            int nk
+
+            int j
+            int nj
+            
+            int na
+            int nb
+            
+            int n
+            
+            double endf
+        
+        #merge
+        BHID=self.collar.BHID.values
+        nnf=[]
+        nnt=[]
+        nnIDA=[]
+        nnIDB=[]
+        nnBHID=[]
+        
+        keysA= groupA.groups.keys()
+        keysB= groupB.groups.keys()
+        
+        for i in BHID:
+            
+            
+            # if we really have to merge
+            if (i in keysA) and (i in keysB): 
+            
+                # prepare input data
+                # table A drillhole i
+                nk=groupA.get_group(i).shape[0]
+                for k in range(nk):
+                    la[k]=groupA.get_group(i)['FROM'].values[k]
+                    ida[k]=groupA.get_group(i)['_id0'].values[k]
+                
+                la[nk]=groupA.get_group(i)['TO'].values[nk-1]
+                ida[nk]=groupA.get_group(i)['_id0'].values[nk-1]
+                
+                # table B drillhole i
+                nj=groupB.get_group(i).shape[0]
+                for j in range(nj):
+                    lb[j]=groupB.get_group(i)['FROM'].values[j]
+                    idb[j]=groupB.get_group(i)['_id1'].values[j]
+                
+                lb[nj]=groupB.get_group(i)['TO'].values[nj-1]
+                idb[nj]=groupB.get_group(i)['_id1'].values[nj-1]
+                
+                # make sure the two drill holes have the same length 
+                # by adding a gap at the end of the shortest drillhole
+                if lb[nj] > la[nk]:
+                    nk+=1
+                    la[nk] = lb[nj]
+                    ida[nk] = -999
+                    endf = lb[nj]
+                
+                elif la[nk] > lb[nj]:
+                    nj+=1
+                    lb[nj] = la[nk]
+                    idb[nj] = -999
+                    endf = la[nk]
+                
+                # merge drillhole i
+                n, np_lab, np_newida, np_newidb = merge_one_dhole(la[:nk+1],lb[:nj+1], ida[:nk+1], idb[:nj+1], tol=0.01)
+
+                # dhid
+                nBHID[:n]=i
+                nnBHID+=nBHID[:n].tolist()
+                
+                # from
+                nnf+=np_lab[:-1].tolist()
+                # to
+                nnt+=np_lab[1:].tolist() 
+                
+                # IDs
+                nnIDA+=np_newida[:-1].tolist()
+                nnIDB+=np_newidb[:-1].tolist()
+            
                 continue
-                            
-            if FROM[0] > tolerance:
-                addf.append(0)
-                addt.append(FROM[0])
-                addd.append(dhole)
-            for i in range(n-1):
-                # ok but we fix small gaps
-                if FROM[i+1]-TO[i]<tolerance and FROM[i+1]-TO[i]>-tolerance:
-                    # fix small gaps
-                    FROM[i+1]=TO[i]
-                #this is an overlap, we warm and do nothing
-                if FROM[i+1]-TO[i]<-tolerance:
-                    warnings.warn('Overlap at DHOLE: {}, FROM: {} '.format(dhole, FROM[i+1]) )   
+            
+            # it is only on table A?
+            if (i in keysA): 
+                
+                n= groupA.get_group(i).shape[0]
+                
+                # in this case we add table A and ignore B
+                # dhid
+                
+                nBHID[:n]=i
+                nnBHID+=nBHID[:n].tolist()
+                
+                # from
+                nnf+=groupA.get_group(i)['FROM'].values.tolist()
+                # to
+                nnt+=groupA.get_group(i)['TO'].values.tolist() 
+                
+                # IDs
+                tmp=-999*np.ones(n, dtype='int')
+                nnIDA+=groupA.get_group(i)['_id0'].values.tolist()
+                nnIDB+= tmp.tolist() 
+                continue
+            
+            # it is only on table B?
+            if (i in keysB): 
+                
+                n= groupB.get_group(i).shape[0]
+                
+                # in this case we add table B and ignore A
+                # dhid
+                
+                nBHID[:n]=i
+                nnBHID+=nBHID[:n].tolist()
+                
+                # from
+                nnf+=groupB.get_group(i)['FROM'].values.tolist()
+                # to
+                nnt+=groupB.get_group(i)['TO'].values.tolist() 
+                
+                # IDs
+                tmp=-999*np.ones(n, dtype='int')
+                nnIDA+= tmp.tolist() 
+                nnIDB+= groupB.get_group(i)['_id1'].values.tolist() 
+                continue
+                
 
-                #this is a gap
-                if FROM[i+1]-TO[i]>tolerance:   
-                    addd.append(dhole)
-                    addf.append(TO[i])     #from 
-                    addt.append(FROM[i+1]) #to
-                    
         
-        # Here we create a pandas dataframe with gaps
-        gaps=pd.DataFrame({'BHID':addd, 'FROM': addf, 'TO': addt})
+    
+        #create new table with intervals and ID
+        newtable=pd.DataFrame({'BHID':nnBHID, 'FROM':nnf,'TO':nnt,'_id0':nnIDA,'_id1':nnIDB})
         
-        # and we append to the table (other fields will be blank or nan)
-        self.table[table_name]=self.table[table_name].append(gaps, ignore_index=True)
-        
-        # finally we sort in place
-        self.table[table_name].sort_values(by=['BHID','FROM'], inplace=True)
-        # and reindex
-        self.table[table_name].index = np.arange(self.table[table_name].shape[0])
+        # merge with existing data
+        newtable=newtable.join(self.table[table_A], on='_id0', rsuffix='__tmp__')
+        newtable=newtable.join(self.table[table_B], on='_id1', rsuffix='__tmp__')
 
+        
+        #clean if necessary
+        if clean:
+            newtable.drop(
+               ['BHID__tmp__', 'FROM__tmp__','TO__tmp__','_id0__tmp__','_id1__tmp__'],
+               axis=1,inplace=True, errors='ignore')
+        
+        #add table to the class
+        self.addtable(newtable,new_table_name,overwrite)
+
+
+    cpdef fix_zero_interval(self, str table_name, 
+                          str new_table_name, 
+                          bint overwrite =False,
+                          double tol=0.01):
+        
+        """
+        mydrillhole.fix_zero_interval(table_name, new_table_name,
+                          overwrite =False, tol=0.01)
+        
+        Remove zero length intervals 
+        
+        Input:
+        table_name: name of the table
+        
+        new_table_name: name of the new table
+            it may not exists at drillhole.table.keys()
+        overwrite: default True. 
+            If new_table_name exists and overwrite == True the existing 
+            table will be overwrite. 
+        tol: default 0.01. 
+            segments with length<= 0.01 will be considered as zero
+            length and removed
+                        
+        """
+        print 'we are working on this'
+        pass
+
+     
+#    cpdef merge_table(self, str tableA, str tableB, str tblNew= '', 
+#                      bint overwrite =False, double tol=0.01):
+        
+#        # Steep 0: prepare some output
+        
+#        # list of dholes
+#        cdef np.ndarray bhidA=self.table[tableA]['BHID'].unique()
+#        bhidB=self.table[tableB]['BHID'].unique()
+        
+#        # these are the table splits not merged 
+#        tA_split=pd.DataFrame({}) 
+#        tB_split=pd.DataFrame({}) 
+        
+#        for s in self.table[tableA].columns:
+#            tA_split[s]= pd.Series(name=s, dtype=self.table[tableA][s].dtype)
+
+#        for s in self.table[tableB].columns:
+#            tB_split[s]= pd.Series(name=s, dtype=self.table[tableB][s].dtype)
+        
+
+        
+#        # Steep 1: group dataframes in order to iterate by drillhole
+#        tbla = self.table[tableA].groupby('BHID')
+#        tblb = self.table[tableB].groupby('BHID')
+        
+#        # Steep 1: split table A using intervals in table B
+#        for dh in bhidA:
+            
+#            if dh in bhidB: 
+#                tA= __intersectAB(tbla.get_group(dh), 
+#                                   tblb.get_group(dh), tol)
+#            else: 
+#                tA= tbla.get_group(dh)
+            
+            
+#            tA_split= pd.concat([tA_split,tA])
+        
+        
+#        # Steep 2: split table B using intervals in table A       
+#        for dh in bhidB:
+            
+#            if dh in bhidA: 
+#                tB= __intersectAB(tblb.get_group(dh), 
+#                                  tA_split.get_group(dh), tol)
+#            else:
+#                tB = tblb.get_group(dh)
+                
+#            tB_split= pd.concat([tB_split,tB])
+        
+        
+#        # Steep 3: merge by BHID, FROM table A and B. 
+#        tC_split=tA_split.merge(tB_split, how='outer', on=['BHID', 'FROM', 'TO'], 
+#                suffixes=('_A', '_B'), copy=True, indicator=True)
+        
+#        tC_split.sort_values(['BHID', 'FROM'], inplace =True)
+#        tC_split.index = np.arange(tC_split.shape[0])
+        
+#        # if name provided add table to the database
+#        if tblNew != '': 
+#            self.addtable(tC_split, tblNew, overwrite)
+        
+#        return tA_split,tB_split, tC_split
+         
 
     # TODO: develop this: 
     # compositing
@@ -1129,20 +1938,15 @@ cdef class Drillhole:
                          double zmax,
                          double bench,
                          double tolerance=0.01):
-        print 'we are working on that'
-
-
-    # TODO: develop this: 
-    cpdef merge_table(self, str table1, str table2, double tolerance=0.01):
-        print 'we are working on that'
+        print 'we are working on that'        
     
 
     #-------------------------------------------------------------------
     #       VTK export 
     #-------------------------------------------------------------------
-    cpdef to_vtk_line(self, str table_name, str field, double nanval=0):
+    cpdef export_core_vtk_line(self, str table_name, str filename,  double nanval=0, str title = '', bint binary=True):
         """
-        to_vtk_point(table_name, field, nanval=0)
+        export_core_vtk_line(table_name, filename, nanval=0, binary=True)
         
         Export desurveyed drillhole table to vtk lines. Endpoints 
         are required.
@@ -1151,23 +1955,32 @@ cdef class Drillhole:
         Parameters
         ----------
         table_name : str
-        file_name : str 
+        filename : str 
+            This is the absolute or relative file path and name. 
+        title : str 
+            The file header (or title, or comment)
+        nanval: float
+            Numeric fields with nan values will be replaced with nanval
+        binary: boolean  (default True)
+            If true export data in binary format, otherwise the output 
+            will be in ascii format 
+        
         
         See Also
         --------
-        to_vtk_points
-        
+        pygslib.vtktool 
         
         Notes
         -----
-
+        Note: To export to VTK points see pygslib.vtktool 
         
         Examples
         --------
         
-        >>> mydrillhole.to_vtk_line('assay', 'field', nanval=0)
+        >>> mydrillhole.export_core_vtk_line('assay', 'assay_line.vtk')
         
-        """  
+        """ 
+        
         #check that table exists      
         assert table_name in self.table, '%s not exist in this drillhole database' % table_name
         
@@ -1179,11 +1992,10 @@ cdef class Drillhole:
         assert 'xb' in self.table[table_name].columns, "table without xb column"
         assert 'yb' in self.table[table_name].columns, "table without yb column"
         assert 'zb' in self.table[table_name].columns, "table without zb column"
-        assert self.table[table_name][field].dtype!=object, "dtype object not supported in field"
+        assert len(title)<=256, "The title exceeded the maximum 256 characters"
         
         
-        cdef int i, n = self.table[table_name].values.shape[0]
-        
+        cdef int l, n
         cdef np.ndarray[double, ndim=1] xb = self.table[table_name]['xb'].values
         cdef np.ndarray[double, ndim=1] yb = self.table[table_name]['yb'].values
         cdef np.ndarray[double, ndim=1] zb = self.table[table_name]['zb'].values
@@ -1191,120 +2003,83 @@ cdef class Drillhole:
         cdef np.ndarray[double, ndim=1] ye = self.table[table_name]['ye'].values
         cdef np.ndarray[double, ndim=1] ze = self.table[table_name]['ze'].values
         
-        cdef np.ndarray data = self.table[table_name][field].values
         
-        data[np.isnan(data)]= nanval  # nan non supported by vtk/paraview
-        
-        txt =  '# vtk DataFile Version 4.0\n'
-        txt+=  'Generated by pygslib\n'
-        txt+=  'ASCII\n'
-        txt+=  'DATASET POLYDATA\n'
-        txt+=  'POINTS ' + str(n*2) + ' ' + 'double\n'
-        
-        for i in range(n):
-            txt+= str(xb[i]) + ' ' + str(yb[i]) + ' ' + str(zb[i]) + ' ' \
-                + str(xe[i]) + ' ' + str(ye[i]) + ' ' + str(ze[i]) + '\n'
-
-        txt+= 'LINES ' + str(n) + ' ' + str(3*n) +'\n'
-        
-        for i in range(0,n*2,2):
-            txt+= '2 ' + str(i) + ' ' + str(i+1) + '\n'
-        
-        txt+= 'CELL_DATA ' + str(n) + '\n'     
-        txt+= 'FIELD FieldData 1\n'     
-        
-        #crete dtype mapping
-        dt={'in':' int', '|S':' string', 'fl': ' double'}
-        tid = str(data.dtype)
-        
-        tid = tid[:2]
-        
-        txt+= field + ' 1 ' + str(n) +  dt[tid] + '\n'
-        for i in range(n):
-            txt+= str(data[i]) + '\n'
+        #first we store the data in a set of vtk arrays (that will be cell data)
+        dlen= self.table[table_name].shape[0]
+        vtkfields={}
+        for i in self.table[table_name].columns:
+            # assign the right vtk type 
+            dtype = self.table[table_name][i].dtype
+            if dtype==np.int: 
+                vtkfields[i]= vtk.vtkIntArray()
+            elif dtype==np.float or dtype==np.double: 
+                vtkfields[i]= vtk.vtkDoubleArray()
+            else:
+                vtkfields[i]= vtk.vtkStringArray()
             
-        return txt    
+            # set some properties
+            vtkfields[i].SetName(i)
+            vtkfields[i].SetNumberOfComponents(1)
+            vtkfields[i].SetNumberOfTuples(dlen)
 
-    cpdef to_vtk_point(self, str table_name, str field, double nanval=0):
-        """
-        to_vtk_point(table_name, field, nanval=0)
+            # deep copy data
+            if dtype==np.int or dtype==np.float or dtype==np.double:
+                for l in range(dlen): 
+                    if np.isnan(self.table[table_name][i][l]):
+                        vtkfields[i].SetValue(l,nanval)
+                    else:
+                        vtkfields[i].SetValue(l,self.table[table_name][i][l]) 
+                        
+            else:
+                for l in range(dlen): 
+                    vtkfields[i].SetValue(l,str(self.table[table_name][i][l]))
         
-        Export desurveyed drillhole table to vtk points. Only center 
-        points are exported
-        
-        
-        Parameters
-        ----------
-        table_name : str
-        file_name : str 
-        
-        See Also
-        --------
-        to_vtk_points
-        
-        
-        Notes
-        -----
+        # now we create a set of vtk points 
+        points= vtk.vtkPoints()
+        npoints = dlen*2
 
-        
-        Examples
-        --------
-        
-        >>> mydrillhole.to_vtk_point('assay', 'field', nanval=0)
-        
-        """        
-        
-        #check that table exists      
-        assert table_name in self.table, '%s not exist in this drillhole database' % table_name
-        
-        #check columns 
-        #check we have the rigth naming in collar columns 
-        assert 'xm' in self.table[table_name].columns, "table without xm column"
-        assert 'ym' in self.table[table_name].columns, "table without ym column"
-        assert 'zm' in self.table[table_name].columns, "table without zm column"
-        assert self.table[table_name][field].dtype!=object, "dtype object not supported in field"
-        
-        
-        cdef int i, n = self.table[table_name].values.shape[0]
-        
-        cdef np.ndarray[double, ndim=1] xm = self.table[table_name]['xm'].values
-        cdef np.ndarray[double, ndim=1] ym = self.table[table_name]['ym'].values
-        cdef np.ndarray[double, ndim=1] zm = self.table[table_name]['zm'].values
+        # now we create a set of lines representing the cores and 
+        # a line container (a cell array)
+        line = vtk.vtkLine()
+        lines = vtk.vtkCellArray()
 
-        
-        cdef np.ndarray data = self.table[table_name][field].values
-        
-        data[np.isnan(data)]= nanval  # nan non supported by vtk/paraview
-        
-        
-        
-        txt =  '# vtk DataFile Version 4.0\n'
-        txt+=  'Generated by pygslib\n'
-        txt+=  'ASCII\n'
-        txt+=  'DATASET POLYDATA\n'
-        txt+=  'POINTS ' + str(n) + ' ' + 'double\n'
-        
-        for i in range(n):
-            txt+= str(xm[i]) + ' ' + str(ym[i]) + ' ' + str(zm[i]) + '\n'
-
-        txt+= 'VERTICES 1 ' + str(n+1) + '\n' 
-        txt+= str(n) + ' ' 
-        
-        for i in range(n):
-            txt+= str(i) + ' '
-
-        txt+= '\n' 
-        txt+= 'POINT_DATA ' + str(n) + '\n'     
-        txt+= 'FIELD FieldData 1\n'     
-        
-        #crete dtype mapping
-        dt={'in':' int', '|S':' string', 'fl': ' double'}
-        tid = str(data.dtype)
-        
-        tid = tid[:2]
-        
-        txt+= field + ' 1 ' + str(n) +  dt[tid] + '\n'
-        for i in range(n):
-            txt+= str(data[i]) + '\n'
+        # populate this data
+        n=-1
+        for l in range(dlen):
             
-        return txt  
+            points.InsertNextPoint(xb[l], yb[l], zb[l])
+            points.InsertNextPoint(xe[l], ye[l], ze[l])
+            
+            n=n+1
+            line.GetPointIds().SetId(0,n)
+            n=n+1
+            line.GetPointIds().SetId(1,n)
+            lines.InsertNextCell(line)
+            
+            
+        # Create a polydata to store everything in
+        linesPolyData = vtk.vtkPolyData()
+         
+        # Add the points to the dataset
+        linesPolyData.SetPoints(points)
+ 
+        # Add the lines to the dataset
+        linesPolyData.SetLines(lines)
+ 
+        #add properties 
+        for i in vtkfields:
+            linesPolyData.GetCellData().AddArray(vtkfields[i])
+
+        # save data to VTK file
+        writer = vtk.vtkPolyDataWriter()
+        writer.SetInputData(linesPolyData)
+        if binary == False: 
+            writer.SetFileTypeToASCII()
+        else: 
+            writer.SetFileTypeToBinary()
+        if title != '':
+            writer.SetHeader (title)
+        else: 
+            writer.SetHeader ('Generated by PyGSLIB')
+        writer.SetFileName(filename)
+        writer.Write()

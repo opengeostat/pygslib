@@ -30,6 +30,8 @@ import __trans
 import __draw
 import drillhole
 import blockmodel
+import neighborhood
+import interpolators
 import vtktools
 import nonlinear
 import platform

@@ -13,7 +13,7 @@ Improve algorithms and testing
 ----
 - [] Complete the estimation part for n node, blocks or polygons (kt3D program)
 - [] Fix the issuaes with gaussian anamorphosis and do more testing. 
-- [] Do more testing on GTK selection
+- [] Do more testing on VTK selection
 - [] Do more testing on desurvey drillhole
 
 

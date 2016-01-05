@@ -32,8 +32,6 @@ except ImportError, e:
  warnings.warn('\nWarning:\n pygslib uses vtk but vtk is not installed!')
 
 
-
-
 # This is a plug-in for setuptools that will invoke py.test
 # when you run python setup.py test
 class PyTest(TestCommand):
@@ -47,7 +45,8 @@ class PyTest(TestCommand):
         sys.exit(pytest.main(self.test_args))
 
 # define properties for setup
-""" Note: using this convention for version 
+""" 
+ Note: using this convention for version 
  major.minor[.build[.revision]]
  with development status at third position as follow: 
     0 for alpha (status)
@@ -70,10 +69,11 @@ keywords='geostatistics kriging variogram estimation simulation'
 author='Adrian Martinez Vargas'
 author_email='adriangeologo@yahoo.es'
 url='https://github.com/opengeostat/pygslib'
-            
+ 
+        
 if __name__ == '__main__':
      
-    #fortran code extension
+    #FORTRAN code extension
     #-------------------------------------------------------------------
     #make sure you use the setup from numpy
     from numpy.distutils.core import setup # this is numpy's setup
@@ -164,7 +164,7 @@ if __name__ == '__main__':
                          plot
                          ])
                          
-    #cython code extension
+    #Cython code extension
     #-------------------------------------------------------------------
     from distutils.core import setup    # this is the standard setup
     from distutils.extension import Extension as CYExtension
@@ -187,6 +187,14 @@ if __name__ == '__main__':
                             ['cython_code/nonlinear.pyx'],
 							include_dirs=[numpy.get_include()]) 
 
+    neighborhood = CYExtension( 'pygslib.neighborhood', 
+                            ['cython_code/neighborhood.pyx'],
+							include_dirs=[numpy.get_include()]) 
+
+    interpolators = CYExtension( 'pygslib.interpolators', 
+                            ['cython_code/interpolators.pyx'],
+							include_dirs=[numpy.get_include()])
+
                             
     setup(name=name,
           version=version,
@@ -204,5 +212,10 @@ if __name__ == '__main__':
           tests_require=['numpy', 'pandas>=0.17', 'nose', 'mock', 'scipy'],
           cmdclass={'test': PyTest},   
           install_requires=['numpy', 'pandas', 'scipy'],
-          ext_modules = [drillhole, blockmodel,vtktools,nonlinear])
+          ext_modules = [drillhole,
+                        blockmodel,
+                        vtktools,
+                        nonlinear,
+                        neighborhood,
+                        interpolators])
 

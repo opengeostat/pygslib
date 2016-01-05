@@ -15,6 +15,7 @@
 #temporary files
 *~
 /develop_tmp
+/cross-check-gslib
 .spyderworkspace
 .spyderproject
 
