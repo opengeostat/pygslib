@@ -5,7 +5,7 @@ This is two things:
 
 - a GSLIB FORTRAN code wrapped into python
 - a set of Python/Cython Function and Classes for drillhole processing,
-  block model creation and manipulation, search neighbourhood, VTK
+  block model creation and manipulation, search neighborhood, VTK
   data visualization and exporting and non-linear geostatistical 
   applications 
 
