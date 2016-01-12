@@ -788,79 +788,6 @@ cdef fillgap1Dhole(double[:] in_f,
 
 
 
-#def __intersectAB(tbla, tblb, tol = 0.01):
-    
-#    # prepare data
-    
-#    # get a set of properties from dictionary
-#    pr={}
-#    columns = tbla.columns
-#    for p in columns: 
-#        pr[p]= tbla[p].values
-    
-#    pr.keys()
-    
-#    # get the new propery table in a large array to avoid stack 
-#    npr={}
-#    ni = len(tbla)
-#    nj = len(tblb)
-#    for p in columns: 
-#        npr[p]= np.empty(ni*2+nj*2, dtype=tbla[p].dtype)
-
-#    # split table A using from / to in B
-#    n=-1
-#    for i in range(ni):
-#        # copy the intervals
-#        n+=1
-#        for p in columns:
-#            npr[p][n]=tbla[p].values[i] 
-#        for j in range(nj):
-#            # if tb < fa, interval b is above interval a, then continue
-#            if tbla['FROM'].values[i] > tblb['TO'].values[j]-tol:
-#                continue
-#            # if ta < fb interval b is below interval b, then breack (no chance of intersection)
-#            if tbla['TO'].values[i] < tblb['FROM'].values[j]+tol:
-#                break
-#            # if from to are almost coincident we make values equal
-#            if (tblb['TO'].values[j]-tol <= tbla['FROM'].values[i] <= tblb['TO'].values[j]+tol): 
-#                tbla['FROM'].values[j]= tblb['TO'].values[i]
-#            if (tblb['FROM'].values[j]-tol <= tbla['TO'].values[i] <= tblb['FROM'].values[j]+tol): 
-#                tbla['TO'].values[j]= tblb['FROM'].values[i]
-#            if (tblb['TO'].values[j]-tol <= tbla['TO'].values[i] <= tblb['TO'].values[j]+tol): 
-#                tbla['TO'].values[j]= tblb['TO'].values[i]
-#            if (tblb['FROM'].values[j]-tol <= tbla['FROM'].values[i] <= tblb['FROM'].values[j]+tol): 
-#                tbla['FROM'].values[j]= tblb['FROM'].values[i]                
-
-#            #intersect to?
-#            if tbla['FROM'].values[i]<tblb['TO'].values[j]<tbla['TO'].values[i]:
-#                # add one
-#                n+=1
-#                # copy the interval 
-#                for p in columns:
-#                    npr[p][n]=tbla[p].values[i] 
-#                # fix from-to
-#                npr['TO'][n-1]=tblb['TO'].values[j]
-#                npr['FROM'][n]=tblb['TO'].values[j]
-                
-#            #intersect from?
-#            if tbla['FROM'].values[i]<tblb['FROM'].values[j]<tbla['TO'].values[i]:
-#                # add one
-#                n+=1
-#                # copy the interval 
-#                for p in columns:
-#                    npr[p][n]=tbla[p].values[i]  
-#                # fix from-to
-#                npr['TO'][n-1]=tblb['FROM'].values[j]
-#                npr['FROM'][n]=tblb['FROM'].values[j]
-            
-#    # slice unused data and prepare dict for returns    
-#    for p in columns:
-#        npr[p]=npr[p][:n+1]
-    
-    
-#    return pd.DataFrame(npr)
-
-
 #-------------------------------------------------------------------
 #  Drillhole class
 #-------------------------------------------------------------------
@@ -994,6 +921,33 @@ cdef class Drillhole:
 
         # sort the data 
         self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
+
+
+
+    cpdef del_table(self,str table_name):
+        """
+        del_table(table_name)
+        
+        Delete an interval table from the drillhole database object.
+        
+        Parameters
+        ----------
+        table_name : str 
+                with an the name of the table
+                
+        Examples
+        --------
+        
+        >>> mydrillhole.addtable('assay')
+        
+                
+        """        
+        #check the input is correct
+        if table_name in self.table:
+            del self.table[table_name]
+        else:
+            raise NameError('Table {} not found in the drillhole database object' % table_name)
+            
 
 
     cpdef validate(self):
@@ -1839,14 +1793,27 @@ cdef class Drillhole:
 
     cpdef fix_zero_interval(self, str table_name, 
                           str new_table_name, 
-                          bint overwrite =False,
-                          double tol=0.01):
+                          bint overwrite = False,
+                          double tol = 0.01,
+                          bint clean = True,
+                          bint endhole=False,
+                          bint addgaps=True):
+        
         
         """
-        mydrillhole.fix_zero_interval(table_name, new_table_name,
-                          overwrite =False, tol=0.01)
+        gap_assay,overlap_assay = mydrillhole.fix_zero_interval(
+                          table_name, new_table_name,
+                          overwrite =False, tol=0.01, clean = True,
+                          endhole=False, addgaps=True)
         
         Remove zero length intervals 
+        
+        The function first removes zero intervals and then  
+        add gaps if the gap length is longer than the tolerance. 
+        
+        Note: 
+        This function remove zero intervals and the calls the add_gaps
+        function. 
         
         Input:
         table_name: name of the table
@@ -1859,75 +1826,54 @@ cdef class Drillhole:
         tol: default 0.01. 
             segments with length<= 0.01 will be considered as zero
             length and removed
-                        
+        endhole: default False.
+            if true a gap at the end of the drillhole will be added. 
+            The end of the drillhole is calculated from 
+            drillhole.collar['LENGTH'], and error will be raised if:
+            there is no 'LENGTH' field at collar or if there are 
+            undefined values at LENGTH. Warnings will be raised is the 
+            TO  > LENGTH.
+        clean: default True.
+            Delete temporary columns created with suffix __tmp__.                         
         """
-        print 'we are working on this'
-        pass
 
-     
-#    cpdef merge_table(self, str tableA, str tableB, str tblNew= '', 
-#                      bint overwrite =False, double tol=0.01):
-        
-#        # Steep 0: prepare some output
-        
-#        # list of dholes
-#        cdef np.ndarray bhidA=self.table[tableA]['BHID'].unique()
-#        bhidB=self.table[tableB]['BHID'].unique()
-        
-#        # these are the table splits not merged 
-#        tA_split=pd.DataFrame({}) 
-#        tB_split=pd.DataFrame({}) 
-        
-#        for s in self.table[tableA].columns:
-#            tA_split[s]= pd.Series(name=s, dtype=self.table[tableA][s].dtype)
+        # check that the table is not in the database
+        if overwrite==False:
+            assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
 
-#        for s in self.table[tableB].columns:
-#            tB_split[s]= pd.Series(name=s, dtype=self.table[tableB][s].dtype)
+        gap_assay = []
+        overlap_assay = []
+
+        # sort table
+        self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
+        
+        # remove zero intervals 
+        t=self.table[table_name][self.table[table_name]['TO']-self.table[table_name]['FROM']>=tol]
+
+
+        if addgaps==True:
+            # add gaps
+            self.addtable(t,'__tmp',overwrite =True)
+            gap_assay,overlap_assay = self.add_gaps(table_name='__tmp', 
+                                                         new_table_name=new_table_name, 
+                                                         overwrite = overwrite, 
+                                                         tol=tol, 
+                                                         endhole = endhole,
+                                                         clean = clean)
+
+            
+            #remove table
+            self.del_table('__tmp')
+            
+        else: 
+            # just add table
+            self.addtable(t,new_table_name,overwrite =True)
+        
+        # return outputs
+        return gap_assay,overlap_assay
         
 
-        
-#        # Steep 1: group dataframes in order to iterate by drillhole
-#        tbla = self.table[tableA].groupby('BHID')
-#        tblb = self.table[tableB].groupby('BHID')
-        
-#        # Steep 1: split table A using intervals in table B
-#        for dh in bhidA:
-            
-#            if dh in bhidB: 
-#                tA= __intersectAB(tbla.get_group(dh), 
-#                                   tblb.get_group(dh), tol)
-#            else: 
-#                tA= tbla.get_group(dh)
-            
-            
-#            tA_split= pd.concat([tA_split,tA])
-        
-        
-#        # Steep 2: split table B using intervals in table A       
-#        for dh in bhidB:
-            
-#            if dh in bhidA: 
-#                tB= __intersectAB(tblb.get_group(dh), 
-#                                  tA_split.get_group(dh), tol)
-#            else:
-#                tB = tblb.get_group(dh)
                 
-#            tB_split= pd.concat([tB_split,tB])
-        
-        
-#        # Steep 3: merge by BHID, FROM table A and B. 
-#        tC_split=tA_split.merge(tB_split, how='outer', on=['BHID', 'FROM', 'TO'], 
-#                suffixes=('_A', '_B'), copy=True, indicator=True)
-        
-#        tC_split.sort_values(['BHID', 'FROM'], inplace =True)
-#        tC_split.index = np.arange(tC_split.shape[0])
-        
-#        # if name provided add table to the database
-#        if tblNew != '': 
-#            self.addtable(tC_split, tblNew, overwrite)
-        
-#        return tA_split,tB_split, tC_split
-         
 
     # TODO: develop this: 
     # compositing

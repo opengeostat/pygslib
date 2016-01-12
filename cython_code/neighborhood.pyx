@@ -221,6 +221,11 @@ cdef class Neighborhood:
         self.distance_data2target, self.selected_data = self.tree.query([self.target_x_r[target],
                               self.target_y_r[target],
                               self.target_z_r[target]], k=k, distance_upper_bound=scale*self.axis_x)
+        
+        oks = np.isfinite(self.distance_data2target)
+        self.distance_data2target = self.distance_data2target[oks]
+        self.selected_data = self.selected_data[oks]
+                              
     
     cpdef apply_interpolator(self, object interpolator, object parameters={}, 
                              object dtypes=[float], double scale=1., object k=1):
