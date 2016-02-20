@@ -713,4 +713,75 @@ cdef class Blockmodel:
             data[i]=self.bmtable[i].values
         
         pygslib.vtktools.grid2vtkfile(path, x, y, z, data)
+
+
+    cpdef float2block(self, np.ndarray [double, ndim=1] x, 
+                            np.ndarray [double, ndim=1] y,
+                            np.ndarray [double, ndim=1] z, 
+                            np.ndarray [double, ndim=1] prop,
+                            str prop_name,
+                            bint average = False):
+        """
+        float2block( x, y, z, prop, prop_name)
+                
+        assign point to block  
         
+        TODO: pass array of properties np.ndarray [double, ndim=2] prop and [prop_names]
+        
+          
+        Parameters
+        ----------
+        
+ 
+        Notes
+        -----
+        
+        
+        Examples
+        --------
+        >>> float2block( x, y, z, prop, prop_name= 'Au')
+                
+        """   
+        
+        cdef long i, n
+        cdef np.ndarray [long, ndim=1] bad 
+        
+        bad = np.zeros(x.shape[0], dtype = int)
+        
+        
+        # make sure there is ijk field in model   
+        
+        assert 'IJK' in self.bmtable.columns, 'Error: no IJK field in block model'
+        
+                        
+        # get index ix, iy, iz
+        ix = x2ix (x, self.xorg, self.dx)
+        iy = x2ix (y, self.yorg, self.dy)
+        iz = x2ix (z, self.zorg, self.dz)
+        
+        # calculate ijk
+        ijk = ind2ijk(ix,iy,iz, self.nx,self.ny,self.nz)
+            
+        # set ijk as key for indexing 
+        n = x.shape[0]
+        self.bmtable.set_index('IJK', inplace= True)
+        
+        if average:
+            self.bmtable[prop_name] = 0.
+        else:
+            self.bmtable[prop_name] = np.nan
+        
+        for i in range(n):
+            if (ijk[i] in self.bmtable.index) and (np.isfinite(prop[i])): 
+                #TODO: loop each property
+                if average:
+                    self.bmtable.at[ijk[i],prop_name] = (self.bmtable.at[ijk[i],prop_name] + prop[i])/2.
+                else:
+                    self.bmtable.at[ijk[i],prop_name] =  prop[i]
+            else:
+                bad[i]=1
+        
+        
+        self.bmtable.reset_index('IJK', inplace= True)
+        
+        return bad

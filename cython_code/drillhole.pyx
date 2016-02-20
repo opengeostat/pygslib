@@ -515,6 +515,150 @@ cpdef desurv1dh(int indbs,
 
 
 #-------------------------------------------------------------------
+#  General functions for compositing 
+#-------------------------------------------------------------------
+cpdef composite1dh(double[:] ifrom, 
+                   double[:] ito, 
+                   double[:] ivar, 
+                   double cint = 1., 
+                   double minlen=-1.):
+    '''
+    cfrom, cto, clen, cvar, cacum= composite(ifrom, ito, ivar, cint = 1, minlen=-1)
+    
+    Composite intervals in a single drillhole. The From-To intervals may be sorted. 
+    
+    Note
+    ----
+    See explanation of this implementation at 
+    http://opengeostat.com/downhole-compositing-algorithm/
+       
+    
+    Parameters
+    ----------
+    ifrom, ito:     1D arrays of floats 
+        From - To  interval
+    ivar :   1D array of floats
+        variable to be composited
+    cint: Optional, float, default 1.  
+        length of the compositing intervals
+    minlen: Optional, float, default -1.  
+        minimum length of the composite, if <=0 then minlen = cint/2.
+    
+    Return
+    ------- 
+    (cfrom, cto, clen, cvar, cacum)
+    cfrom, cto:  1D arrays of floats
+         From, To composited intervals 
+    clen, cvar, cacum:  1D arrays of floats     
+         total length of intervals composited
+         variable composited 
+         variable accumulated
+    
+    '''
+    
+    
+    assert len(ifrom) == len(ito)==len(ivar), "Error: ifrom, ito or ivar with different shapes"
+    assert cint>0, "Error compositing length (cint) <= 0 "
+    #assert all(ifrom < ito), "Error: ifrom >= ito, wrong or zero length intervals"
+    #assert all(np.isfinite(ifrom)),"Error: ifrom with not finite elements"
+    #assert all(np.isfinite(ito)),"Error: ito with not finite elements"
+    
+    cdef long i, l, k, ncomp, nintrb
+    
+    #declare the composite/internal arrays
+    cdef:
+        double[::1] cfrom
+        double[::1] cto
+        double[::1] clen
+        double[::1] cvar
+        double[::1] cacum
+        double[::1] iprop
+        double[::1] icum
+
+    #get some array parameters     
+    if minlen<=0:
+        minlen= cint/2.
+
+    ncomp = int(ito[-1]/cint + 1)  # number of composites 
+    nintrb = len(ifrom)           # number of intervals
+
+    # define output arrays
+    cfrom = np.arange(0.,ito[-1]+cint,cint)    # from 
+    cto = np.arange(cint,ito[-1]+2*cint,cint)  # to
+    clen = np.zeros(ncomp)                  # length of composited information, may be != cto - cfrom
+    cvar = np.zeros(ncomp)                  # composited variable
+    cvar[:] = np.nan
+    cacum = np.zeros(ncomp)                 # accumulate variable in the interval (useful for category) 
+    iprop =np.zeros(nintrb)                 # size of interval within composite
+    icum =np.zeros(nintrb)                 # size of interval within composite
+
+    # for each composite 
+    for i in range (ncomp): 
+
+        # initialize proportions 
+        iprop[:]=0
+        icum[:]=0
+        
+        #for each interval 
+        for l in range (nintrb):
+            
+            # ignore interval if variable is nan 
+            if np.isnan(ivar[l]):
+                continue
+
+            # case a, below the composite 
+            if ifrom[l]>=cto[i]: 
+                break
+
+            # case b, over the composite
+            if ito[l]<=cfrom[i]: 
+                continue
+
+            # --these are overlap--
+
+            # case overlap top or contained
+            if ito[l]>cfrom[i] and ito[l]<=cto[i]:     
+
+                # case c, interval in composite
+                if ifrom[l]>=cfrom[i]: 
+                    iprop[l] = ito[l]-ifrom[l]
+                    icum[l] = ivar[l]*iprop[l]
+
+
+                # case d, overlap top
+                else:
+                    iprop[l] = ito[l]-cfrom[i]
+                    icum[l] = ivar[l]*iprop[l]
+
+
+            # case e, composite in interval
+            if ifrom[l]<cfrom[i] and ito[l]>cto[i]: 
+                iprop[l] = cto[i]-cfrom[i]
+                icum[l] = ivar[l]*iprop[l]
+                continue
+
+
+            # case f, overlap bottom
+            if ifrom[l]>=cfrom[i] and ifrom[l]<cto[i] and ito[l]>cto[i]:
+                iprop[l] = cto[i]-ifrom[l]
+                icum[l] = ivar[l]*iprop[l]
+                continue
+
+        clen[i] = np.nansum(iprop)
+        
+        
+        if clen[i]> minlen:  
+            cacum[i] = np.nansum(icum)
+            cvar[i] = cacum[i]/clen[i]  # wighted average
+        else: 
+            cvar[i] = np.nan
+            cacum[i] = np.nan
+
+    
+            
+    return cfrom, cto, clen, cvar, cacum
+
+#-------------------------------------------------------------------
 #  General functions for fill gaps and merge
 #-------------------------------------------------------------------
 cdef min_int(double la, 
@@ -871,6 +1015,10 @@ cdef class Drillhole:
         self.survey = survey.copy(deep=True) # we remove external reference
         self.table = {}
         
+        # set BHID as uppercase to avoid issues
+        self.collar['BHID']= self.collar['BHID'].str.upper()
+        self.survey['BHID']= self.survey['BHID'].str.upper()
+        
         # sort the data 
         self.collar.sort_values(by=['BHID'], inplace=True)
         self.survey.sort_values(by=['BHID','AT'], inplace=True)
@@ -918,7 +1066,9 @@ cdef class Drillhole:
             else:
                 raise NameError('Table %s already exist, use overwrite = True to overwrite' % table_name)
             
-
+        # set BHID as uppercase to avoid issues
+        self.table[table_name]['BHID']= self.table[table_name]['BHID'].str.upper()
+        
         # sort the data 
         self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
 
@@ -1105,6 +1255,8 @@ cdef class Drillhole:
         The desurvey algorithm may produce unexpected results if there is only 
         one survey interval per drillhole. This function avoid this issue
         by duplication the survey parameter at a dummy_at position. 
+        
+        TODO: use collar length instead dummy_at, if LENGTH is defined
         
         """
         
@@ -1877,8 +2029,151 @@ cdef class Drillhole:
 
     # TODO: develop this: 
     # compositing
-    cpdef downh_composite(self, str table_name, double tolerance=0.01):
-        print 'we are working on that'
+    
+    cpdef collar2table(self, str table_name, 
+                      str new_table_name,
+                      collar_prop,
+                      bint overwrite=False):
+        """
+                         
+        mydhole.collar2table(table_name, new_table_name, 
+                     collar_prop= ['TYPE', 'Comment'],
+                     overwrite=False)                          
+        
+        Add collar properties to a table 
+        
+        
+        Input:
+        table_name: name of the table
+        new_table_name: name of the output table
+                
+        collar_prop=: [list] with property names in collar 
+            the property names may exist at drillhole.collar.columns
+            if collar_prop= Null all the Collar properties will be copied
+        
+        overwrite: default False 
+            If new_table_name exists and overwrite == True the existing 
+            table will be overwrite.             
+        
+        """
+        
+        cdef int j, n
+        
+        assert table_name in self.table.keys(), 'The input table {} not in database'.format(table_name)
+        # check that the table is not in the database
+        if overwrite==False:
+            assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
+        
+        if collar_prop == None: 
+            
+            out = pd.merge(self.table[table_name], self.collar,  on ='BHID')
+        
+        else: 
+        
+            assert isinstance (collar_prop, list), 'Error: collar_prop is not a list'
+        
+            n= len(collar_prop)
+    
+            # check that the properties exist in collar
+            for p in collar_prop: 
+                assert p in self.collar.columns, 'Error: The property {} not in collar'.format(p)
+            
+            p = ['BHID'] + collar_prop
+            
+            out = pd.merge(self.table[table_name], self.collar[p],  on ='BHID')
+            
+        
+        self.addtable(table=out,table_name=new_table_name, overwrite=overwrite)
+            
+        
+    
+    cpdef downh_composite(self,  str table_name, 
+                          str variable_name, 
+                          str new_table_name, 
+                          double cint = 1, 
+                          double minlen=-1,                          
+                          bint overwrite =False):
+
+        """
+        mydrillhole.downh_composite(
+                          table_name, 
+                          variable_name, 
+                          new_table_name, 
+                          cint = 1, 
+                          minlen=-1,                          
+                          overwrite =False)
+        
+        Down hole composite (one variable at the time)
+        
+               
+        Input:
+        table_name: name of the table with drillhole intervals
+            it must be an existing table at drillhole.table.keys()
+        variable_name: name of the variable in "table_name" table
+            it must be an existing table at drillhole.table[table_name].columns
+        new_table_name: name of the new table with composites
+            it can be a new name, no in drillhole.table.keys()
+            or a table name on drillhole.table.keys() if overwrite =True
+        cint: default 1, compositing interval length
+            it may be greater than zero 
+        minlen: default -1 minimum composite length
+            if < 0 then minlen will be cint/2.
+        overwrite: default True. 
+            If the table exist and overwrite = True the existing table 
+            will be overwrite. 
+        
+        """
+        
+        
+        # check that the table is not in the database
+        if overwrite==False:
+            assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
+            
+        #check that the variable is the table and the variable type
+        assert variable_name in self.table[table_name].columns, 'Error: The variable {} do not exists in the input table'.format(variable_name)
+        assert type(self.table[table_name][variable_name])==type(np.float), 'Error: The variable {} is not type float'.format(variable_name)
+        
+        
+        # sort table
+        self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
+                
+        # create a group to easily iterate
+        group=self.table[table_name].groupby('BHID')
+        
+        #add gaps
+        BHID=group.groups.keys()
+        nnf=[]
+        nnt=[]
+        nnBHID=[]
+        nnvar= []
+        nnacum = []
+        nnlen = []
+        for i in BHID:
+                                                     
+            nf, nt, nlen, nvar, nacum= composite1dh(ifrom= group.get_group(i)['FROM'].values,
+                                                     ito= group.get_group(i)['TO'].values, 
+                                                     ivar=group.get_group(i)[variable_name].values, 
+                                                     cint=cint, minlen=minlen)
+                                          
+            
+            nBHID = np.empty([len(nf)], dtype=object, order='C')
+            nBHID[:]=i
+            nnf+=nf.tolist()
+            nnt+=nt.tolist()
+            nnBHID+=nBHID.tolist()
+            nnlen+=nlen.tolist()
+            nnvar+=nvar.tolist()
+            nnacum+=nacum.tolist()
+    
+        #create new table with gaps (only with fields )
+        newtable=pd.DataFrame({'BHID':nnBHID, 'FROM':nnf,'TO':nnt,'_len':nnlen, variable_name:nnvar, '_acum':nnacum})
+        
+        #add table to the class
+        self.addtable(newtable,new_table_name,overwrite)
+                
+
+
+
 
     cpdef bench_composite(self, str table_name, 
                          double zmax,

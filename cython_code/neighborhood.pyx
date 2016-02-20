@@ -214,8 +214,12 @@ cdef class Neighborhood:
     
     cpdef get_data(self, int target=0, double scale=1., int k=1): 
         
+        
         # check bounds
         assert target<self.nt, 'target = {} out of bound, use target < {}'.format(target, self.nt)
+
+        #set current tarhet for external reference
+        self.current_target=target 
         
         #select grup of points with the tree
         self.distance_data2target, self.selected_data = self.tree.query([self.target_x_r[target],
@@ -240,7 +244,7 @@ cdef class Neighborhood:
         noutputs=len(dtypes)
         output=[]
         for i in range(noutputs): 
-            output.append(np.empty(self.nt, dtype=dtypes[i]))
+            output.append(np.zeros(self.nt, dtype=dtypes[i]))
 
         
         # apply function

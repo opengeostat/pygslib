@@ -575,7 +575,7 @@ subroutine kt3d( &
         nk   = nk + 1
         xk   = xk + vra(1)
         vk   = vk + vra(1)*vra(1)
-        error = 900000               ! warning, estimate with one sample
+        error = -1               ! warning, estimate with one sample
         return 
     end if
 
