@@ -565,15 +565,6 @@ cpdef composite1dh(double[:] ifrom,
     
     cdef long i, l, k, ncomp, nintrb
     
-    #declare the composite/internal arrays
-    cdef:
-        double[::1] cfrom
-        double[::1] cto
-        double[::1] clen
-        double[::1] cvar
-        double[::1] cacum
-        double[::1] iprop
-        double[::1] icum
 
     #get some array parameters     
     if minlen<=0:
@@ -582,15 +573,33 @@ cpdef composite1dh(double[:] ifrom,
     ncomp = int(ito[-1]/cint + 1)  # number of composites 
     nintrb = len(ifrom)           # number of intervals
 
+
     # define output arrays
-    cfrom = np.arange(0.,ito[-1]+cint,cint)    # from 
-    cto = np.arange(cint,ito[-1]+2*cint,cint)  # to
-    clen = np.zeros(ncomp)                  # length of composited information, may be != cto - cfrom
-    cvar = np.zeros(ncomp)                  # composited variable
-    cvar[:] = np.nan
-    cacum = np.zeros(ncomp)                 # accumulate variable in the interval (useful for category) 
-    iprop =np.zeros(nintrb)                 # size of interval within composite
-    icum =np.zeros(nintrb)                 # size of interval within composite
+    np_cfrom = np.zeros(ncomp)     # from 
+    np_cto = np.zeros(ncomp)       # to
+    np_clen = np.zeros(ncomp)      # length of composited information, may be != cto - cfrom
+    np_cvar = np.zeros(ncomp)      # composited variable
+    np_cvar[:] = np.nan
+    np_cacum = np.zeros(ncomp)     # accumulate variable in the interval (useful for category) 
+    np_iprop =np.zeros(nintrb)     # size of interval within composite
+    np_icum =np.zeros(nintrb)      # size of interval within composite
+
+
+    #declare the composite/internal arrays (memory slice)
+    cdef:
+        double[::1] cfrom = np_cfrom
+        double[::1] cto = np_cto
+        double[::1] clen = np_clen
+        double[::1] cvar = np_cvar
+        double[::1] cacum = np_cacum
+        double[::1] iprop = np_iprop
+        double[::1] icum = np_icum
+
+    #update some from to intervals
+    #TODO: at this point add constraints for contacts
+    for i in range(ncomp):
+        cfrom[i] = i*cint
+        cto[i] =  (i+1)*cint
 
     # for each composite 
     for i in range (ncomp): 
@@ -656,7 +665,7 @@ cpdef composite1dh(double[:] ifrom,
 
     
             
-    return cfrom, cto, clen, cvar, cacum
+    return np_cfrom, np_cto, np_clen, np_cvar, np_cacum
 
 #-------------------------------------------------------------------
 #  General functions for fill gaps and merge
@@ -791,6 +800,7 @@ cdef fillgap1Dhole(double[:] in_f,
         int noverlap=-1
         int ndat= len(in_f)
     
+    
     #make a deep copy of the from to intervals and create a memory view
     np_f= np.zeros(ndat, dtype=float)
     np_t= np.zeros(ndat, dtype=float)
@@ -878,11 +888,13 @@ cdef fillgap1Dhole(double[:] in_f,
                
     # add last interval
     # one sample drillhole? 
+    '''
     if ndat==1:
         nint+=1
         nt[nint]=t[0] # ising max here to avoid negative interval from>to
         nf[nint]=f[0]
         nID[nint]=id[0]
+    '''
         
     # there are not problem (like a gap or an overlap)
     if (-tol<=f[ndat-1]-t[ndat-2]<=tol) and ndat>1:
@@ -1691,6 +1703,7 @@ cdef class Drillhole:
                                           tol=tol,
                                           endhole=l_endhole)
             
+            
             nBHID = np.empty([len(nf)], dtype=object, order='C')
             nBHID[:]=i
             nnf+=nf.tolist()
@@ -1699,6 +1712,7 @@ cdef class Drillhole:
             nnBHID+=nBHID.tolist()
             nngap+=gap.tolist()
             nnoverlap+=overlap.tolist()
+    
     
         #create new table with gaps (only with fields )
         newtable=pd.DataFrame({'BHID':nnBHID, 'FROM':nnf,'TO':nnt,'_id0':nnID})
@@ -2131,7 +2145,7 @@ cdef class Drillhole:
             
         #check that the variable is the table and the variable type
         assert variable_name in self.table[table_name].columns, 'Error: The variable {} do not exists in the input table'.format(variable_name)
-        assert type(self.table[table_name][variable_name])==type(np.float), 'Error: The variable {} is not type float'.format(variable_name)
+        assert np.dtype(self.table[table_name][variable_name])==np.float64, 'Error: The variable {} is not type float64'.format(variable_name)
         
         
         # sort table
