@@ -212,11 +212,14 @@ cdef class Neighborhood:
         else:
             raise StopIteration()
     
-    cpdef get_data(self, int target=0, double scale=1., int k=1): 
+    cpdef get_data(self, int target=0, double scale=1., int k=2): 
         
+        # check k > 1, k==1 produce error 
+        assert k>1, 'Error k={}, make sure to use k>1'.format(k)
         
         # check bounds
         assert target<self.nt, 'target = {} out of bound, use target < {}'.format(target, self.nt)
+        
 
         #set current tarhet for external reference
         self.current_target=target 
