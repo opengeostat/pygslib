@@ -1,6 +1,6 @@
 package:
   name: pygslib
-  version: "0.0.0.3.6"
+  version: "0.0.0.3.7"
 
 source:
   path: /home/adrian/bitbucket/public/pygslib
@@ -48,7 +48,6 @@ test:
   # Python imports
   imports:
     - pygslib
-    - pygslib.tests
 
   # commands:
     # You can put test commands to be run here.  Use this to test that the

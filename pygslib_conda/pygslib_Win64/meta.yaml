@@ -4,7 +4,7 @@
 #c:\>conda install libpython
 package:
   name: pygslib
-  version: "0.0.0.3.6"
+  version: "0.0.0.3.7"
 
 source:
   path: c:/OG_Python/pygslib/
@@ -59,7 +59,6 @@ test:
   # Python imports
   imports:
     - pygslib
-    - pygslib.tests
 
   # commands:
     # You can put test commands to be run here.  Use this to test that the
