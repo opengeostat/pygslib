@@ -1,3 +1,4 @@
+# TODO: Remove constraint scipy 0.16 after Anaconda get fixed the isue with libgfortran3 
 package:
   name: pygslib
   version: "0.0.0.3.7"
@@ -32,17 +33,19 @@ requirements:
     - numpy 
     - pandas
     - matplotlib
-    - scipy
+    - scipy 0.16.0
+    - libgfortran 1.0
 
   run:
     - python
     - numpy
     - pandas
     - matplotlib
-    - scipy
+    - scipy 0.16.0
     - vtk
     - ipython
     - pyevtk
+    - libgfortran 1.0
 
 test:
   # Python imports
@@ -63,7 +66,8 @@ test:
     - nose
     - numpy
     - pandas >=0.17
-    - scipy
+    - scipy 0.16.0
+    - libgfortran 1.0
     # Put any additional test requirements here.  For example
     # - nose
 
