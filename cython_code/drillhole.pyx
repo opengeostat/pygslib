@@ -119,6 +119,13 @@ cpdef cart2ang( float x,
         Coordinates x, y, z of one unit length vector with origin of 
         coordinates at p1 [0,0,0]
         
+    Warning
+    -------
+    If x, y or z are outside the interval [-1,1] the values will be 
+    truncated to 1. If the coordinates are outside this 
+    interval due to rounding error then result will be ok, otherwise
+    the result will be wrong 
+    
     Returns
     -------
     out : tuple of floats, ``(azm, dip)``
@@ -153,21 +160,35 @@ cpdef cart2ang( float x,
         float rdip
         float RAD2DEG
         float pi
+        float EPSLON=1.0e-4
+
+    if abs(x)+EPSLON>1.001 or abs(y)+EPSLON>1.001 or abs(z)+EPSLON>1.001:
+        #print x,y,z
+        warnings.warn('cart2ang: a coordinate x, y or z is outside the interval [-1,1]')
+        
+    # check the values are in interval [-1,1] and truncate if necessary
+    if x>1.: x=1.
+    if x<-1.: x=-1.
+    if y>1.: y=1.
+    if y<-1.: y=-1.   
+    # in case z>1 or z<-1 asin will be out of domain and will produce an error 
+    if z>1.: z=1.
+    if z<-1.: z=-1.
 
     RAD2DEG=180.0/3.141592654
     pi = 3.141592654
 
     if x!=0. and y!= 0.: 
         azm= atan2(x,y)
-        if azm<0:  
+        if azm<0.:  
             azm= azm + pi*2
         azm = azm * RAD2DEG
     else: 
-        azm = 0
+        azm = 0.
 
 
     dip = -asin(z) * RAD2DEG
-
+     
     return azm, dip
 
 
@@ -1606,8 +1627,10 @@ cdef class Drillhole:
                     if endpoints==True:
                         tmpaz,tmpdip,xbt[jt],ybt[jt],zbt[jt] = \
                         desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],fromt[jt],warns)
+                        
                         tmpaz,tmpdip,xet[jt],yet[jt],zet[jt] = \
                         desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],tot[jt],warns)  
+                        
         
         self.table[table_name]['azm'] = azmt
         self.table[table_name]['dipm']= dipmt
@@ -2263,8 +2286,8 @@ cdef class Drillhole:
         assert 'zb' in self.table[table_name].columns, "table without zb column"
         assert len(title)<=256, "The title exceeded the maximum 256 characters"
         
-        
-        cdef int l, n, nancoord, dlen, dlennonan, k
+      
+        cdef int l, n, nancoord, dlen
         cdef np.ndarray[double, ndim=1] xb = self.table[table_name]['xb'].values
         cdef np.ndarray[double, ndim=1] yb = self.table[table_name]['yb'].values
         cdef np.ndarray[double, ndim=1] zb = self.table[table_name]['zb'].values
@@ -2272,19 +2295,18 @@ cdef class Drillhole:
         cdef np.ndarray[double, ndim=1] ye = self.table[table_name]['ye'].values
         cdef np.ndarray[double, ndim=1] ze = self.table[table_name]['ze'].values
         
+      
+        #check all coordinates exist (no nan, no infinite)
+        
+        assert  np.isfinite(xb).all(), "no finite coordinates at xb, please filter out non finite coordinates and try again"
+        assert  np.isfinite(yb).all(), "no finite coordinates at yb, please filter out non finite coordinates and try again" 
+        assert  np.isfinite(zb).all(), "no finite coordinates at zb, please filter out non finite coordinates and try again"
+        assert  np.isfinite(xe).all(), "no finite coordinates at xe, please filter out non finite coordinates and try again"
+        assert  np.isfinite(ye).all(), "no finite coordinates at ye, please filter out non finite coordinates and try again"
+        assert  np.isfinite(ze).all(), "no finite coordinates at ze, please filter out non finite coordinates and try again"
         
         #first we store the data in a set of vtk arrays (that will be cell data)
-        dlen= xb.shape[0]
-        dlennonan =0
-        for l in range(xb.shape[0]): 
-            # this is to ignore points with invalid coordinates
-            if np.isfinite(xb[l]) and \
-               np.isfinite(yb[l]) and \
-               np.isfinite(zb[l]) and \
-               np.isfinite(xe[l]) and \
-               np.isfinite(ye[l]) and \
-               np.isfinite(ze[l]):
-                   dlennonan=dlennonan+1
+        dlen = xb.shape[0]
                 
         vtkfields={}
         for i in self.table[table_name].columns:
@@ -2300,39 +2322,23 @@ cdef class Drillhole:
             # set some properties
             vtkfields[i].SetName(i)
             vtkfields[i].SetNumberOfComponents(1)
-            vtkfields[i].SetNumberOfTuples(dlennonan)
+            vtkfields[i].SetNumberOfTuples(dlen)
 
             # deep copy data
             if dtype==np.int or dtype==np.float or dtype==np.double:
-                k=-1
                 for l in range(dlen): 
-                    if np.isfinite(xb[l]) and \
-                       np.isfinite(yb[l]) and \
-                       np.isfinite(zb[l]) and \
-                       np.isfinite(xe[l]) and \
-                       np.isfinite(ye[l]) and \
-                       np.isfinite(ze[l]):
-                        k=k+1
-                        if np.isnan(self.table[table_name][i][l]):
-                            vtkfields[i].SetValue(k,nanval)
-                        else:
-                            vtkfields[i].SetValue(k,self.table[table_name][i][l]) 
+                    if np.isnan(self.table[table_name][i][l]):
+                        vtkfields[i].SetValue(l,nanval)
+                    else:
+                        vtkfields[i].SetValue(l,self.table[table_name][i][l]) 
                         
             else:
-                k=-1
                 for l in range(dlen): 
-                    if np.isfinite(xb[l]) and \
-                       np.isfinite(yb[l]) and \
-                       np.isfinite(zb[l]) and \
-                       np.isfinite(xe[l]) and \
-                       np.isfinite(ye[l]) and \
-                       np.isfinite(ze[l]):
-                           k=k+1
-                           vtkfields[i].SetValue(k,str(self.table[table_name][i][l]))
+                   vtkfields[i].SetValue(l,str(self.table[table_name][i][l]))
         
         # now we create a set of vtk points 
         points= vtk.vtkPoints()
-        npoints = dlennonan*2
+        npoints = dlen*2
 
         # now we create a set of lines representing the cores and 
         # a line container (a cell array)
@@ -2344,28 +2350,12 @@ cdef class Drillhole:
         nancoord=0
         for l in range(dlen):
             
-            if np.isfinite(xb[l]) and \
-               np.isfinite(yb[l]) and \
-               np.isfinite(zb[l]) and \
-               np.isfinite(xe[l]) and \
-               np.isfinite(ye[l]) and \
-               np.isfinite(ze[l]):
+            n=n+1
+            line.GetPointIds().SetId(0,n)
+            n=n+1
+            line.GetPointIds().SetId(1,n)
+            lines.InsertNextCell(line)
             
-                points.InsertNextPoint(xb[l], yb[l], zb[l])
-                points.InsertNextPoint(xe[l], ye[l], ze[l])
-                
-                n=n+1
-                line.GetPointIds().SetId(0,n)
-                n=n+1
-                line.GetPointIds().SetId(1,n)
-                lines.InsertNextCell(line)
-            
-            else:
-                
-                nancoord+=1
-        
-        if nancoord>0:
-            warnings.warn('! {} coordinates with NaN value detected and not exported'.format(nancoord) )
         
         # Create a polydata to store everything in
         linesPolyData = vtk.vtkPolyData()
