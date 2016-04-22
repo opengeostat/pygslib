@@ -2350,6 +2350,8 @@ cdef class Drillhole:
         nancoord=0
         for l in range(dlen):
             
+            points.InsertNextPoint(xb[l], yb[l], zb[l])
+            points.InsertNextPoint(xe[l], ye[l], ze[l])
             n=n+1
             line.GetPointIds().SetId(0,n)
             n=n+1
