@@ -2285,25 +2285,72 @@ cdef class Drillhole:
         assert 'yb' in self.table[table_name].columns, "table without yb column"
         assert 'zb' in self.table[table_name].columns, "table without zb column"
         assert len(title)<=256, "The title exceeded the maximum 256 characters"
+
+        cdef int l, n, dlen
+        cdef np.ndarray[double, ndim=1] xb 
+        cdef np.ndarray[double, ndim=1] yb 
+        cdef np.ndarray[double, ndim=1] zb 
+        cdef np.ndarray[double, ndim=1] xe 
+        cdef np.ndarray[double, ndim=1] ye 
+        cdef np.ndarray[double, ndim=1] ze 
+
+
+        try: 
         
-      
-        cdef int l, n, nancoord, dlen
-        cdef np.ndarray[double, ndim=1] xb = self.table[table_name]['xb'].values
-        cdef np.ndarray[double, ndim=1] yb = self.table[table_name]['yb'].values
-        cdef np.ndarray[double, ndim=1] zb = self.table[table_name]['zb'].values
-        cdef np.ndarray[double, ndim=1] xe = self.table[table_name]['xe'].values
-        cdef np.ndarray[double, ndim=1] ye = self.table[table_name]['ye'].values
-        cdef np.ndarray[double, ndim=1] ze = self.table[table_name]['ze'].values
+            # this will work if all coordinates defined
+            
+            assert  np.isfinite(self.table[table_name]['xb'].values).all(), "no finite coordinates at xb, please filter out non finite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['yb'].values).all(), "no finite coordinates at yb, please filter out non finite coordinates and try again" 
+            assert  np.isfinite(self.table[table_name]['zb'].values).all(), "no finite coordinates at zb, please filter out non finite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['xe'].values).all(), "no finite coordinates at xe, please filter out non finite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['ye'].values).all(), "no finite coordinates at ye, please filter out non finite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['ze'].values).all(), "no finite coordinates at ze, please filter out non finite coordinates and try again"
+            
+            #create array views 
+            xb = self.table[table_name]['xb'].values
+            yb = self.table[table_name]['yb'].values
+            zb = self.table[table_name]['zb'].values
+            xe = self.table[table_name]['xe'].values
+            ye = self.table[table_name]['ye'].values
+            ze = self.table[table_name]['ze'].values        
+
         
-      
-        #check all coordinates exist (no nan, no infinite)
+        except:
+            
+            # this will work if there are coordinates non-defined (nan or non-finite)
+            
+            warnings.warn('There are non-finite or NAN values in coordinates, these intervals will be excluded')
+            
+            # using only xm as reference
+            tmp = self.table[table_name][np.isfinite(self.table[table_name]['xm'])]
+            tmp = tmp[np.isfinite(tmp['ym'])]
+            tmp = tmp[np.isfinite(tmp['zm'])]
+            #reset index (required to ensure right order???)
+            tmp.reset_index(level=None, drop=True, inplace=True, col_level=0, col_fill='')
+            # a trick that makes this work, create a temporary drillhole
+            self.addtable(tmp, '__tmp' ,overwrite = True)
+            # update table name
+            table_name = '__tmp'
+            
+            
+            #create array views 
+            xb = self.table[table_name]['xb'].values
+            yb = self.table[table_name]['yb'].values
+            zb = self.table[table_name]['zb'].values
+            xe = self.table[table_name]['xe'].values
+            ye = self.table[table_name]['ye'].values
+            ze = self.table[table_name]['ze'].values   
+ 
+            # if ther are undefined values at yb,zb, xe,ye,ze the output will be wrong, here whe check this
+            assert  np.isfinite(self.table[table_name]['xb'].values).all(), "no finite coordinates at xb after nan at xm,ym,zm removed"
+            assert  np.isfinite(self.table[table_name]['yb'].values).all(), "no finite coordinates at yb after nan at xm,ym,zm removed" 
+            assert  np.isfinite(self.table[table_name]['zb'].values).all(), "no finite coordinates at zb after nan at xm,ym,zm removed"
+            assert  np.isfinite(self.table[table_name]['xe'].values).all(), "no finite coordinates at xe after nan at xm,ym,zm removed"
+            assert  np.isfinite(self.table[table_name]['ye'].values).all(), "no finite coordinates at ye after nan at xm,ym,zm removed"
+            assert  np.isfinite(self.table[table_name]['ze'].values).all(), "no finite coordinates at ze after nan at xm,ym,zm removed"          
+            
         
-        assert  np.isfinite(xb).all(), "no finite coordinates at xb, please filter out non finite coordinates and try again"
-        assert  np.isfinite(yb).all(), "no finite coordinates at yb, please filter out non finite coordinates and try again" 
-        assert  np.isfinite(zb).all(), "no finite coordinates at zb, please filter out non finite coordinates and try again"
-        assert  np.isfinite(xe).all(), "no finite coordinates at xe, please filter out non finite coordinates and try again"
-        assert  np.isfinite(ye).all(), "no finite coordinates at ye, please filter out non finite coordinates and try again"
-        assert  np.isfinite(ze).all(), "no finite coordinates at ze, please filter out non finite coordinates and try again"
+            
         
         #first we store the data in a set of vtk arrays (that will be cell data)
         dlen = xb.shape[0]
@@ -2347,7 +2394,6 @@ cdef class Drillhole:
 
         # populate this data
         n=-1
-        nancoord=0
         for l in range(dlen):
             
             points.InsertNextPoint(xb[l], yb[l], zb[l])
