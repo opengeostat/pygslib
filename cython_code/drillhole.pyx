@@ -477,7 +477,7 @@ cpdef desurv1dh(int indbs,
             xa = xc
             ya = yc
             za = zc
-            # desurvey interval at zurvey... table
+            # desurvey interval at survey... table
             
             dz,dn,de = dsmincurb(len12,azm1,dip1,azm2,dip2)
 
@@ -588,7 +588,7 @@ cpdef composite1dh(double[:] ifrom,
     
 
     #get some array parameters     
-    if minlen<=0:
+    if minlen<0:
         minlen= cint/2.
 
     ncomp = int(ito[-1]/cint + 1)  # number of composites 
@@ -677,16 +677,18 @@ cpdef composite1dh(double[:] ifrom,
         clen[i] = np.nansum(iprop)
         
         
-        if clen[i]> minlen:  
+        if clen[i]>= minlen:  
             cacum[i] = np.nansum(icum)
             cvar[i] = cacum[i]/clen[i]  # wighted average
-        else: 
-            cvar[i] = np.nan
-            cacum[i] = np.nan
+        #else: 
+        #    cvar[i] = np.nan
+        #    cacum[i] = np.nan
 
-    
+    # this algorithm return an empty interval if there is no residual
+    # to fix this we remove the last interval if len < minlen
+    # this also apply the minlen constraint
             
-    return np_cfrom, np_cto, np_clen, np_cvar, np_cacum
+    return np_cfrom[np_clen>= minlen], np_cto[np_clen>= minlen], np_clen[np_clen>= minlen], np_cvar[np_clen>= minlen], np_cacum[np_clen>= minlen]
 
 #-------------------------------------------------------------------
 #  General functions for fill gaps and merge
@@ -1034,6 +1036,7 @@ cdef class Drillhole:
         assert 'YCOLLAR' in collar.columns, "collar don't have YCOLLAR column"
         assert 'ZCOLLAR' in collar.columns, "collar don't have ZCOLLAR column"
         
+        
         if 'LENGTH' not in collar.columns: 
             warnings.warn('! Collar table without LENGTH field' ) 
         
@@ -1047,6 +1050,20 @@ cdef class Drillhole:
         self.collar = collar.copy(deep=True) # we remove external reference
         self.survey = survey.copy(deep=True) # we remove external reference
         self.table = {}
+        
+        # set numeric columns as float (we don't want integers)
+        #this rize an error if there are non numeric values
+        self.collar['XCOLLAR'] = self.collar['XCOLLAR'].astype(float)
+        self.collar['YCOLLAR'] = self.collar['YCOLLAR'].astype(float)
+        self.collar['ZCOLLAR'] = self.collar['ZCOLLAR'].astype(float)
+        if 'LENGTH' in self.collar.columns: 
+            self.collar['LENGTH'] = self.collar['LENGTH'].astype(float)
+        self.survey['AT'] = self.survey['AT'].astype(float)
+        self.survey['AZ'] = self.survey['AZ'].astype(float)
+        self.survey['DIP'] = self.survey['DIP'].astype(float)
+        
+        
+        
         
         # set BHID as uppercase to avoid issues
         self.collar['BHID']= self.collar['BHID'].str.upper()
@@ -1098,14 +1115,22 @@ cdef class Drillhole:
                 self.table[table_name]=table.copy(deep=True) # we remove external reference
             else:
                 raise NameError('Table %s already exist, use overwrite = True to overwrite' % table_name)
+
+
+        # set numeric columns as float (we don't want integers)
+        #this rize an error if there are non numeric values
+        self.table[table_name]['FROM'] = self.table[table_name]['FROM'].astype(float)
+        self.table[table_name]['TO'] = self.table[table_name]['TO'].astype(float)
+
             
         # set BHID as uppercase to avoid issues
         self.table[table_name]['BHID']= self.table[table_name]['BHID'].str.upper()
         
         # sort the data 
         self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
-
-
+        
+        # reset index, if necessary uncomment next line
+        # self.table[table_name].reset_index(level=None, drop=True, inplace=True, col_level=0, col_fill='')
 
     cpdef del_table(self,str table_name):
         """
@@ -1646,6 +1671,14 @@ cdef class Drillhole:
             self.table[table_name]['ze']= zet
 
 
+        # this is to produce a warning if some intervals where not desurvey
+        try: 
+            assert  np.isfinite(self.table[table_name]['xm'].values).all(), "no finite coordinates at xb, please filter out non finite coordinates and try again"
+        except:
+            warnings.warn('Some intervals where non-desurveyed and NAN coordinates where created, check errors in collar or survey')
+
+
+
     #-------------------------------------------------------------------
     #       Table gap, compositing and merging
     #-------------------------------------------------------------------
@@ -2173,8 +2206,24 @@ cdef class Drillhole:
             If the table exist and overwrite = True the existing table 
             will be overwrite. 
         
-        """
+        Notes
+        ---
+        Undefined intervals in 'variable_name' will be excluded. 
         
+        To composite per lithology you can filter out each lithology
+        composite and then combine the composite tables.
+        
+        This algorithm starts from distance zero and no residual will 
+        be created at the top, for example, the if the first interval is 
+        [FROM=1.5, TO=2] it will be composited as [FROM=0, TO=2,_len=0.5] 
+        for 2 m composites. This produce consistent results if different
+        tables are composited, making easier later table combination
+        
+        The accumulation output '_acum' can be use to produce accumulated
+        variables, to identify number of intervals in each composite or 
+        to track categoric variables (coded as number) compositing. 
+
+        """
         
         # check that the table is not in the database
         if overwrite==False:
@@ -2184,6 +2233,7 @@ cdef class Drillhole:
         assert variable_name in self.table[table_name].columns, 'Error: The variable {} do not exists in the input table'.format(variable_name)
         assert np.dtype(self.table[table_name][variable_name])==np.float64, 'Error: The variable {} is not type float64'.format(variable_name)
         
+            
         
         # sort table
         self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
