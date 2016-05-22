@@ -36,18 +36,22 @@ TODO at drillhole module
 - [ ] Add a dictionary with drillholes names, traces and properties for faster programming in class members and to create user's reports. Add summary of drillholes in Drillhole class.
 - [ ] Generate reposts with reportlab??? for example for log files. 
 - [ ] VTK export is too slow, optimize. Consider to use directly VTK code in C+ or Python. VTK write XML polydata format, in other words: PolyData (.vtp) — Serial vtkPolyData (unstructured).
-- [ ] Create export in other formats, example inventor.
+- [ ] Create export in other formats, example inventor (see vtkIVWriter).
 - [ ] Create a dictionary with warning and errors in validations and do only one warning. 
 - [ ] Remove the need for one interval error ?
 
 TODO at block model module 
 ----
-- [ ] The block fill is too slow with large/complicated wireframes, optimize
+- [ ] The block fill is too slow with large/complicated wireframes, optimize (testing vtkPolyDataToImageStencil)
 - [ ] Implement block percentage in solid
 - [ ] Implement block split
 - [ ] Implement reblock
 - [ ] Implement block subcells (AMR or Datamine style?)
-- [ ] Export partial block models
+- [ ] Export partial block models as unestructured VTK grid and create export to other file formats
+- [ ] Update examples. Add new functionality to examples 
+- [ ] Add function to report summary with minimum maximum coordinates and other properties. Include limits at parent centroids and corner
+- [ ] Add a simplified function to create a full parent model (create_IJK, then calc_ixyz_fromijk, then calc_xyz_fromixyz) 
+- [ ] Add validation of IJK vs IX,IY,IZ, vs XC,YC and ZC. Hint: Use calc_ixyz_fromijk, calc_xyz_fromixyz and calc_ijk to create temporary variables and compare with numpy.isclose.
 
 
 TODO at interpolators module 

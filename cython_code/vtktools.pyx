@@ -343,9 +343,11 @@ cpdef vtk_raycasting(surface, pSource, pTarget):
     pointsVTKIntersectionData = pointsVTKintersection.GetData()
     noPointsVTKIntersection = pointsVTKIntersectionData.GetNumberOfTuples()
     pointsIntersection = []
+  
+    # >>>>>>>> optimize this
     for idx in range(noPointsVTKIntersection):
         _tup = pointsVTKIntersectionData.GetTuple3(idx)
-        pointsIntersection.append(_tup)
+        pointsIntersection.append(_tup)                  
 
     return intersect, pointsIntersection, pointsVTKIntersectionData
     

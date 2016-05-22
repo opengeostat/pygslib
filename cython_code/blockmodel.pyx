@@ -560,7 +560,12 @@ cdef class Blockmodel:
         if overwrite==False:
             assert 'IJK' not in self.bmtable.columns, 'IJK already exist in bmtable, set overwrite=True to overwrite'
         
-        self.bmtable['IJK'] =  ind2ijk(self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'], self.nx,self.ny,self.nz)
+        self.bmtable['IJK'] =  ind2ijk(self.bmtable['IX'].values,
+                                       self.bmtable['IY'].values,
+                                       self.bmtable['IZ'].values, 
+                                       self.nx,
+                                       self.ny,
+                                       self.nz)
 
     cpdef calc_ixyz_fromijk(self, bint overwrite=False):
         """
@@ -715,14 +720,15 @@ cdef class Blockmodel:
         pygslib.vtktools.grid2vtkfile(path, x, y, z, data)
 
 
-    cpdef float2block(self, np.ndarray [double, ndim=1] x, 
+    cpdef point2block(self, np.ndarray [double, ndim=1] x, 
                             np.ndarray [double, ndim=1] y,
                             np.ndarray [double, ndim=1] z, 
-                            np.ndarray [double, ndim=1] prop,
+                            prop,
                             str prop_name,
-                            bint average = False):
+                            bint average = False,
+                            bint overwrite = False):
         """
-        float2block( x, y, z, prop, prop_name)
+        point2block( x, y, z, prop, prop_name)
                 
         assign point to block  
         
@@ -731,20 +737,42 @@ cdef class Blockmodel:
           
         Parameters
         ----------
+        x, y, z  Float 1D numpy arrays
+            coordinates of the points. Array shapes may be equal
+        prop  array like
+            array with property shape[0] == x.shape[0]
+            note that prop can be an array of array, for example, an
+            array of indicators arrays
+        prop_name str
+            name of the property at block model
+        average bool
+            If there are more than one point at block 
+            average the points. If true the average will be created, 
+            this may fail if prop is not numeric. If false the last 
+            point in the block will be used to assign the value. 
+        overwrite bool
+            If False an existing property will not be overwrited  
         
- 
         Notes
         -----
+        Points not laying in an existing block will be ignored.  
         
         
         Examples
         --------
-        >>> float2block( x, y, z, prop, prop_name= 'Au')
+        >>> point2block( x, y, z, prop, prop_name= 'Au',  average = False, overwrite = False)
                 
         """   
         
         cdef long i, n
         cdef np.ndarray [long, ndim=1] bad 
+        
+        # note that prop can be an array of array with any type
+        assert x.shape[0] == y.shape[0] == z.shape[0] == prop.shape[0]
+        
+        # check that the column exist and is not overwrite
+        if overwrite==False:
+            assert prop_name not in self.bmtable.columns, 'The field {} already exist, use overwrite = True to rewrite'.format(prop_name)
         
         bad = np.zeros(x.shape[0], dtype = int)
         
