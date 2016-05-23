@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 '''
 
 import vtk
+import vtk.util.numpy_support as vtknumpy
 cimport numpy as np
 import numpy as np
 import pandas as pd
@@ -338,6 +339,8 @@ cdef class Blockmodel:
         self.dx=dx
         self.dy=dy
         self.dz=dz
+        
+        # self.bmtable=None
         
     cpdef set_block_size(self, float dx,float dy, float dz):
         """
@@ -813,3 +816,120 @@ cdef class Blockmodel:
         self.bmtable.reset_index('IJK', inplace= True)
         
         return bad
+
+
+    cpdef fillwireframe(self, 
+                    object surface,  
+                    float toll=0, 
+                    bint overwrite=False):
+        
+        """
+        fillwireframe(surface, toll, overwrite=False)
+                
+        Creates a full block model given a VTK surface (polydata) using 
+        vtkPolyDataToImageStencil. The results consist of blocks with
+        parameter ``in``  with value between 0 and 1. 
+        
+        ``in = 0 `` represent blocks completely outside the wireframe
+        ``in = 1 `` represent blocks completely inside the wireframe
+        ``1 >in > 0 `` represent blocks cut by the wireframe
+        
+        The parameter in is calculated as the sum of corners of the 
+        block, each corner is equal to 1 if is inside the block or equal 
+        to 0 if is outside. 
+        
+        The parameter ``in`` can be used as percentage of inclusion in 
+        the block with an error proportional to the size of the block 
+        and the resolution/complexity of the wireframe. 
+              
+        The method may fail if the wireframe is narrower than a block,
+        e.j. larg blocks in narrow veins. To avoid this you can set 
+        a tolerance value 1>=toll>=0. The output may not be used as 
+        volume, only as selection of blocks within a wireframe 
+        (with ``in>0``). 
+        
+          
+        Parameters
+        ----------
+        surface : VTK polydata
+               this may work with any 3D object..., no necessarily triangles   
+        tol    : float, default 0.0
+               number in interval [0. , 1.] 
+               you may use tol>0 if the blocks are large and the 
+               wireframe is narrower than the block size. 
+         overwrite : boolean
+               overwrite flag, if true the entire block model will be 
+               overwritten
+        
+        
+        
+        Notes
+        -----
+        The tolerance only works on x, y plane, not in z. 
+        
+        
+        Examples
+        --------
+        >>> mymodel.fillwireframe(surface, toll=0, overwrite=False)
+                
+        """ 
+        
+        #check the model do not exist 
+        if overwrite==False: 
+            assert self.bmtable is None, 'Error: bmtable already exist, set overwrite=True to overwrite'
+        
+        
+        #create and empty grid (the background)  
+        grid= vtk.vtkImageData()
+        grid.SetSpacing([self.dx,self.dy,self.dz])
+        grid.SetOrigin([self.xorg,self.yorg,self.zorg])
+        grid.SetDimensions([self.nx+1,self.ny+1,self.nz+1])
+
+        pscalars = vtk.vtkFloatArray()
+        pscalars.SetName('__in')
+
+        for i in range ((self.nx+1)*(self.ny+1)*(self.nz+1)):
+            pscalars.InsertTuple1(i, 1.0) # use here 1.0 or 100.0
+            
+        grid.GetPointData().SetScalars(pscalars)
+
+        # create the vtkfilter to select point corners of image voxels
+        # in solid   
+        pol2stenc = vtk.vtkPolyDataToImageStencil()
+        pol2stenc.SetInputData(surface)
+        pol2stenc.SetOutputSpacing([self.dx,self.dy,self.dz])
+        pol2stenc.SetOutputOrigin([self.xorg,self.yorg,self.zorg])
+        pol2stenc.SetOutputWholeExtent(grid.GetExtent())
+
+        #SetTolerance in order to include more blocks 50/50... 
+        # not work at elevation z
+        pol2stenc.SetTolerance(toll)
+        pol2stenc.Update()
+        
+        #create the image (regular grid)
+        imgstenc = vtk.vtkImageStencil()
+        imgstenc.SetInputData(grid)
+        imgstenc.SetStencilConnection(pol2stenc.GetOutputPort())
+        imgstenc.ReverseStencilOff();
+        imgstenc.SetBackgroundValue(0.0);
+        imgstenc.Update();
+        
+        #create the volume percentage (average of 8 '__in' point data) 
+        p2c = vtk.vtkPointDataToCellData()
+        p2c.SetInputConnection(0, imgstenc.GetOutputPort(0))
+        p2c.PassPointDataOn()
+        p2c.Update()
+               
+        # populate the block model
+        
+        #first we create an empty full model
+        self.create_IJK(overwrite=True)
+        self.calc_ixyz_fromijk()
+        self.calc_xyz_fromixyz()
+        
+        #then we get the data from vtk using vtk.util._numpy_support
+        self.bmtable['__in']= vtknumpy.vtk_to_numpy(p2c.GetOutput().GetCellData().GetArray(0))
+        
+        # this return the actual model in VTK format, in case you what to use it
+        return p2c.GetOutput()
+        

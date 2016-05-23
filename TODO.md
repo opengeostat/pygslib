@@ -15,6 +15,7 @@ Improve algorithms and testing
 - [ ] Complete the estimation part for n node, blocks or polygons (kt3D program)
 - [ ] Optimize speed/Identify slow code and bottleneck 
 
+
 User manual and help
 ----
 - [ ] Simplify examples
@@ -42,11 +43,11 @@ TODO at drillhole module
 
 TODO at block model module 
 ----
-- [ ] The block fill is too slow with large/complicated wireframes, optimize (testing vtkPolyDataToImageStencil)
-- [ ] Implement block percentage in solid
+- [x] The block fill is too slow with large/complicated wireframes, optimize (testing vtkPolyDataToImageStencil)
+- [x] Implement block percentage in solid. **Note the actual solution is an approximation** 
+- [ ] Implement block subcells (AMR or Datamine style?)
 - [ ] Implement block split
 - [ ] Implement reblock
-- [ ] Implement block subcells (AMR or Datamine style?)
 - [ ] Export partial block models as unestructured VTK grid and create export to other file formats
 - [ ] Update examples. Add new functionality to examples 
 - [ ] Add function to report summary with minimum maximum coordinates and other properties. Include limits at parent centroids and corner
@@ -68,3 +69,14 @@ TODO at nonlinear module
 TODO at vtk tools module 
 ----
 - [x] Do more testing on VTK selection
+- [ ] Replace pyevtk with vtk.util.numpy_support
+- [ ] Update the code to properly export grids, use this code:
+
+    ''' python
+
+    writer = vtk.vtkStructuredPointsWriter();
+    writer.SetFileName("myfilename.vtk");
+    writer.SetInputData(grid)
+    writer.Write()
+
+    '''
