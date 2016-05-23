@@ -72,11 +72,11 @@ TODO at vtk tools module
 - [ ] Replace pyevtk with vtk.util.numpy_support
 - [ ] Update the code to properly export grids, use this code:
 
-    ''' python
+    ``` python
 
     writer = vtk.vtkStructuredPointsWriter();
     writer.SetFileName("myfilename.vtk");
     writer.SetInputData(grid)
     writer.Write()
 
-    '''
+    ```
