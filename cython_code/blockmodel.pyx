@@ -723,6 +723,48 @@ cdef class Blockmodel:
         pygslib.vtktools.grid2vtkfile(path, x, y, z, data)
 
 
+    cpdef blocks2vtkUnstructuredGrid(self, str path, str varname):
+        """
+        blocks2vtkUnstructuredGrid(self, str path, str varname)
+                
+        Export blocks of a partial grid to a vtkRectilinearGrid file. 
+          
+        Parameters
+        ----------
+        path : string 
+               file name and path, without extension. The file extension
+               (*.vtr) will be added automatically. 
+        var : string
+               Name of the variable to be exported
+ 
+        Notes
+        -----
+        Require XC, YC and ZC.
+        
+        Only numeric variables can be exported 
+        TODO: export all
+        
+        This call pygslib.vtktools.partialgrid2vtkfile 
+              
+        Examples
+        --------
+        >>> blocks2vtkUnstructuredGrid('myfile', 'AU')
+                
+        """   
+        
+        
+        cdef np.ndarray [double, ndim=1] x,y,z, var
+        
+        x= self.bmtable['XC'].values
+        y= self.bmtable['YC'].values
+        z= self.bmtable['ZC'].values
+        var = self.bmtable[varname].values.astype(np.double)
+        
+        
+        pygslib.vtktools.partialgrid2vtkfile(path, x, y, z, 
+                             self.dx, self.dy, self.dz, var, varname)
+
+
     cpdef point2block(self, np.ndarray [double, ndim=1] x, 
                             np.ndarray [double, ndim=1] y,
                             np.ndarray [double, ndim=1] z, 

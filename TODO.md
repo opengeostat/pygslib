@@ -45,10 +45,12 @@ TODO at block model module
 ----
 - [x] The block fill is too slow with large/complicated wireframes, optimize (testing vtkPolyDataToImageStencil)
 - [x] Implement block percentage in solid. **Note the actual solution is an approximation** 
+- [ ] Reimplement the block fill with vtkUniformGrid, this is similar to vtkImage but is the base for AMR objects 
 - [ ] Implement block subcells (AMR or Datamine style?)
+- [ ] Implement implicit modeler functions using vtkImplicitModeller
 - [ ] Implement block split
 - [ ] Implement reblock
-- [ ] Export partial block models as unestructured VTK grid and create export to other file formats
+- [x] Export partial block models as unstructured VTK grid and create export to other file formats
 - [ ] Update examples. Add new functionality to examples 
 - [ ] Add function to report summary with minimum maximum coordinates and other properties. Include limits at parent centroids and corner
 - [ ] Add a simplified function to create a full parent model (create_IJK, then calc_ixyz_fromijk, then calc_xyz_fromixyz) 

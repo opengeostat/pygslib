@@ -445,7 +445,7 @@ cpdef pointquering(surface,
 
         if test == 1:
             # The return value is +1 if outside, -1 if inside, and 0 if undecided.
-            intersect=obbTree.InsideOrOutside(p0)
+            intersect=obbTree.InsideOrOutside(p0)   # see also vtkSelectEnclosedPoints 
             if intersect==-1: 
                 inside[i]=1
             
@@ -581,7 +581,7 @@ cpdef grid2vtkfile(str path,
                    np.ndarray [double, ndim=1] x, 
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
-                   data):
+                   data):  
     """
     
     grid2vtkfile(path, x,y,z, data)
@@ -602,3 +602,116 @@ cpdef grid2vtkfile(str path,
     """
 
     pyevtk.hl.gridToVTK(path, x, y, z, cellData=data)
+
+
+cpdef partialgrid2vtkfile(str path,                    
+                   np.ndarray [double, ndim=1] x, 
+                   np.ndarray [double, ndim=1] y,
+                   np.ndarray [double, ndim=1] z,
+                   double DX, 
+                   double DY,
+                   double DZ,
+                   np.ndarray [double, ndim=1] var,
+                   str varname):
+    """
+    
+    partialgrid2vtkfile(path, x,y,z, dx,dy,dz,var, varname)
+    
+    save unstructurw vtk grid of parent blocks into a file
+    
+    
+    Parameters
+    ----------
+    
+    
+        
+    Returns
+    -------
+    
+    
+    """
+
+    # add extension to path 
+    if not path.lower().endswith('.vtu'):
+        path = path + '.vtu'
+
+
+    # number of cells/blocks
+    nc = x.shape[0]
+    
+    # number of points (block vertex)
+    np = nc*8
+     
+    # Create array of the points and ID
+    pcoords = vtk.vtkFloatArray()
+    pcoords.SetNumberOfComponents(3)
+    pcoords.SetNumberOfTuples(np) # each block add 8 extra points, TODO: filter out duplicated points 
+
+    # create data for the cell 
+    cscalars = vtk.vtkFloatArray()
+    cscalars.SetName(varname)
+    
+    points = vtk.vtkPoints()
+    voxelArray = vtk.vtkCellArray()
+    
+    # create vertex (points)
+    id=0
+    #for each block
+    for i in range (nc):
+        # for each vertex    
+        pcoords.SetTuple3(id, x[i]+DX/2., y[i]-DY/2., z[i]-DZ/2.)
+        pcoords.SetTuple3(id+1, x[i]-DX/2., y[i]-DY/2., z[i]-DZ/2.)
+        pcoords.SetTuple3(id+2, x[i]+DX/2., y[i]+DY/2., z[i]-DZ/2.)
+        pcoords.SetTuple3(id+3, x[i]-DX/2., y[i]+DY/2., z[i]-DZ/2.)
+        pcoords.SetTuple3(id+4, x[i]+DX/2., y[i]-DY/2., z[i]+DZ/2.)
+        pcoords.SetTuple3(id+5, x[i]-DX/2., y[i]-DY/2., z[i]+DZ/2.)
+        pcoords.SetTuple3(id+6, x[i]+DX/2., y[i]+DY/2., z[i]+DZ/2.)
+        pcoords.SetTuple3(id+7, x[i]-DX/2., y[i]+DY/2., z[i]+DZ/2.)
+
+        id+=8
+            
+    # add points to the cell
+    points.SetData(pcoords)
+
+    # Create the cells.
+    #for each block
+    id=-1
+    for i in range (nc):        
+        # add next cell
+        voxelArray.InsertNextCell(8)  
+        
+        # add data to scallar
+        cscalars.InsertTuple1(i, var[i]) # use here 1.0 or 100.0
+        
+        # for each vertex
+        for j in range (8): 
+            id+=1
+            voxelArray.InsertCellPoint(id)
+    
+    # create the unestructured grid
+    ug = vtk.vtkUnstructuredGrid()
+    # Assign points and cells
+    ug.SetPoints(points)
+    ug.SetCells(vtk.VTK_VOXEL, voxelArray)
+    
+    # asign scalar 
+    ug.GetCellData().SetScalars(cscalars)
+
+    # Clean before saving... 
+    # this will remove duplicated points  
+    extractGrid = vtk.vtkExtractUnstructuredGrid()
+    extractGrid.SetInputData(ug)
+    extractGrid.PointClippingOff()
+    extractGrid.ExtentClippingOff()
+    extractGrid.CellClippingOn()
+    extractGrid.MergingOn()
+    extractGrid.SetCellMinimum(0)
+    extractGrid.SetCellMaximum(nc)
+    extractGrid.Update()
+    
+
+    # save results 
+    writer = vtk.vtkXMLUnstructuredGridWriter();
+    writer.SetFileName(path);
+    writer.SetInputData(extractGrid.GetOutput())
+    writer.Write()
