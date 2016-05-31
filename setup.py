@@ -78,7 +78,23 @@ if __name__ == '__main__':
     #make sure you use the setup from numpy
     from numpy.distutils.core import setup # this is numpy's setup
     from setuptools import find_packages
+
+    # these are the almost intact gslib code
+    gslib_kt3d = Extension(name = 'pygslib.gslib.__gslib__kt3d',
+                     sources = ['for_code/kt3d/kt3d.f90', 
+                                'for_code/kt3d/gslib/setrot.f90',
+                                'for_code/kt3d/gslib/getindx.f90',
+                                'for_code/kt3d/gslib/picksupr.f90',
+                                'for_code/kt3d/gslib/setsupr.f90',
+                                'for_code/kt3d/gslib/sqdist.f90',
+                                'for_code/kt3d/gslib/cova3.f90',
+                                'for_code/kt3d/gslib/ktsol.f90',
+                                'for_code/kt3d/gslib/sortem.f90',
+                                'for_code/kt3d/gslib/srchsupr.f90'],
+                                f2py_options=[ 'only:', 'pykt3d', 'set_unest',  ':']) 
     
+    
+    # this is the gslib code too modified 
     # define extensions here:
     #-----------------------------------------------------  
     rotscale = Extension(name = 'pygslib.__rotscale',
@@ -161,8 +177,8 @@ if __name__ == '__main__':
                          dist_transf,
                          block_covariance,
                          kt3d,
-                         plot
-                         ])
+                         plot,
+                         gslib_kt3d])
                          
     #Cython code extension
     #-------------------------------------------------------------------
@@ -170,30 +186,30 @@ if __name__ == '__main__':
     from distutils.extension import Extension as CYExtension
     #from Cython.Build import cythonize
     import numpy
-	
+    
     drillhole = CYExtension( 'pygslib.drillhole', 
                             ['cython_code/drillhole.pyx'], 
-							include_dirs=[numpy.get_include()]) 
+                            include_dirs=[numpy.get_include()]) 
                                 
     blockmodel = CYExtension( 'pygslib.blockmodel', 
                             ['cython_code/blockmodel.pyx'],
-							include_dirs=[numpy.get_include()]) 
+                            include_dirs=[numpy.get_include()]) 
       
     vtktools = CYExtension( 'pygslib.vtktools', 
                             ['cython_code/vtktools.pyx'],
-							include_dirs=[numpy.get_include()]) 
+                            include_dirs=[numpy.get_include()]) 
 
     nonlinear = CYExtension( 'pygslib.nonlinear', 
                             ['cython_code/nonlinear.pyx'],
-							include_dirs=[numpy.get_include()]) 
+                            include_dirs=[numpy.get_include()]) 
 
     neighborhood = CYExtension( 'pygslib.neighborhood', 
                             ['cython_code/neighborhood.pyx'],
-							include_dirs=[numpy.get_include()]) 
+                            include_dirs=[numpy.get_include()]) 
 
     interpolators = CYExtension( 'pygslib.interpolators', 
                             ['cython_code/interpolators.pyx'],
-							include_dirs=[numpy.get_include()])
+                            include_dirs=[numpy.get_include()])
 
                             
     setup(name=name,

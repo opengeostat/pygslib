@@ -28,4 +28,8 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=-1
+current_page=0
+FILE_NAME_0=2354;Python;0;EUTF-8;1;1;0;.%2Fbitbucket%2Fpublic%2Fpygslib%2Fsetup.py;0;4
+
+[VTE]
+last_dir=/home/adrian/Desktop/TMP_GSLIP_DEVELOP/gslib77/kt3d/modiffied version/f2py_v5
