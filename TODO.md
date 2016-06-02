@@ -77,6 +77,7 @@ TODO at nonlinear module
 TODO at vtk tools module 
 ----
 - [ ] Add boolean operations (find alternative to vtkbooleanoperationpolydatafilter, e.j. vtkImplicitBoolean)
+- [ ] Implement Unfolding with vtkwarpvector (hint, vector interpolation (angle + scallar) required)
 - [ ] Add slice operation
 - [x] Do more testing on VTK selection
 - [ ] Replace pyevtk with vtk.util.numpy_support
