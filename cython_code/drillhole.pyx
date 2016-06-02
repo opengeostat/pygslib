@@ -1130,7 +1130,7 @@ cdef class Drillhole:
         self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
         
         # reset index, if necessary uncomment next line
-        # self.table[table_name].reset_index(level=None, drop=True, inplace=True, col_level=0, col_fill='')
+        self.table[table_name].reset_index(level=None, drop=True, inplace=True, col_level=0, col_fill='')
 
     cpdef del_table(self,str table_name):
         """

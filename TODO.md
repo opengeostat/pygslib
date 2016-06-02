@@ -29,6 +29,7 @@ TODO at drillhole module
 - [ ] Implement bench composite.
 - [ ] Add HTMLbar tables.
 - [ ] Update Ipython templates.
+- [ ] Optimize code for desurvey and composite
 - [x] Do more testing on desurvey drillhole
 - [x] Make numeric but non float float before importing
 - [x] Validate and test composite.
@@ -56,13 +57,16 @@ TODO at block model module
 - [ ] Add function to report summary with minimum maximum coordinates and other properties. Include limits at parent centroids and corner
 - [ ] Add a simplified function to create a full parent model (create_IJK, then calc_ixyz_fromijk, then calc_xyz_fromixyz) 
 - [ ] Add validation of IJK vs IX,IY,IZ, vs XC,YC and ZC. Hint: Use calc_ixyz_fromijk, calc_xyz_fromixyz and calc_ijk to create temporary variables and compare with numpy.isclose.
+- [ ] Add VTK export of debug data in KT3D function, including search ellipse and target block/point
 
 
 TODO at interpolators module 
 ----
+- [ ] Review or Reimplement 
 
 TODO at neighborhood module 
 ----
+- [ ] Review or Reimplement 
 
 
 TODO at nonlinear module 
@@ -71,6 +75,8 @@ TODO at nonlinear module
 
 TODO at vtk tools module 
 ----
+- [ ] Add boolean operations (find alternative to vtkbooleanoperationpolydatafilter, e.j. vtkImplicitBoolean)
+- [ ] Add slice operation
 - [x] Do more testing on VTK selection
 - [ ] Replace pyevtk with vtk.util.numpy_support
 - [ ] Update the code to properly export grids, use this code:

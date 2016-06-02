@@ -76,9 +76,9 @@ cpdef x2ix(np.ndarray [double, ndim=1] x,
     array([ 0,  5, 13, 18, 28, 29])
 
     """
-    
-    assert  xorg < x.min(), '\nError:\n x.min < xorg, values out of grid. Redefine xorg<= %f ' %  x.min()
-    
+ 
+    assert  xorg < x.min(), '\nError:\n x.min ={0} < xorg = {1}, values out of grid. Redefine xorg<= {0}'.format(x.min(),xorg)
+
     
     # output 
     cdef np.ndarray [long, ndim=1, cast=True] ix= np.empty([x.shape[0]], dtype= int) 
@@ -763,6 +763,74 @@ cdef class Blockmodel:
         
         pygslib.vtktools.partialgrid2vtkfile(path, x, y, z, 
                              self.dx, self.dy, self.dz, var, varname)
+
+
+    cpdef block2point(self, np.ndarray [double, ndim=1] x, 
+                            np.ndarray [double, ndim=1] y,
+                            np.ndarray [double, ndim=1] z, 
+                            str prop_name):
+        """
+        block2point( x, y, z, prop_name)
+                
+        assign a block property to the points inside a block  
+               
+          
+        Parameters
+        ----------
+        x, y, z  Float 1D numpy arrays
+            coordinates of the points. Array shapes may be equal
+        prop_name str
+            name of the property at block model
+        
+        Notes
+        -----
+        Points not laying in an existing block will be returned with 
+        value numpy.nan  
+        
+        
+        Examples
+        --------
+        >>> Au_at_point= point2block( x, y, z, prop_name= 'Au')
+                
+        """   
+        
+        cdef long i, n
+        cdef np.ndarray [double, ndim=1] var 
+        
+        # note that prop can be an array of array with any type
+        assert x.shape[0] == y.shape[0] == z.shape[0] 
+        
+        
+        var = np.empty(x.shape[0], dtype = float)
+        var[:]= np.nan
+        
+        
+        # make sure there is ijk field in model   
+        
+        assert 'IJK' in self.bmtable.columns, 'Error: no IJK field in block model'
+        
+                        
+        # get index ix, iy, iz
+        ix = x2ix (x, self.xorg, self.dx)
+        iy = x2ix (y, self.yorg, self.dy)
+        iz = x2ix (z, self.zorg, self.dz)
+        
+        # calculate ijk
+        ijk = ind2ijk(ix,iy,iz, self.nx,self.ny,self.nz)
+            
+        # set ijk as key for indexing 
+        n = x.shape[0]
+        self.bmtable.set_index('IJK', inplace= True)
+        
+        
+        for i in range(n):
+            if ijk[i] in self.bmtable.index:
+                var[i]=self.bmtable.at[ijk[i],prop_name] 
+        
+        
+        self.bmtable.reset_index('IJK', inplace= True)
+        
+        return var
 
 
     cpdef point2block(self, np.ndarray [double, ndim=1] x, 
