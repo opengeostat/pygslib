@@ -25,6 +25,7 @@ User manual and help
 
 TODO at drillhole module 
 ----
+- [ ] Implement the prototype Drillhole generator _v3.ipynb
 - [ ] Validate merge tables.
 - [ ] Implement bench composite.
 - [ ] Add HTMLbar tables.
