@@ -53,7 +53,7 @@ TODO at block model module
 - [ ] Implement block split
 - [ ] Implement reblock
 - [x] Export partial block models as unstructured VTK grid
-- [ ] Modify blocks2vtkUnstructuredGrid to export all variables in the model  
+- [x] Modify blocks2vtkUnstructuredGrid to export all variables in the model  
 - [ ] Update examples. Add new functionality to examples 
 - [ ] Add function to report summary with minimum maximum coordinates and other properties. Include limits at parent centroids and corner
 - [ ] Add a simplified function to create a full parent model (create_IJK, then calc_ixyz_fromijk, then calc_xyz_fromixyz) 

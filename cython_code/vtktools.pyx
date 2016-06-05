@@ -24,6 +24,8 @@ from libc.math cimport cos
 cimport numpy as np
 import numpy as np
 import pyevtk.hl
+import vtk.util.numpy_support as vtknumpy
+
 
 cpdef vtk_show(renderer, width=400, height=300, 
              camera_position=None, 
@@ -611,8 +613,8 @@ cpdef partialgrid2vtkfile(str path,
                    double DX, 
                    double DY,
                    double DZ,
-                   np.ndarray [double, ndim=1] var,
-                   str varname):
+                   object var,
+                   object varname):
     """
     
     partialgrid2vtkfile(path, x,y,z, dx,dy,dz,var, varname)
@@ -639,17 +641,16 @@ cpdef partialgrid2vtkfile(str path,
     # number of cells/blocks
     nc = x.shape[0]
     
+    #number of variables
+    nvar = len(var)
+    
     # number of points (block vertex)
     np = nc*8
      
     # Create array of the points and ID
     pcoords = vtk.vtkFloatArray()
     pcoords.SetNumberOfComponents(3)
-    pcoords.SetNumberOfTuples(np) # each block add 8 extra points, TODO: filter out duplicated points 
-
-    # create data for the cell 
-    cscalars = vtk.vtkFloatArray()
-    cscalars.SetName(varname)
+    pcoords.SetNumberOfTuples(np) 
     
     points = vtk.vtkPoints()
     voxelArray = vtk.vtkCellArray()
@@ -680,8 +681,6 @@ cpdef partialgrid2vtkfile(str path,
         # add next cell
         voxelArray.InsertNextCell(8)  
         
-        # add data to scallar
-        cscalars.InsertTuple1(i, var[i]) # use here 1.0 or 100.0
         
         # for each vertex
         for j in range (8): 
@@ -695,7 +694,10 @@ cpdef partialgrid2vtkfile(str path,
     ug.SetCells(vtk.VTK_VOXEL, voxelArray)
     
     # asign scalar 
-    ug.GetCellData().SetScalars(cscalars)
+    for i in range(nvar):
+        cscalars = vtknumpy.numpy_to_vtk(var[i])
+        cscalars.SetName(varname[i]) 
+        ug.GetCellData().AddArray(cscalars)
 
     # Clean before saving... 
     # this will remove duplicated points  
