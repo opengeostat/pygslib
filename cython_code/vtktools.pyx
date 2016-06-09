@@ -530,6 +530,102 @@ cpdef pointquering(surface,
     return inside, p1
 
 
+
+# ----------------------------------------------------------------------
+#   Functions for point querying 
+# ----------------------------------------------------------------------
+cpdef pointinsolid(surface, 
+                   np.ndarray [double, ndim=1] x, 
+                   np.ndarray [double, ndim=1] y,
+                   np.ndarray [double, ndim=1] z,
+                   double tolerance = .000001 ):
+    """
+    inside = pointquering(surface, x, y, z)
+    
+    Find points inside a closed surface using vtkSelectEnclosedPoints
+        
+    
+    Parameters
+    ----------
+    surface : VTK polydata
+           this may work with any 3D object..., no necessarily triangles   
+    x,y,z   : 1D array of floats
+           coordinates of the points to be tested
+      
+    
+    Returns
+    -------
+    inside : 1D array of integers 
+        Indicator of point inclusion with values [0,1]  
+        0 means that the point is not inside
+        1 means that the point is inside
+    
+    See Also
+    --------
+    vtk_raycasting, pointquering
+    
+    Notes
+    -----
+    It is assumed that the surface is closed and manifold.  
+    Note that if this check is not performed and the surface is not 
+    closed, the results are undefined.
+    
+    """
+    
+    #TODO: add check to verify that the surface is closed 
+    
+    cdef int i
+    
+    assert x.shape[0]==y.shape[0]==z.shape[0]
+    
+
+    points = vtk.vtkPoints();
+    
+    
+    for i in range(x.shape[0]):
+        points.InsertNextPoint(x[i],y[i],z[i]);
+
+    pointsPolydata = vtk.vtkPolyData();
+    pointsPolydata.SetPoints(points);
+     
+    #Points inside test
+    selectEnclosedPoints = vtk.vtkSelectEnclosedPoints();
+    selectEnclosedPoints.SetTolerance(tolerance)
+    selectEnclosedPoints.SetInputData(pointsPolydata);
+    selectEnclosedPoints.SetSurfaceData(surface);
+    selectEnclosedPoints.Update();
+
+    insideArray = vtk.vtkDataArray.SafeDownCast(
+        selectEnclosedPoints.GetOutput().GetPointData().GetArray("SelectedPoints"));
+
+    inside = vtknumpy.vtk_to_numpy(insideArray)
+    
+
+    return inside
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 cpdef getbounds(polydata):    
     """
     
