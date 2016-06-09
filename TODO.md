@@ -76,6 +76,7 @@ TODO at nonlinear module
 
 TODO at vtk tools module 
 ----
+- [ ] pointquering with vtkOBBTree is too slow with some wireframes, try vtkCellLocator or optimize with grid/image locator 
 - [ ] Add boolean operations (find alternative to vtkbooleanoperationpolydatafilter, e.j. vtkImplicitBoolean)
 - [ ] Implement Unfolding with vtkwarpvector (hint, vector interpolation (angle + scallar) required)
 - [ ] Add slice operation

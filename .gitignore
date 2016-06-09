@@ -12,6 +12,7 @@
 *.pyd
 *.c
 
+
 #temporary files
 *~
 /develop_tmp
@@ -26,3 +27,5 @@
 .spyderproject
 .spyderworkspace
 
+#geany
+.geany
