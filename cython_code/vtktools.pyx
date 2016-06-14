@@ -606,7 +606,114 @@ cpdef pointinsolid(surface,
 
 
 
+# ----------------------------------------------------------------------
+#   Inport triangles into wireframe
+# ----------------------------------------------------------------------
+cpdef tables2wireframe( 
+                   np.ndarray [double, ndim=1] x, 
+                   np.ndarray [double, ndim=1] y,
+                   np.ndarray [double, ndim=1] z,
+                   np.ndarray [long, ndim=1] pid,
+                   np.ndarray [long, ndim=1] pid1,
+                   np.ndarray [long, ndim=1] pid2,
+                   np.ndarray [long, ndim=1] pid3,
+                   str filename = None):
+    """
+    mywireframe = tables2wireframe(x, y, z, pid1,pid2,pid3) 
+    
+    Takes a wireframe defined by two table: 
+    
+    - x, y, z : This is the points table
+    - pid1,pid2,pid3: This is another table defining triangles with 
+      three point IDs. 
+        
+    Parameters
+    ---------- 
+    x,y,z          : 1D array of floats
+		coordinates of the points to be tested		
+    pid1,pid2,pid3 : 1D array of integers
+		triangles defined by three existing point IDs
+    str filename   : Str (Default None)
+		file name and path. If provided the file wireframe is saved to 
+		this file.   
+    
+    Returns
+    -------
+    surface : VTK polydata
+           wireframe imported
+    
+    
+    Notes
+    -----
+	``pid`` is the row number in the point table.
+	
+	``pid`` indices start at zero
+	
+	For example: 
+	
+	a point table
+	
+	| x | y | z |
+	-------------
+	| 0 | 0 | 0 |
+	| 1 | 0 | 0 | 
+	| 0 | 1 | 0 |
+	
+	a triangle table
+	
+	|pid1|pid2|pid3|
+	-------------
+	| 0  | 1  | 2  |
+	
+    """
+    
+	# TODO: test this 
+    
+    cdef int i
+    
+    assert x.shape[0]==y.shape[0]==z.shape[0],          'Error: x, y, z or pid with different dimension'
+    assert pid1.shape[0]==pid1.shape[0]==pid1.shape[0], 'Error: pid1,pid2 or pid3 with different dimension'
 
+
+
+    points = vtk.vtkPoints();
+    
+    
+    for i in range(x.shape[0]):
+        points.InsertNextPoint(x[i],y[i],z[i]);
+
+
+	#create triangles
+	triangle = vtk.vtkTriangle()
+	triangles = vtk.vtkCellArray()
+
+	for i in range(solidtr.shape[0]):
+		triangle.GetPointIds().InsertId ( 0, pid1[i]);
+		triangle.GetPointIds().InsertId ( 1, pid2[i] );
+		triangle.GetPointIds().InsertId ( 2, pid3[i] );
+		
+		triangles.InsertNextCell ( triangle )
+
+	# Create a polydata object
+	trianglePolyData = vtk.vtkPolyData()
+	# Add the geometry and topology to the polydata
+	trianglePolyData.SetPoints(points)
+	trianglePolyData.SetPolys(triangles)
+	
+	# if required save the file
+	if filename!=None: 
+		# check extension 
+		if not filename.endswith('.mp3'):
+			filename = filename + '.vtp'
+		
+		writer =  vtk.vtkXMLPolyDataWriter()
+		writer.SetFileName(filename)
+		writer.SetInputData(trianglePolyData)
+		writer.SetDataModeToBinary()
+		writer.Write();
+
+
+    return trianglePolyData
 
 
 
