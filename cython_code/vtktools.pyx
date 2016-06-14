@@ -609,7 +609,7 @@ cpdef pointinsolid(surface,
 # ----------------------------------------------------------------------
 #   Inport triangles into wireframe
 # ----------------------------------------------------------------------
-cpdef tables2wireframe( 
+cpdef dmtable2wireframe( 
                    np.ndarray [double, ndim=1] x, 
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
@@ -619,7 +619,7 @@ cpdef tables2wireframe(
                    np.ndarray [long, ndim=1] pid3,
                    str filename = None):
     """
-    mywireframe = tables2wireframe(x, y, z, pid1,pid2,pid3) 
+    mywireframe = dmtable2wireframe(x, y, z, pid1,pid2,pid3) 
     
     Takes a wireframe defined by two table: 
     
