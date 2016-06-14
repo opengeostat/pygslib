@@ -630,12 +630,12 @@ cpdef tables2wireframe(
     Parameters
     ---------- 
     x,y,z          : 1D array of floats
-		coordinates of the points to be tested		
+        coordinates of the points to be tested        
     pid1,pid2,pid3 : 1D array of integers
-		triangles defined by three existing point IDs
+        triangles defined by three existing point IDs
     str filename   : Str (Default None)
-		file name and path. If provided the file wireframe is saved to 
-		this file.   
+        file name and path. If provided the file wireframe is saved to 
+        this file.   
     
     Returns
     -------
@@ -645,29 +645,29 @@ cpdef tables2wireframe(
     
     Notes
     -----
-	``pid`` is the row number in the point table.
-	
-	``pid`` indices start at zero
-	
-	For example: 
-	
-	a point table
-	
-	| x | y | z |
-	-------------
-	| 0 | 0 | 0 |
-	| 1 | 0 | 0 | 
-	| 0 | 1 | 0 |
-	
-	a triangle table
-	
-	|pid1|pid2|pid3|
-	-------------
-	| 0  | 1  | 2  |
-	
+    ``pid`` is the row number in the point table.
+    
+    ``pid`` indices start at zero
+    
+    For example: 
+    
+    a point table
+    
+    | x | y | z |
+    -------------
+    | 0 | 0 | 0 |
+    | 1 | 0 | 0 | 
+    | 0 | 1 | 0 |
+    
+    a triangle table
+    
+    |pid1|pid2|pid3|
+    -------------
+    | 0  | 1  | 2  |
+    
     """
     
-	# TODO: test this 
+    # TODO: test this 
     
     cdef int i
     
@@ -683,34 +683,34 @@ cpdef tables2wireframe(
         points.InsertNextPoint(x[i],y[i],z[i]);
 
 
-	#create triangles
-	triangle = vtk.vtkTriangle()
-	triangles = vtk.vtkCellArray()
+    #create triangles
+    triangle = vtk.vtkTriangle()
+    triangles = vtk.vtkCellArray()
 
-	for i in range(solidtr.shape[0]):
-		triangle.GetPointIds().InsertId ( 0, pid1[i]);
-		triangle.GetPointIds().InsertId ( 1, pid2[i] );
-		triangle.GetPointIds().InsertId ( 2, pid3[i] );
-		
-		triangles.InsertNextCell ( triangle )
+    for i in range(pid1.shape[0]):
+        triangle.GetPointIds().InsertId ( 0, pid1[i]);
+        triangle.GetPointIds().InsertId ( 1, pid2[i] );
+        triangle.GetPointIds().InsertId ( 2, pid3[i] );
+        
+        triangles.InsertNextCell ( triangle )
 
-	# Create a polydata object
-	trianglePolyData = vtk.vtkPolyData()
-	# Add the geometry and topology to the polydata
-	trianglePolyData.SetPoints(points)
-	trianglePolyData.SetPolys(triangles)
-	
-	# if required save the file
-	if filename!=None: 
-		# check extension 
-		if not filename.endswith('.mp3'):
-			filename = filename + '.vtp'
-		
-		writer =  vtk.vtkXMLPolyDataWriter()
-		writer.SetFileName(filename)
-		writer.SetInputData(trianglePolyData)
-		writer.SetDataModeToBinary()
-		writer.Write();
+    # Create a polydata object
+    trianglePolyData = vtk.vtkPolyData()
+    # Add the geometry and topology to the polydata
+    trianglePolyData.SetPoints(points)
+    trianglePolyData.SetPolys(triangles)
+    
+    # if required save the file
+    if filename!=None: 
+        # check extension 
+        if not filename.endswith('.mp3'):
+            filename = filename + '.vtp'
+        
+        writer =  vtk.vtkXMLPolyDataWriter()
+        writer.SetFileName(filename)
+        writer.SetInputData(trianglePolyData)
+        writer.SetDataModeToBinary()
+        writer.Write();
 
 
     return trianglePolyData
