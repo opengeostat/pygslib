@@ -599,6 +599,99 @@ cdef class Blockmodel:
         
         self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'] =  ijk2ind(self.bmtable['IJK'].values,self.nx,self.ny,self.nz)
 
+
+    cpdef reblock(self, double dx, double dy, double dz):
+        """
+        mymodel.reblock()
+        
+        Reblock models         
+        
+        The model is reblocked using IJK calculated from XC, YC, ZC
+        coordinates and averaging all points with same IJK. 
+        
+        Note that this is like a point to block conversion and subblock
+        overlapings are not taked into account. 
+        
+        Parameters
+        ----------
+        dx,dy,dz: floats
+			New block dimensions. Note that new dimentions may be 
+			greater or equal than old dimensions in all directions.
+        
+        
+        Returns
+        -------
+        block: model instance with model reblocked
+        
+        err: list of variables excluded (ej no numeric)
+        
+        Warning
+        -------
+        The existin model will be overwritten
+        
+        """         
+
+        assert dx>=self.dx  and dy>=self.dy and dz>=self.dz, 'Error: dx<self.dx, only reblocking to larger blocks supported'
+
+        assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
+        assert set(('XC', 'YC', 'ZC')).issubset(self.bmtable.columns), 'Error: No XC,YC,ZC in bmtable'
+        
+        tmpmod= pygslib.blockmodel.Blockmodel(self.nx,
+                                              self.ny,
+                                              self.nz,
+                                              self.xorg,
+                                              self.yorg,
+                                              self.zorg,
+                                              dx,dy,dz)
+
+        # add tables
+        tmpmod.set_blocks(self.bmtable)
+        
+        # calk ix iy and iz
+        tmpmod.calc_ixyz_fromxyz(overwrite=True)
+
+        #calk IJK
+        tmpmod.calc_ijk(overwrite=True)
+               
+        #clean model
+        if set(('IX', 'IY', 'IZ')).issubset(tmpmod.bmtable.columns): 
+            tmpmod.bmtable.drop(['IX', 'IY', 'IZ'], axis=1,inplace= True)
+        if set(('XC', 'YC', 'ZC')).issubset(tmpmod.bmtable.columns): 
+            tmpmod.bmtable.drop(['XC', 'YC', 'ZC'], axis=1, inplace= True)
+        
+        
+        tmpmod.bmtable['NBLK'] = 1
+        
+        
+        npoints = int(dx/self.dx*dy/self.dy*dz/self.dz)
+        
+        # now create a group by ijk
+        np = tmpmod.bmtable[['NBLK','IJK']].groupby('IJK').sum()
+        np['RD'] = np['NBLK']/float(npoints)
+        
+        err = []
+        for i in tmpmod.bmtable.columns:
+            if i == 'IJK' or i == 'RD' or i == 'NBLK':
+                continue  
+            try:
+                np[i] = tmpmod.bmtable[[i,'IJK']].groupby('IJK').mean()
+            except:
+                err.append(i)
+        
+        
+        if len(err)>0:
+            warnings.warn('\nWarning:\n Non numeric columns were ignored!')
+            
+        
+        tmpmod.set_blocks(np.reset_index())
+        
+        # set index as integre 32 bits
+        tmpmod.bmtable['IJK'] = tmpmod.bmtable['IJK'].values.astype(int)
+        
+                
+        return tmpmod, err
+
+
     cpdef create_IJK(self, bint overwrite=False):
         
         """
