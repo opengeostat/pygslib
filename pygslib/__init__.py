@@ -94,7 +94,7 @@ def version():
                'minor':0 , 
                'maintenance':0, 
                'build':3, 
-               'month':4, 
+               'month':6, 
                'year':2016}
 
     osplatform=platform.platform()
