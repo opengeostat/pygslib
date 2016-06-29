@@ -805,6 +805,10 @@ cpdef grid2vtkfile(str path,
     
     
     """
+    
+    # add extension to path 
+    if not path.lower().endswith('.vtr'):
+        path = path + '.vtr'
 
     pyevtk.hl.gridToVTK(path, x, y, z, cellData=data)
 
