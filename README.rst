@@ -12,7 +12,7 @@ This is two things:
 
 Current version
 ----------
-version = '0.0.0.3.6'
+version = '0.0.0.3.7'
 
 This means that we are in a very early developing stage and the package 
 is experimental!
@@ -22,6 +22,10 @@ Ipython notebook templates and examples.
 The easiest way to use PyGSLIB is to modify the Ipython notebook 
 provided as template and examples. Just change some input and enjoy 
 the results. 
+
+Keep in mind that new functionality is not implemented in the examples yet. 
+
+You may work with a vtk viewer (e.j. Paraview) for 3D visualization. 
 
 Notes
 -----
@@ -49,114 +53,15 @@ implementation:
 3. [Deprecated] The algorithms modules, which are intended to simplify 
    the use of pygslib.
 
-Installation in Anaconda distribution (Linux/Window/OS)
+Installation in Anaconda distribution (Linux/Window/ {OS not implemented yet})
 ------------
-The easiest way to install and work with PyGSLIB is to use Anaconda 
-(conda) distributions. To install PyGSLIB in the root environment of 
-your anaconda distribution follow the instructions below. 
-
-Binary Installation in Anaconda 64 bits distribution   (Linux/Window 64)
-------------
-There is a binary distribution at binstar.org. First install conda or 
-anaconda distribution, if you don't have one, and run the command: 
-
-``conda install -c https://conda.binstar.org/opengeostat pygslib``
+The easiest way to install and work with PyGSLIB is using an Anaconda 
+(conda) distribution. To install PyGSLIB in the root environment of 
+your anaconda distribution simply type in a terminal:  
 
 
-Installation from sources (pypi.python.org) in Anaconda 32/64 bits 
-distribution (Linux)
-------------
-Install dependencies: 
+``conda install -c opengeostat pygslib``
 
- 
-``$ conda install numpy pandas matplotlib``
-
-Install PyGSLIB with  ``easy_install`` or ``pip``:
-
-``$ pip install pygslib``
-
-You may need access to gfortran compiler to compile the FORTRAN code. 
-This is usually available in most Linux distributions. 
-
-Installation from sources (pypi.python.org) in Anaconda 32 bits 
-distribution (Windows)
-------------
-Install dependencies, including mingw which comes with gfortran: 
-
-
-``C:\>conda install mingw numpy pandas matplotlib``
-
-
-Install PyGSLIB with  ``easy_install`` or ``pip`` using gfortran 
-32 bits compiler
-
-
-``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
-
-
-Installation from sources (pypi.python.org) in Anaconda 64 bits 
-distribution (Windows)
-------------
-Install dependencies: 
-
-``C:\>conda install numpy pandas matplotlib`` 
-
-
-Install mingw with 64 bit compiler
-
-``C:\>conda install -c https://conda.binstar.org/omnia mingwpy``
-
-Install PyGSLIB with  `easy_install` or `pip` using gfortran 64 bits 
-compiler:
-
-
-``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
-
-
-If you get an error like this::
-
-    File "C:\Users\Your_Path_Here\Anaconda\envs\test3\lib\site-packages\numpy\distutils\fcompiler\gnu.py", 
-    line 337, in get_libraries raise NotImplementedError("Only MS compiler supported with gfortran on win64")
-    NotImplementedError: Only MS compiler supported with gfortran on win64
-
-
-Don't worry, this is a known issue in numpys distutils. Go to the file 
-
-``C:\Users\YYOUR_USER_NAME\Anaconda\lib\site-packages\numpy\distutils\fcompiler\gnu.py``
-
-or this file, if you are installing PyGSLIB in an environment
-
-``C:\Users\YYOUR_USER_NAME\Anaconda\envs\YOUR_ENVIRONMENT\lib\site-packages\numpy\distutils\fcompiler\gnu.py``
-
-around the line 337 you will see::
-
-    if is_win64():
-        c_compiler = self.c_compiler
-        if c_compiler and c_compiler.compiler_type == "msvc":
-            return []
-        else:
-            raise NotImplementedError("Only MS compiler supported with gfortran on win64")
-
-
-rewrite the code like this::
-
-	if is_win64():
-		c_compiler = self.c_compiler
-		if c_compiler and c_compiler.compiler_type == "msvc":
-		    return []
-		else:
-		    return [] #raise NotImplementedError("Only MS compiler supported with gfortran on win64")
-
-
-and rerun
-
-
-``C:\>pip install --global-option build_ext --global-option --compiler=mingw32 pygslib``
-
-
-This may fix the problem.
-
-Note that this is a bug in numpy<1.10
 
 
 Installation from source (from github.com)
@@ -179,7 +84,7 @@ To update conda repository(Linux)::
 
 	conda skeleton pypi pygslib
 	conda build pygslib
-	anaconda upload /home/adrian/anaconda/conda-bld/linux-64/pygslib-0.0.0.3.3-nppy27_0.tar.bz2
+	anaconda upload /home/adrian/anaconda/conda-bld/linux-64/pygslib-0.0.0.3.#-nppy27_0.tar.bz2
 
 
 Usage
@@ -189,15 +94,15 @@ See the Ipython noteebooks provided in the folder ``pygslib/Ipython_templates``.
 
 License 
 -------
-Copyright 2015, Adrian Martinez Vargas
+Copyright 2016, Adrian Martinez Vargas
 
 Supported by Opengeostat Consulting @ http://opengeostat.com/
 
                                                                  
-This software may be modified and distributed under the terms  of the 
+This software may be modified and distributed under the terms of the 
 MIT license.  See the LICENSE.txt file for details.
 
-Tue 05  Jan.  2016
+Monday 18 July 2016
 
 
 
