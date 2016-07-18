@@ -438,8 +438,14 @@ cdef class Blockmodel:
                         
         Examples
         --------
-        >>> bmtable=pd.DataFrame({'IJK':[1,2,3,4]})
+        >>> bmtable=pd.DataFrame({'IJK':np.array([1,2,3,4], dtype=np.int32)})
         >>> myblockmodel.set_blocks(bmtable)
+        
+        Comments
+        -------
+        Make sure IJK, IX,IY and IZ have dtype int32. XC,YC and ZC may 
+        have dtype float32
+         
                 
         """ 
         cdef bint has_ijk, has_ixyz, has_cxyz 
@@ -615,8 +621,8 @@ cdef class Blockmodel:
         Parameters
         ----------
         dx,dy,dz: floats
-			New block dimensions. Note that new dimentions may be 
-			greater or equal than old dimensions in all directions.
+            New block dimensions. Note that new dimentions may be 
+            greater or equal than old dimensions in all directions.
         
         
         Returns
