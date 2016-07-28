@@ -60,6 +60,16 @@ building extension "pygslib.__plot" sources
 f2py options: []
   adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
   adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.gslib.__gslib__kt3d" sources
+f2py options: ['only:', 'pykt3d', 'set_unest', ':']
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\gslib\__gslib__kt3d-f2pywrappers2.f90' to sources.
+building extension "pygslib.gslib.__gslib__postik" sources
+f2py options: ['only:', 'postik', 'set_unest', ':']
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\gslib\__gslib__postik-f2pywrappers2.f90' to sources.
 build_src: building npy-pkg config files
 writing requirements to pygslib.egg-info\requires.txt
 writing pygslib.egg-info\PKG-INFO
@@ -86,142 +96,303 @@ Could not locate executable DF
 customize IntelItaniumVisualFCompiler
 Could not locate executable efl
 customize Gnu95FCompiler
-Found executable C:\Users\Adrian\Anaconda2\Scripts\gfortran.exe
-Found executable C:\Users\Adrian\Anaconda2\Scripts\gfortran.exe
+Found executable C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat
+Found executable C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat
 customize Gnu95FCompiler
 customize Gnu95FCompiler using build_ext
-building 'pygslib.__variograms' extension
+building 'pygslib.gslib.__gslib__postik' extension
 compiling C sources
 C compiler: gcc -g -DDEBUG -DMS_WIN64 -O0 -Wall -Wstrict-prototypes
 
 compile options: '-DNPY_MINGW_USE_CUSTOM_MSVCR -D__MSVCRT_VERSION__=0x0900 -Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c'
 gcc -g -DDEBUG -DMS_WIN64 -O0 -Wall -Wstrict-prototypes -DNPY_MINGW_USE_CUSTOM_MSVCR -D__MSVCRT_VERSION__=0x0900 -Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c build\src.win-amd64-2.7\fortranobject.c -o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o
-Found executable C:\Users\Adrian\Anaconda2\Scripts\gcc.exe
-gcc -g -DDEBUG -DMS_WIN64 -O0 -Wall -Wstrict-prototypes -DNPY_MINGW_USE_CUSTOM_MSVCR -D__MSVCRT_VERSION__=0x0900 -Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c build\src.win-amd64-2.7\pygslib\__variogramsmodule.c -o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\__variogramsmodule.o
-compiling Fortran sources
-Fortran f77 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.exe -Wall -g -ffixed-form -fno-second-underscore -O0
-Fortran f90 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.exe -Wall -g -fno-second-underscore -O0
-Fortran fix compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.exe -Wall -g -ffixed-form -fno-second-underscore -Wall -g -fno-second-underscore -O0
+Found executable C:\Users\Adrian\Anaconda2\Scripts\gcc.bat
+gcc -g -DDEBUG -DMS_WIN64 -O0 -Wall -Wstrict-prototypes -DNPY_MINGW_USE_CUSTOM_MSVCR -D__MSVCRT_VERSION__=0x0900 -Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c build\src.win-amd64-2.7\pygslib\gslib\__gslib__postikmodule.c -o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\gslib\__gslib__postikmodule.o
+compiling Fortran 90 module sources
+Fortran f77 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -ffixed-form -fno-second-underscore -O0
+Fortran f90 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -fno-second-underscore -O0
+Fortran fix compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -ffixed-form -fno-second-underscore -Wall -g -fno-second-underscore -O0
 compile options: '-Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c'
-gfortran.exe:f90: for_code/variograms.f90
-C:\Users\Adrian\Anaconda2\Scripts\gfortran.exe -Wall -g -Wall -g -shared build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\__variogramsmodule.o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o build\temp.win-amd64-2.7\Release\for_code\variograms.o -LC:\Users\Adrian\Anaconda2\share\mingwpy\lib\gcc\x86_64-w64-mingw32\4.9.2 -LC:\Users\Adrian\Anaconda2\libs -LC:\Users\Adrian\Anaconda2\PCbuild\amd64 -LC:\Users\Adrian\Anaconda2\PC\VS9.0\amd64 -lpython27 -lgfortran -o pygslib\__variograms.pyd
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/dllcrt2.o:crtdll.c:(.text+0xb): undefined reference to `malloc'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/dllcrt2.o:crtdll.c:(.text+0xbd): undefined reference to `_amsg_exit'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/dllcrt2.o:crtdll.c:(.text+0x1d3): undefined reference to `free'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/dllcrt2.o:crtdll.c:(.text+0x249): undefined reference to `_initterm'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/dllcrt2.o:crtdll.c:(.text+0x258): undefined reference to `_amsg_exit'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/dllcrt2.o:crtdll.c:(.text+0x270): undefined reference to `_initterm'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\__variogramsmodule.o: In function `f2py_size':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/pygslib/__variogramsmodule.c:130: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/pygslib/__variogramsmodule.c:130: undefined reference to `fprintf'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\__variogramsmodule.o: In function `f2py_rout___variograms_gamv':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/pygslib/__variogramsmodule.c:874: undefined reference to `sprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/pygslib/__variogramsmodule.c:919: undefined reference to `sprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/pygslib/__variogramsmodule.c:954: undefined reference to `sprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/pygslib/__variogramsmodule.c:1109: undefined reference to `sprintf'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\__variogramsmodule.o: In function `f2py_rout___variograms_gamma':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/pygslib/__variogramsmodule.c:1493: undefined reference to `sprintf'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\__variogramsmodule.o:c:\OG_Python\pygslib/build/src.win-amd64-2.7/pygslib/__variogramsmodule.c:1518: more undefined references to `sprintf' follow
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o: In function `F2PyDict_SetItemString':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:23: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:23: undefined reference to `fprintf'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o: In function `fortran_doc':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:156: undefined reference to `strlen'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:166: undefined reference to `strlen'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:170: undefined reference to `memcpy'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:214: undefined reference to `memcpy'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:236: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:236: undefined reference to `fprintf'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o: In function `fortran_getattr':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:262: undefined reference to `strcmp'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:285: undefined reference to `strcmp'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:289: undefined reference to `strcmp'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:308: undefined reference to `strcmp'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o: In function `fortran_setattr':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:331: undefined reference to `strcmp'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:353: undefined reference to `memcpy'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:363: undefined reference to `memcpy'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o: In function `array_from_pyobj':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:687: undefined reference to `strlen'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:687: undefined reference to `sprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:699: undefined reference to `memset'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:725: undefined reference to `strlen'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:725: undefined reference to `sprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:767: undefined reference to `strlen'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:767: undefined reference to `sprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:773: undefined reference to `strlen'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:773: undefined reference to `sprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:776: undefined reference to `strlen'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:776: undefined reference to `sprintf'
-build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o: In function `check_and_fix_dimensions':
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:860: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:860: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:873: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:873: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:886: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:886: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:899: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:899: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:909: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:909: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:922: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:922: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:933: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:933: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:951: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:951: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:954: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:954: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:955: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:955: undefined reference to `fwrite'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:956: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:956: undefined reference to `fprintf'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:957: undefined reference to `__imp___iob_func'
-c:\OG_Python\pygslib/build/src.win-amd64-2.7/fortranobject.c:957: undefined reference to `fwrite'
-build\temp.win-amd64-2.7\Release\for_code\variograms.o: In function `gamv_':
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `malloc'
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `malloc'
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `malloc'
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `malloc'
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `malloc'
-build\temp.win-amd64-2.7\Release\for_code\variograms.o:c:\OG_Python\pygslib/for_code/variograms.f90:272: more undefined references to `malloc' follow
-build\temp.win-amd64-2.7\Release\for_code\variograms.o: In function `gamv_':
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `free'
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `free'
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `free'
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `free'
-c:\OG_Python\pygslib/for_code/variograms.f90:272: undefined reference to `free'
-build\temp.win-amd64-2.7\Release\for_code\variograms.o:c:\OG_Python\pygslib/for_code/variograms.f90:272: more undefined references to `free' follow
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-atonexit.o):atonexit.c:(.text+0x25): undefined reference to `_lock'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-atonexit.o):atonexit.c:(.text+0x59): undefined reference to `__dllonexit'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-atonexit.o):atonexit.c:(.text+0x88): undefined reference to `_unlock'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-atonexit.o):atonexit.c:(.text+0x9a): undefined reference to `__imp__onexit'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-gs_support.o):gs_support.c:(.text+0x1ac): undefined reference to `abort'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-pseudo-reloc.o):pseudo-reloc.c:(.text+0x23): undefined reference to `__iob_func'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-pseudo-reloc.o):pseudo-reloc.c:(.text+0x3e): undefined reference to `fwrite'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-pseudo-reloc.o):pseudo-reloc.c:(.text+0x48): undefined reference to `__iob_func'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-pseudo-reloc.o):pseudo-reloc.c:(.text+0x57): undefined reference to `vfprintf'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-pseudo-reloc.o):pseudo-reloc.c:(.text+0x5c): undefined reference to `abort'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-pseudo-reloc.o):pseudo-reloc.c:(.text+0x157): undefined reference to `memcpy'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-crt_handler.o):crt_handler.c:(.text+0x44): undefined reference to `signal'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-crt_handler.o):crt_handler.c:(.text+0xa0): undefined reference to `signal'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-crt_handler.o):crt_handler.c:(.text+0xe6): undefined reference to `signal'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-crt_handler.o):crt_handler.c:(.text+0x166): undefined reference to `signal'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-crt_handler.o):crt_handler.c:(.text+0x191): undefined reference to `signal'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-crt_handler.o):crt_handler.c:(.text+0x1a7): more undefined references to `signal' follow
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-tlsthrd.o):tlsthrd.c:(.text+0x9f): undefined reference to `calloc'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-tlsthrd.o):tlsthrd.c:(.text+0x16c): undefined reference to `free'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-tlsthrd.o):tlsthrd.c:(.text+0x1f8): undefined reference to `free'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-pesect.o):pesect.c:(.text+0x9b): undefined reference to `strlen'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-pesect.o):pesect.c:(.text+0x126): undefined reference to `strncmp'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-CRT_fp8.o):CRT_fp8.c:(.text+0x3): undefined reference to `__imp__fpreset'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingwex.a(lib64_libmingwex_a-sqrt.o):sqrt.c:(.text+0xd1): undefined reference to `_errno'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingwex.a(lib64_libmingwex_a-cos.o):cos.c:(.text+0x75): undefined reference to `_errno'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingwex.a(lib64_libmingwex_a-cos.o):cos.c:(.text+0xa6): undefined reference to `_errno'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingwex.a(lib64_libmingwex_a-log.o):log.c:(.text+0x84): undefined reference to `_errno'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingwex.a(lib64_libmingwex_a-log.o):log.c:(.text+0x103): undefined reference to `_errno'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingwex.a(lib64_libmingwex_a-sin.o):sin.c:(.text+0x75): more undefined references to `_errno' follow
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-merr.o):merr.c:(.text+0xb5): undefined reference to `__iob_func'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-merr.o):merr.c:(.text+0xde): undefined reference to `fprintf'
-C:/Users/Adrian/Anaconda2/share/mingwpy/bin/../lib/gcc/x86_64-w64-mingw32/4.9.2/../../../../x86_64-w64-mingw32/lib/../lib/libmingw32.a(lib64_libmingw32_a-merr.o):merr.c:(.text+0x58): undefined reference to `__setusermatherr'
+extra options: '-Jbuild\temp.win-amd64-2.7\Release\pygslib\gslib -Ibuild\temp.win-amd64-2.7\Release\pygslib\gslib'
+gfortran.bat:f90: for_code/postik/postik.f90
+compiling Fortran sources
+Fortran f77 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -ffixed-form -fno-second-underscore -O0
+Fortran f90 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -fno-second-underscore -O0
+Fortran fix compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -ffixed-form -fno-second-underscore -Wall -g -fno-second-underscore -O0
+compile options: '-Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c'
+extra options: '-Jbuild\temp.win-amd64-2.7\Release\pygslib\gslib -Ibuild\temp.win-amd64-2.7\Release\pygslib\gslib'
+gfortran.bat:f90: for_code/postik/gslib/beyond.f90
+gfortran.bat:f90: for_code/postik/gslib/locate.f90
+gfortran.bat:f90: for_code/postik/gslib/powint.f90
+gfortran.bat:f90: for_code/postik/gslib/sortem.f90
+gfortran.bat:f90: build\src.win-amd64-2.7\pygslib\gslib\__gslib__postik-f2pywrappers2.f90
+C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -Wall -g -shared build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\gslib\__gslib__postikmodule.o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o build\temp.win-amd64-2.7\Release\for_code\postik\postik.o build\temp.win-amd64-2.7\Release\for_code\postik\gslib\beyond.o build\temp.win-amd64-2.7\Release\for_code\postik\gslib\locate.o build\temp.win-amd64-2.7\Release\for_code\postik\gslib\powint.o build\temp.win-amd64-2.7\Release\for_code\postik\gslib\sortem.o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\gslib\__gslib__postik-f2pywrappers2.o -Lc:\users\adrian\anaconda2\mingw\lib\gcc\x86_64-w64-mingw32\4.7.0 -LC:\Users\Adrian\Anaconda2\libs -LC:\Users\Adrian\Anaconda2\PCbuild\amd64 -LC:\Users\Adrian\Anaconda2\PC\VS9.0\amd64 -lpython27 -lgfortran -o pygslib\gslib\__gslib__postik.pyd
+build\temp.win-amd64-2.7\Release\for_code\postik\postik.o: In function `postik_':
+C:\OG_Python\pygslib/for_code/postik/postik.f90:220: undefined reference to `val_'
 collect2.exe: error: ld returned 1 exit status
+running develop
+running build_scripts
+running egg_info
+running build_src
+build_src
+building extension "pygslib.__variograms" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.__bigaus" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\__bigaus-f2pywrappers.f' to sources.
+building extension "pygslib.__bicalib" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.__trans" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\__trans-f2pywrappers.f' to sources.
+building extension "pygslib.__draw" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\__draw-f2pywrappers.f' to sources.
+building extension "pygslib.__addcoord" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.__rotscale" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.__read_gslib" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.__declus" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.__dist_transf" sources
+f2py options: ['only:', 'backtr', 'anatbl', 'nscore', 'ns_ttable', ':']
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.__block_covariance" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\__block_covariance-f2pywrappers.f' to sources.
+building extension "pygslib.__kt3d" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\__kt3d-f2pywrappers.f' to sources.
+building extension "pygslib.__plot" sources
+f2py options: []
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+building extension "pygslib.gslib.__gslib__kt3d" sources
+f2py options: ['only:', 'pykt3d', 'set_unest', ':']
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\gslib\__gslib__kt3d-f2pywrappers2.f90' to sources.
+building extension "pygslib.gslib.__gslib__postik" sources
+f2py options: ['only:', 'postik', 'set_unest', ':']
+f2py:> build\src.win-amd64-2.7\pygslib\gslib\__gslib__postikmodule.c
+Reading fortran codes...
+	Reading file 'for_code/postik/postik.f90' (format:free)
+	Reading file 'for_code/postik/gslib/beyond.f90' (format:free)
+	Reading file 'for_code/postik/gslib/locate.f90' (format:free)
+	Reading file 'for_code/postik/gslib/powint.f90' (format:free)
+	Reading file 'for_code/postik/gslib/sortem.f90' (format:free)
+Post-processing...
+	Block: __gslib__postik
+			Block: commons
+			Block: set_unest
+{}
+In: :__gslib__postik:for_code/postik/postik.f90:postik
+vars2fortran: No typespec for argument "na".
+			Block: postik
+Post-processing (stage 2)...
+	Block: __gslib__postik
+		Block: unknown_interface
+			Block: commons
+			Block: set_unest
+			Block: postik
+Building modules...
+	Building module "__gslib__postik"...
+		Constructing wrapper function "set_unest"...
+		  set_unest(unest_)
+		Constructing wrapper function "postik"...
+		  out1,out2,out3,error = postik(iout,outpar,ccut1,ivol,ivtyp,varred,zmin,zmax,ltail,ltpar,mtail,mtpar,utail,utpar,maxdis,vr,wt,p,[nccut,nc,na])
+		Constructing F90 module support for "commons"...
+		  Variables: unest
+	Wrote C/API module "__gslib__postik" to file "build\src.win-amd64-2.7\pygslib\gslib\__gslib__postikmodule.c"
+	Fortran 90 wrappers are saved to "build\src.win-amd64-2.7\pygslib\gslib\__gslib__postik-f2pywrappers2.f90"
+  adding 'build\src.win-amd64-2.7\fortranobject.c' to sources.
+  adding 'build\src.win-amd64-2.7' to include_dirs.
+  adding 'build\src.win-amd64-2.7\pygslib\gslib\__gslib__postik-f2pywrappers2.f90' to sources.
+build_src: building npy-pkg config files
+writing requirements to pygslib.egg-info\requires.txt
+writing pygslib.egg-info\PKG-INFO
+writing top-level names to pygslib.egg-info\top_level.txt
+writing dependency_links to pygslib.egg-info\dependency_links.txt
+reading manifest file 'pygslib.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'pygslib.egg-info\SOURCES.txt'
+running build_ext
+Looking for python27.dll
+Cannot build msvcr library: "msvcr90d.dll" not found
+customize Mingw32CCompiler
+customize Mingw32CCompiler using build_ext
+customize GnuFCompiler
+Could not locate executable g77
+Could not locate executable f77
+customize IntelVisualFCompiler
+Could not locate executable ifort
+Could not locate executable ifl
+customize AbsoftFCompiler
+Could not locate executable f90
+customize CompaqVisualFCompiler
+Could not locate executable DF
+customize IntelItaniumVisualFCompiler
+Could not locate executable efl
+customize Gnu95FCompiler
+Found executable C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat
+Found executable C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat
+customize Gnu95FCompiler
+customize Gnu95FCompiler using build_ext
+building 'pygslib.gslib.__gslib__postik' extension
+compiling C sources
+C compiler: gcc -g -DDEBUG -DMS_WIN64 -O0 -Wall -Wstrict-prototypes
+
+compile options: '-DNPY_MINGW_USE_CUSTOM_MSVCR -D__MSVCRT_VERSION__=0x0900 -Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c'
+gcc -g -DDEBUG -DMS_WIN64 -O0 -Wall -Wstrict-prototypes -DNPY_MINGW_USE_CUSTOM_MSVCR -D__MSVCRT_VERSION__=0x0900 -Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c build\src.win-amd64-2.7\fortranobject.c -o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o
+Found executable C:\Users\Adrian\Anaconda2\Scripts\gcc.bat
+gcc -g -DDEBUG -DMS_WIN64 -O0 -Wall -Wstrict-prototypes -DNPY_MINGW_USE_CUSTOM_MSVCR -D__MSVCRT_VERSION__=0x0900 -Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c build\src.win-amd64-2.7\pygslib\gslib\__gslib__postikmodule.c -o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\gslib\__gslib__postikmodule.o
+compiling Fortran 90 module sources
+Fortran f77 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -ffixed-form -fno-second-underscore -O0
+Fortran f90 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -fno-second-underscore -O0
+Fortran fix compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -ffixed-form -fno-second-underscore -Wall -g -fno-second-underscore -O0
+compile options: '-Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c'
+extra options: '-Jbuild\temp.win-amd64-2.7\Release\pygslib\gslib -Ibuild\temp.win-amd64-2.7\Release\pygslib\gslib'
+gfortran.bat:f90: for_code/postik/postik.f90
+compiling Fortran sources
+Fortran f77 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -ffixed-form -fno-second-underscore -O0
+Fortran f90 compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -fno-second-underscore -O0
+Fortran fix compiler: C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -ffixed-form -fno-second-underscore -Wall -g -fno-second-underscore -O0
+compile options: '-Ibuild\src.win-amd64-2.7 -IC:\Users\Adrian\Anaconda2\lib\site-packages\numpy\core\include -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -IC:\Users\Adrian\Anaconda2\include -IC:\Users\Adrian\Anaconda2\PC -c'
+extra options: '-Jbuild\temp.win-amd64-2.7\Release\pygslib\gslib -Ibuild\temp.win-amd64-2.7\Release\pygslib\gslib'
+gfortran.bat:f90: for_code/postik/gslib/beyond.f90
+gfortran.bat:f90: for_code/postik/gslib/locate.f90
+gfortran.bat:f90: for_code/postik/gslib/powint.f90
+gfortran.bat:f90: for_code/postik/gslib/sortem.f90
+gfortran.bat:f90: build\src.win-amd64-2.7\pygslib\gslib\__gslib__postik-f2pywrappers2.f90
+C:\Users\Adrian\Anaconda2\Scripts\gfortran.bat -Wall -g -Wall -g -shared build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\gslib\__gslib__postikmodule.o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\fortranobject.o build\temp.win-amd64-2.7\Release\for_code\postik\postik.o build\temp.win-amd64-2.7\Release\for_code\postik\gslib\beyond.o build\temp.win-amd64-2.7\Release\for_code\postik\gslib\locate.o build\temp.win-amd64-2.7\Release\for_code\postik\gslib\powint.o build\temp.win-amd64-2.7\Release\for_code\postik\gslib\sortem.o build\temp.win-amd64-2.7\Release\build\src.win-amd64-2.7\pygslib\gslib\__gslib__postik-f2pywrappers2.o -Lc:\users\adrian\anaconda2\mingw\lib\gcc\x86_64-w64-mingw32\4.7.0 -LC:\Users\Adrian\Anaconda2\libs -LC:\Users\Adrian\Anaconda2\PCbuild\amd64 -LC:\Users\Adrian\Anaconda2\PC\VS9.0\amd64 -lpython27 -lgfortran -o pygslib\gslib\__gslib__postik.pyd
+Creating c:\users\adrian\anaconda2\lib\site-packages\pygslib.egg-link (link to .)
+pygslib 0.0.0.3.7.2 is already the active version in easy-install.pth
+
+Installed c:\og_python\pygslib
+Processing dependencies for pygslib==0.0.0.3.7.2
+Searching for matplotlib==1.5.1
+Best match: matplotlib 1.5.1
+Adding matplotlib 1.5.1 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for pandas==0.18.1
+Best match: pandas 0.18.1
+Adding pandas 0.18.1 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for numpy==1.11.1
+Best match: numpy 1.11.1
+Adding numpy 1.11.1 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for pyparsing==2.1.4
+Best match: pyparsing 2.1.4
+Adding pyparsing 2.1.4 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for cycler==0.10.0
+Best match: cycler 0.10.0
+Adding cycler 0.10.0 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for pytz==2016.4
+Best match: pytz 2016.4
+Adding pytz 2016.4 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for python-dateutil==2.5.3
+Best match: python-dateutil 2.5.3
+Adding python-dateutil 2.5.3 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for six==1.10.0
+Best match: six 1.10.0
+Adding six 1.10.0 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Finished processing dependencies for pygslib==0.0.0.3.7.2
+running develop
+running egg_info
+writing requirements to pygslib.egg-info\requires.txt
+writing pygslib.egg-info\PKG-INFO
+writing top-level names to pygslib.egg-info\top_level.txt
+writing dependency_links to pygslib.egg-info\dependency_links.txt
+reading manifest file 'pygslib.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'pygslib.egg-info\SOURCES.txt'
+running build_ext
+Looking for python27.dll
+Cannot build msvcr library: "msvcr90d.dll" not found
+skipping 'cython_code\drillhole.c' Cython extension (up-to-date)
+skipping 'cython_code\blockmodel.c' Cython extension (up-to-date)
+skipping 'cython_code\vtktools.c' Cython extension (up-to-date)
+skipping 'cython_code\nonlinear.c' Cython extension (up-to-date)
+skipping 'cython_code\neighborhood.c' Cython extension (up-to-date)
+skipping 'cython_code\interpolators.c' Cython extension (up-to-date)
+copying build\lib.win-amd64-2.7\pygslib\drillhole.pyd -> pygslib
+copying build\lib.win-amd64-2.7\pygslib\blockmodel.pyd -> pygslib
+copying build\lib.win-amd64-2.7\pygslib\vtktools.pyd -> pygslib
+copying build\lib.win-amd64-2.7\pygslib\nonlinear.pyd -> pygslib
+copying build\lib.win-amd64-2.7\pygslib\neighborhood.pyd -> pygslib
+copying build\lib.win-amd64-2.7\pygslib\interpolators.pyd -> pygslib
+Creating c:\users\adrian\anaconda2\lib\site-packages\pygslib.egg-link (link to .)
+pygslib 0.0.0.3.7.2 is already the active version in easy-install.pth
+
+Installed c:\og_python\pygslib
+Processing dependencies for pygslib==0.0.0.3.7.2
+Searching for scipy==0.17.1
+Best match: scipy 0.17.1
+Adding scipy 0.17.1 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for pandas==0.18.1
+Best match: pandas 0.18.1
+Adding pandas 0.18.1 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for numpy==1.11.1
+Best match: numpy 1.11.1
+Adding numpy 1.11.1 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for pytz==2016.4
+Best match: pytz 2016.4
+Adding pytz 2016.4 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for python-dateutil==2.5.3
+Best match: python-dateutil 2.5.3
+Adding python-dateutil 2.5.3 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Searching for six==1.10.0
+Best match: six 1.10.0
+Adding six 1.10.0 to easy-install.pth file
+
+Using c:\users\adrian\anaconda2\lib\site-packages
+Finished processing dependencies for pygslib==0.0.0.3.7.2

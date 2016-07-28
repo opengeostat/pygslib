@@ -217,7 +217,7 @@ subroutine postik( &
             endif
             ncut = ncut + 1
             cut(ncut) = vr(l)
-            gmean     = gmean + val(ivr)
+            gmean     = gmean + vr(l)
             cdf(ncut) = wt(l)
             tcdf = tcdf + cdf(ncut)
                         

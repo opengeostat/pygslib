@@ -29,6 +29,8 @@ long_line_column=72
 
 [files]
 current_page=0
+FILE_NAME_0=2544;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Cpostik%5Cpostik.f90;0;4
+FILE_NAME_1=3234;Python;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Csetup.py;0;4
 
 [VTE]
 last_dir=/home/adrian/bitbucket/public/pygslib

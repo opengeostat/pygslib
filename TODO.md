@@ -9,8 +9,10 @@ Avoid bugs and improve compilation
 - [ ] Clean a bit the code ``Warning: Label 4 at (1) defined but not used`` and  ``Warning: Unused dummy argument``.
 - [ ] Initialize arrays ``Warning: ‘####’ may be used uninitialized in this function``
 - [ ] Initialize arrays
+- [ ] Remove old kt3D function 
+- [ ] test dtype of dict parameters at python level to avoid dtype complains and error from fortran at gslib.kt3d function
 
-Improve algorithms and testing
+Testing
 ----
 - [ ] Complete the estimation part for n node, blocks or polygons (kt3D program)
 - [ ] Optimize speed/Identify slow code and bottleneck 
