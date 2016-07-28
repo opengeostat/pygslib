@@ -16,6 +16,7 @@ of the MIT license.  See the LICENSE.txt file for details.
 
 import pandas as pd
 import __gslib__kt3d
+import __gslib__postik
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
@@ -23,6 +24,7 @@ import warnings
 # Set default parameters in the Fortran common module
 
 __gslib__kt3d.set_unest (np.nan) 
+__gslib__postik.set_unest (np.nan)
 
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -31,7 +33,7 @@ __gslib__kt3d.set_unest (np.nan)
 #
 #-----------------------------------------------------------------------------------------------------------------
 def set_nan_value(value=np.nan):
-    """Set non estimated value in the module KT3D
+    """Set non estimated value in the modules KT3D and POSTIK
     
     This will change the value assigned to non estimated values
 
@@ -51,11 +53,12 @@ def set_nan_value(value=np.nan):
     """
 
     __gslib__kt3d.set_unest (value)
+    __gslib__postik.set_unest (value)
     
 
 #-----------------------------------------------------------------------------------------------------------------
 #
-#    Variograms GAMV low level functions
+#    Kriging with Kt3D
 #
 #-----------------------------------------------------------------------------------------------------------------
     
@@ -70,7 +73,7 @@ def kt3d(parameters):
         b) the input (for grid estimate) is now as numpy arrays. 
            The grid definition was retained because is an input
            of the GSLIB search super-block algorithm.
-        c) the triming limits were removed, you may filter out 
+        c) the trimming limits were removed, you may filter out 
            undesired values before estimating     
     
     the parameter file here is a dictionary with the following keys.
@@ -288,6 +291,113 @@ def kt3d(parameters):
 
 
 
+#-----------------------------------------------------------------------------------------------------------------
+#
+#    PostIK
+#
+#-----------------------------------------------------------------------------------------------------------------
+    
+def postik(parameters):
+    """Post Process IK Distributions
+    
+    This is a wrap for the GSLIB Fortran code of the program POSTIK Version 2.0, 
+    originally in Fortran 77. Only minor changes were included, the most 
+    relevant are:
+    
+        a) the direct file output was redirected to Numpy Arrays
+        b) the input (for grid estimate) is now as numpy arrays. 
+        c) the trimming limits were removed, you may filter out 
+           undesired values before post-processing    
+    
+    the parameter file here is a dictionary with the following keys.
+     
+    
+    
+    Parameters
+    ----------
+        parameters  :  dict
+            This is a dictionary with key parameter (case sensitive) and values, 
+            some of the input are optional and will be internally initialized as
+            zero or array of zeros. 
 
+        kt3d_Parameters = {
+            # output option, output parameter
+            iout   : ,   # input int
+            outpar : ,   # input float
+            # the thresholds
+            ccut1  : ,   # input rank-1 array('f') with bounds (nccut)
+            # volume support?, type, varred
+            ivol   : ,   # input int
+            ivtyp  : ,   # input int
+            varred : ,   # input float
+            # minimum and maximum Z value
+            zmin   : ,   # input float
+            zmax   : ,   # input float
+            # lower,middle and upper tail: option, parameter
+            ltail  : ,   # input int
+            ltpar  : ,   # input float
+            mtail  : ,   # input int
+            mtpar  : ,   # input float
+            utail  : ,   # input int
+            utpar  : ,   # input float
+            # maximum discretization
+            maxdis : ,   # input int
+            # 1D arrays with global distribution
+            vr     : ,   # input rank-1 array('f') with bounds (nc)
+            wt     : ,   # input rank-1 array('f') with bounds (nc)
+            # 2D array with IK3D output (continuous)
+            p      : }   # input rank-2 array('f') with bounds (nc,na)
+            
+        Returns
+        -------
+            out1, out2, out3 : rank-1 array('f') with bounds (na) 
+                results
+                iout == 1 out1 -> 'mean', out2 -> NaN, out3 -> NaN
+                iout == 2 out1 -> 'prob > cutoff', out2 -> 'mean > cutoff', out3 -> 'mean < cutoff'
+                iout == 3 out1 -> 'Z value corresponding to CDF = value', out2 -> NaN, out3 -> NaN
+                iout == 4 out1 -> 'Conditional Variance', out2 -> NaN, out3 -> NaN
+               
+      
+    Notes
+    -----
+
+    This python functions is a wrapper that calls functions in the module __gslib__postik.so
+
+    Example
+    -------
+    
+    >>>     out1,out2,out3,error = postik(parameters)
+
+    """
+  
+
+
+    # prepare the output
+
+    out1,out2,out3,error = __gslib__kt3d.postik(**parameters)
+
+    (output['outest'],     
+    output['outkvar'],   
+    output['outcdf'],     
+    output['cbb'],        
+    output['neq'],        
+    output['na'],         
+    output['dbgxdat'],    
+    output['dbgydat'],    
+    output['dbgzdat'],    
+    output['dbgvrdat'],   
+    output['dbgwt'],      
+    output['dbgxtg'],    
+    output['dbgytg'],     
+    output['dbgztg'],     
+    output['dbgkvector'], 
+    output['dbgkmatrix'], error, warnings) =__gslib__kt3d.pykt3d(**parameters)
+
+
+
+    if error>0:
+        raise NameError('Error = {}'.format(error))
+
+    return out1,out2,out3
 
 
