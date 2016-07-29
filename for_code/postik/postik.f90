@@ -59,13 +59,31 @@ subroutine set_unest(unest_)
 
 end subroutine set_unest  
 
+
+subroutine get_unest(unest_)
+
+    use Commons
+    
+    real, intent(out) :: unest_
+
+    unest_ = UNEST 
+    
+    if (isnan(UNEST)) write(*,*) 'UNEST is a NaN'
+    
+    if (UNEST==anan) write(*,*) 'UNEST == NaN'
+    
+    return
+
+end subroutine get_unest  
+
+
 subroutine postik( &
                   iout,outpar, &  ! output option, output parameter
                   nccut, ccut1, & ! number of thresholds, the thresholds
                   ivol,ivtyp,varred, & ! volume support?, type, varred
                   zmin,zmax, & ! minimum and maximum Z value
                   ltail,ltpar, & ! lower tail: option, parameter
-                  mtail,mtpar, & ! middle    : option, parameter
+                  middle,mpar, & ! middle    : option, parameter
                   utail,utpar, & ! upper tail: option, parameter
                   maxdis, & ! maximum discretization
                   vr, wt, nc, & ! global distribution
@@ -131,11 +149,11 @@ subroutine postik( &
 
 
     ! external variables (in)
-    real, intent(in) :: outpar, varred, zmin,zmax,ltpar,mtpar,utpar
-    integer, intent(in) :: iout, nccut, ivol,ivtyp, ltail,mtail,utail,maxdis,nc
+    real, intent(in) :: outpar, varred, zmin,zmax,ltpar,mpar,utpar
+    integer, intent(in) :: iout, nccut, ivol,ivtyp, ltail,middle,utail,maxdis,nc, na
     real, intent(in), dimension(nccut) :: ccut1
     real, intent(in), dimension(nc) :: vr, wt
-    real, intent(in), dimension(nc,na) :: p
+    real, intent(in), dimension(na,nccut) :: p
 
     ! external variables (out)
     real, intent(out), dimension(na) :: out1,out2,out3
@@ -210,11 +228,18 @@ subroutine postik( &
             tcdf = 0.0
             gmean = 0.0
             ncut  = 0
-            if(wt(l) <= 0.0) then
+            if(wt(l) <= 0.0 .or. wt(l) == UNEST .or. isnan(wt(l))) then
                 write(*,*) ' ERROR: negative weights at index ', l
                 error = 6
                 return 
             endif
+            
+            if(vr(l) == UNEST .or. isnan(vr(l)) ) then
+                write(*,*) ' ERROR: nans in globa CDF at index ', l
+                error = 6
+                return 
+            endif
+            
             ncut = ncut + 1
             cut(ncut) = vr(l)
             gmean     = gmean + vr(l)
@@ -265,7 +290,7 @@ subroutine postik( &
 
     do l=1, na
         do i=1,nccut
-            ccdf(i) = p(i,l)
+            ccdf(i) = p(l,i)
         end do 
 
         ! initialize output
@@ -276,7 +301,8 @@ subroutine postik( &
         ! Check for missing values:
 
         if(ccdf(nccut) < -0.1) cycle  ! skip this iteration and do next iteration 
-
+        if(ccdf(nccut) == UNEST) cycle  ! skip this iteration and do next iteration 
+        if(isnan(ccdf(nccut))) cycle
 
         ! Reinstate "ccut1" because volume support may have changed "ccut":
 
@@ -315,7 +341,7 @@ subroutine postik( &
                 call beyond(1,nccut,ccut,ccdf,ncut,cut,cdf,zmin, &
                 zmax,ltail,ltpar,middle,mpar,utail, &
                 utpar,zval,cdfval,ierr)
-                if(ierr /= 0) write(*,*) 'ERROR: ',ierr,' continuing'
+                if(ierr /= 0) write(*,*) 'ERROR: ',ierr,' continuing1'
                 etype = etype + zval
                 ecv   = ecv   + zval*zval
             end do
@@ -365,7 +391,7 @@ subroutine postik( &
                     zmax,ltail,ltpar,middle,mpar,utail, &
                     utpar,zval,cdfval,ierr)
                     if(ierr /= 0) then
-                        write(*,*) 'ERROR: ',ierr,' continuing'
+                        write(*,*) 'ERROR: ',ierr,' continuing2'
                     endif
                     enew = enew + zval
                 end do
@@ -391,6 +417,7 @@ subroutine postik( &
             nbelow = 0
             etype  = 0.0
             ecv    = 0.0
+            
             do i=1,maxdis
                 cdfval  = cdfval + dis
                 zval    = -1.0
@@ -398,7 +425,7 @@ subroutine postik( &
                 zmax,ltail,ltpar,middle,mpar,utail, &
                 utpar,zval,cdfval,ierr)
                 if(ierr /= 0) then
-                    write(*,*) 'ERROR: ',ierr,' continuing'
+                    write(*,*) 'ERROR: ',ierr,' continuing3'
                 endif
                 etype = etype + zval
                 ecv   = ecv   + zval*zval
@@ -432,7 +459,7 @@ subroutine postik( &
             zmax,ltail,ltpar,middle,mpar,utail, &
             utpar,outpar_,cdfval,ierr)
             if(ierr /= 0) then
-                write(*,*) 'ERROR: ',ierr,' continuing'
+                write(*,*) 'ERROR: ',ierr,' continuing4'
             endif
             prob   = 1.0 - cdfval
             eabove = eabove / real(max(1,nabove))
@@ -450,7 +477,7 @@ subroutine postik( &
             zmax,ltail,ltpar,middle,mpar,utail, &
             utpar,zval,outpar_,ierr)
             if(ierr /= 0) then
-                write(*,*) 'ERROR: ',ierr,' continuing'
+                write(*,*) 'ERROR: ',ierr,' continuing5'
             endif
             out1(l) = zval
         endif

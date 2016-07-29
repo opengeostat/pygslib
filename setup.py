@@ -99,7 +99,7 @@ if __name__ == '__main__':
                                 'for_code/postik/gslib/locate.f90',
                                 'for_code/postik/gslib/powint.f90',
                                 'for_code/postik/gslib/sortem.f90'],
-                                f2py_options=[ 'only:', 'postik', 'set_unest', ':']) 
+                                f2py_options=[ 'only:', 'postik', 'set_unest', 'get_unest',  ':']) 
     
     
     # this is the gslib code too modified 
