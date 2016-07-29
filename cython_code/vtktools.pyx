@@ -795,7 +795,7 @@ cpdef grid2vtkfile(str path,
     if are 3D it saves VtkStructuredGrid
     
     
-    Parameters
+    Parameters 
     ----------
     
     
