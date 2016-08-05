@@ -642,7 +642,7 @@ def gam(parameters):
 
     For two variables use flatten array with order C, for example, if mydata is a Pandas DataFrame use 
     
-	>> vr=mydata[['U', 'V']].values.flatten(order='FORTRAN')
+    >> vr=mydata[['U', 'V']].values.flatten(order='FORTRAN')
     >> parameters['vr']=vr
 
 
@@ -711,10 +711,11 @@ def setrot(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,maxrot=1):
     return __kt3d.setrot(ang1,ang2,ang3,anis1,anis2,ind,maxrot)
 
 
-def rotcoord(X,Y,Z,ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,invert=0):
-    """Rotate and revert rotation of data with 3d Coordinates
+def rotcoord(ang1=0,ang2=0,ang3=0,anis1=1,anis2=1,ind=1,invert=0):
+    """Generate rotation matriz
     
-    This is implemented as in http://www.ccgalberta.com/ccgresources/report06/2004-403-angle_rotations.pdf
+    This is the rotation matrix used internally in standard
+    GSLIB programs 
     
     Note
     ---------
@@ -1072,7 +1073,7 @@ def rotscale(parameters):
                     'z0'     :  0             # new Z origin of coordinate , 'f'
                     'ang1'   :  45.,          # Z  Rotation angle, 'f' 
                     'ang2'   :  0.,           # X  Rotation angle, 'f' 
-                    'ang2'   :  0.,           # Y  Rotation angle, 'f' 
+                    'ang3'   :  0.,           # Y  Rotation angle, 'f' 
                     'anis1'  :  1.,           # Y cell anisotropy, 'f' 
                     'anis2'  :  1.,           # Z cell anisotropy, 'f' 
                     'invert' :  0}            # 0 do rotation, <> 0 invert rotation, 'i' 

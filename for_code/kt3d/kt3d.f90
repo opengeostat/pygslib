@@ -82,9 +82,9 @@ end subroutine set_unest
 ! Note:  link these functions manually in setup.py
 !
 ! ====================================================================== 
-subroutine pykt3d( nd, x,y,z,vr,ve, &                                   ! input data 
+subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! input data 
            nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,&    ! block model definition (including  discretization)
-           radius,radius1,radius2, ndmax,ndmin,noct,sang1,sang2,sang3, & ! search parameters
+           radius,radius1,radius2, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3, & ! search parameters
            idrif,&                                                      ! drift terms
            itrend,ktype,skmean,koption, iktype,ncut,cut, &              ! kriging options
            nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,  &                   ! variogram parameters                                                       
@@ -106,7 +106,7 @@ subroutine pykt3d( nd, x,y,z,vr,ve, &                                   ! input 
     integer, intent (in) :: nd
     real, intent(in), dimension(nd) :: x                                ! only x is compulsory, if y,z,vr, ve not provided will be initialized to zero                      
     real, intent(in), dimension(nd), optional :: y,z,vr,ve 
-
+    integer, intent(in), dimension(nd), optional :: bhid
     
     
     integer, intent(in) :: nx,ny,nz                                     ! block model definition \nx,xmn,xsiz ...
@@ -116,7 +116,7 @@ subroutine pykt3d( nd, x,y,z,vr,ve, &                                   ! input 
     real, intent(in) :: radius,radius1,radius2                          ! search parameters
     real, intent(in), optional  :: sang1,sang2,sang3       
     integer, intent(in) :: ndmax,ndmin
-    integer, intent(in), optional ::noct
+    integer, intent(in), optional ::noct,nbhid
 
     integer, intent(in), dimension (MAXDT), optional  :: idrif          ! drift terms (external)
      
@@ -165,6 +165,11 @@ subroutine pykt3d( nd, x,y,z,vr,ve, &                                   ! input 
     real                   :: sanis1, sanis2  ! anisotropy in the search ellipse 
     integer,  dimension (MAXDT) :: idrif_                 ! drift terms (local)
     real :: skmean_
+    real, dimension(nd) :: tmpbhid
+    
+    do i=1, nd
+        tmpbhid(i) =  bhid(i) 
+    end do 
 
 
     ! create a local copy of the array
@@ -269,9 +274,9 @@ subroutine pykt3d( nd, x,y,z,vr,ve, &                                   ! input 
 
     ! call kriging
 
-    call   kt3d(   nd, x,y,z,vr,ve, &                                        ! input data 
+    call   kt3d(   nd, x,y,z,vr,ve, tmpbhid, &                                        ! input data 
                    nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,& ! block model definition (including  discretization)
-                   radius, ndmax,ndmin,noct,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
+                   radius, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
                    idrif,&                                                   ! drift terms
                    itrend,ktype,skmean,koption, iktype,ncut,cut, &           ! kriging options
                    nst,it,c0,cc,aa,ang1,ang2,ang3, anis1,anis2, &            ! variogram parameters
@@ -298,9 +303,9 @@ end subroutine pykt3d
 ! Note:  Do not link these to python, use wraper (pykt3d) instead
 !
 ! ======================================================================
-subroutine kt3d(   nd, x,y,z,vr,ve, &                                        ! input data 
+subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                        ! input data 
                    nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,& ! block model definition (including  discretization)
-                   radius, ndmax,ndmin,noct,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
+                   radius, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
                    idrif,&                                                   ! drift terms
                    itrend,ktype,skmean,koption, iktype,ncut,cut, &           ! kriging options
                    nst_,it,c0_,cc,aa,ang1,ang2,ang3, anis1,anis2, &            ! variogram parameters
@@ -340,14 +345,15 @@ subroutine kt3d(   nd, x,y,z,vr,ve, &                                        ! i
     ! ==================              
            
     integer, intent (in) :: nd                               
-    real, intent(in), dimension(nd) :: x,y,z,vr,ve                  ! input data
+    real, intent(in), dimension(nd) :: x,y,z,vr,ve, bhid                  ! input data
+     
     
     integer, intent(in) :: nx,ny,nz                                 ! block model definition \nx,xmn,xsiz ...
     real, intent(in) ::    xmn,ymn,zmn, xsiz,ysiz,zsiz 
     integer, intent(in) :: nxdis,nydis,nzdis                     ! block discretization
     
     real, intent(in) :: radius, sang1,sang2,sang3,sanis1,sanis2                   ! search radius
-    integer, intent(in) :: ndmax,ndmin,noct
+    integer, intent(in) :: ndmax,ndmin,noct,nbhid
 
     integer, intent(inout), dimension (MAXDT) :: idrif              ! drift terms 
 
@@ -402,6 +408,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, &                                        ! i
     real :: c0(1)
     integer :: maxrot
     
+    ! array to count the number of samples per dhole. We assume that number of drillholes <= number of samples  
+    integer, dimension(nd) :: nnbhid 
+    
     ! array of varianles to read from file >>>>>> remove 
     real ::       var(20)
     logical ::    first,fircon,accept
@@ -452,6 +461,10 @@ subroutine kt3d(   nd, x,y,z,vr,ve, &                                        ! i
     ! computations start here
     ! =================
 
+    ! initialize array to count number of samples per dhole
+    nnbhid(:) = 0
+
+
     ! we define the array where we estimate externally (like in jackknife) 
     nloop = nout
 
@@ -497,9 +510,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, &                                        ! i
     ! Set up for super block searching:                               ! here use kdtree 
 
     write(*,*) 'Setting up super block search strategy'
-    nsec = 1
+    nsec = 2   ! the original code has 1, 2 is to sort bhid with the same order  
     call setsupr(nx,xmn,xsiz,ny,ymn,ysiz,nz,zmn,zsiz,nd,x,y,z, &
-    vr,tmp,nsec,ve,sec2,sec3,MAXSBX,MAXSBY,MAXSBZ,nisb, &
+    vr,tmp,nsec,ve,bhid,sec3,MAXSBX,MAXSBY,MAXSBZ,nisb, &
     nxsup,xmnsup,xsizsup,nysup,ymnsup,ysizsup,nzsup, &
     zmnsup,zsizsup)
     call picksup(nxsup,xsizsup,nysup,ysizsup,nzsup,zsizsup, &
@@ -627,6 +640,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, &                                        ! i
 
     write(*,*)
     write(*,*) 'Working on the kriging with nloop:  ', nloop
+ 
 
     ! MAIN LOOP OVER ALL THE BLOCKS IN THE GRID:
 
@@ -668,7 +682,20 @@ subroutine kt3d(   nd, x,y,z,vr,ve, &                                        ! i
             accept = .TRUE. 
             if(koption /= 0 .AND. &
             (abs(x(ind)-xloc)+abs(y(ind)-yloc)+ abs(z(ind)-zloc)) & ! this is what excludes the point in cross val and jackknife 
-             < EPSLON) accept = .FALSE. 
+             < EPSLON) accept = .FALSE.
+            ! Check maxumum number of samples per drillhole
+            if (nbhid > 0) then
+                
+                ! get drillhole number (1 to ndholes) 
+                dhnum = bhid(ind)
+                ! add and count num of samples in this dholes
+                nnbhid(dhnum) = nnbhid(dhnum) + 1 
+                ! ignore sample if exedded maximum per drillohole 
+                if (nnbhid(dhnum) > nbhid) accept = .FALSE.
+                
+                
+            end if  
+              
             if(accept) then
                 if(na < ndmax) then
                     na = na + 1

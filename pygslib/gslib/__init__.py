@@ -93,6 +93,7 @@ def kt3d(parameters):
             'z' : ,   # (optional) rank-1 array('f') with bounds (nd)
             'vr' : ,   # (optional) rank-1 array('f') with bounds (nd)
             've' : ,   # (optional) rank-1 array('f') with bounds (nd)
+            'bhid': , #  (optional) rank-1 array('i') with bounds (nd)
             # Output (Target) 
             # ----------
             'nx' : ,   # int
@@ -119,6 +120,7 @@ def kt3d(parameters):
             'ndmax'      : ,   # int
             'ndmin'      : ,   # int
             'noct'       : ,   # (optional) int
+            'nbhid'       : ,   # (optional) int
             'sang1'      : ,   # (optional) float
             'sang2'      : ,   # (optional) float
             'sang3'      : ,   # (optional) float
@@ -182,6 +184,10 @@ def kt3d(parameters):
 
     Optional parameters can be removed, knowing that kt3D will create an internal array/variable
     initialized to zero value
+    
+    If using nbhid > 0 the hole id number (bhid) is required. Hole IDs may be integers from
+    one to total number of drillholes. Use function pygslib.Drillhole.txt2intID(table_name) to get 
+    a correct bhid number.  
 
     This python functions is a wrapper that calls functions in the module __gslib__kt3d.so
 
@@ -200,7 +206,13 @@ def kt3d(parameters):
     if 'cut' in parameters and parameters['cut']==None:
         parameters['cut'] =[0]
     
+    # check that bhid is provided if nbhid > 0
+    if parameters['nbhid']> 0 :
+        assert parameters['bhid'] is not None, 'Error: BHID required if nbhid > 0'
 
+    # check not using octants and min
+    if parameters['nbhid']> 0 and parameters['noct']> 0:
+        warnings.warn('/n Warning: !!!!! Using octants and maximum number of samples per drillholes at the same time /nmay produce unexpected results !!!!!!')
 
     # prepare the output
     output = {}

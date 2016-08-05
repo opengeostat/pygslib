@@ -366,7 +366,7 @@ cpdef pointquering(surface,
                    np.ndarray [double, ndim=1] z,
                    int test):
     """
-    pointquering(surface, azm, dip, x, y, z, test)
+    query = pygslib.vtktools.pointquering(surface, azm, dip, x, y, z, test)
     
     Find points inside, over and below surface/solid
         
@@ -394,6 +394,9 @@ cpdef pointquering(surface,
         Indicator of point inclusion with values [0,1]  
         0 means that the point is not inside, above or below surface
         1 means that the point is inside, above or below surface
+    p1 : 1D array size 3
+        rays to show where are pointing in the output
+    
     
     See Also
     --------
@@ -540,7 +543,7 @@ cpdef pointinsolid(surface,
                    np.ndarray [double, ndim=1] z,
                    double tolerance = .000001 ):
     """
-    inside = pointquering(surface, x, y, z)
+    inside = pygslib.vtktools.pointinsolid(surface, x, y, z)
     
     Find points inside a closed surface using vtkSelectEnclosedPoints
         
@@ -716,21 +719,102 @@ cpdef dmtable2wireframe(
     return trianglePolyData
 
 
+cpdef GetPointsInPolydata(polydata):
+    """
+    
+    p= GetPointsInPolydata(polydata)
+    
+    Returns the points coordinates in a polydata (e.j. wireframe) 
+    as a numpy array. 
+    
+    
+    Parameters
+    ----------
+    polydata : VTK polydata
+    
+        
+    Returns
+    -------
+    p : 2D array of float
+        Points coordinates in polydata object  
+        
+    See also
+    --------
+    SetPointsInPolydata, SavePolydata
+    
+    """
+    npoints = polydata.GetNumberOfPoints()
+    
+    p = np.empty([npoints,3]) 
+
+    for i in range(npoints):
+        p[i,0],p[i,1],p[i,2] = polydata.GetPoint(i)
+        
+    return p
+        
+    
+cpdef SetPointsInPolydata(polydata, points):
+    """
+    
+    SetPointsInPolydata(polydata)
+    
+    Set the points coordinates in a polydata (e.j. wireframe). 
+    
+    
+    Parameters
+    ----------
+    polydata : VTK polydata
+    points   : 2D array 
+            New points coordinates to be set in the polydata
+            points shape may be equal to [polydata.GetNumberOfPoints(),3] 
+    
+        
+    See also
+    --------
+    GetPointsInPolydata, SavePolydata
+    
+        
+    """    
+    npoints = polydata.GetNumberOfPoints()
+
+    assert npoints == points.shape[0], 'Error: Wrong shape[0] in points array'
+    assert points.shape[1]==3, 'Error: Wrong shape[1] in points array'
+
+    p = vtk.vtkPoints() 
+    p.SetNumberOfPoints(npoints)
 
 
+    for i in range(npoints):   
+        p.InsertPoint(i,(points[i,0],points[i,1],points[i,2]))
+        
+    polydata.SetPoints(p)
 
 
+cpdef SavePolydata(polydata, path):
+    """
+    
+    SavePolydata(polydata, path)
+    
+    Save polydata in a VTK XML polydata file (ext vtp) 
+    
+    
+    Parameters
+    ----------
+    polydata : VTK polydata
+    path : str 
+            Extension (*.vtp) will be added if not provided  
+    
+            
+    """  
 
+    # add extension to path 
+    if not path.lower().endswith('.vtp'):
+        path = path + '.vtp'
 
-
-
-
-
-
-
-
-
-
+    writer = vtk.vtkXMLPolyDataWriter()
+    writer.SetFileName(path)
+    writer.SetInputData(polydata)
+    writer.Write()
 
 
 cpdef getbounds(polydata):    
@@ -921,3 +1005,5 @@ cpdef partialgrid2vtkfile(str path,
     writer.SetFileName(path);
     writer.SetInputData(extractGrid.GetOutput())
     writer.Write()
+
+

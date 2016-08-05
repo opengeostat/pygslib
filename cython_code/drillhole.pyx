@@ -1462,8 +1462,8 @@ cdef class Drillhole:
         cdef int j
         cdef int nc = self.collar.shape[0]
         cdef int nt = self.table[table_name].shape[0]
-        cdef np.ndarray[long, ndim=1] cBHID = np.zeros([nc], dtype=long)
-        cdef np.ndarray[long, ndim=1] tBHID = np.zeros([nt], dtype=long)
+        cdef np.ndarray[long, ndim=1] cBHID = np.zeros([nc], dtype=int)
+        cdef np.ndarray[long, ndim=1] tBHID = np.zeros([nt], dtype=int)
         cdef np.ndarray[object, ndim=1] cTextID = np.empty([nc], dtype=object)
         cdef np.ndarray[object, ndim=1] tTextID = np.empty([nt], dtype=object)
         
