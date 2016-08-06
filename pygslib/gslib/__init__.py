@@ -13,13 +13,14 @@ of the MIT license.  See the LICENSE.txt file for details.
          
 """                                                                      
 
-
+import warnings
 import pandas as pd
 import __gslib__kt3d
 import __gslib__postik
 import numpy as np
 import matplotlib.pyplot as plt
-import warnings
+
+
 
 # Set default parameters in the Fortran common module
 
@@ -212,7 +213,12 @@ def kt3d(parameters):
 
     # check not using octants and min
     if parameters['nbhid']> 0 and parameters['noct']> 0:
-        warnings.warn('/n Warning: !!!!! Using octants and maximum number of samples per drillholes at the same time /nmay produce unexpected results !!!!!!')
+        pass
+        #warnings.warn("test")
+        
+        #raise NameError(' \nWarning: !!!!! Using octants and maximum ' + \
+                      #'  number of samples per drillholes at the same '  + \
+                       #' time may produce unexpected results !!!!!!')
 
     # prepare the output
     output = {}
