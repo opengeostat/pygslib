@@ -33,7 +33,7 @@ FILE_NAME_0=24999;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5
 FILE_NAME_1=1936;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Ckt3d%5Cgslib%5Csrchsupr.f90;0;4
 FILE_NAME_2=4082;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Ckt3d%5Cgslib%5Csetsupr.f90;0;4
 FILE_NAME_3=0;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Ckt3d%5Cgslib%5Csortem.f90;0;4
-FILE_NAME_4=723;Python;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib%5Cgslib%5C__init__.py;0;4
+FILE_NAME_4=7961;Python;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib%5Cgslib%5C__init__.py;0;4
 
 [VTE]
 last_dir=/home/adrian/bitbucket/public/pygslib
