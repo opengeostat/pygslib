@@ -212,13 +212,12 @@ def kt3d(parameters):
         assert parameters['bhid'] is not None, 'Error: BHID required if nbhid > 0'
 
     # check not using octants and min
-    if parameters['nbhid']> 0 and parameters['noct']> 0:
-        pass
-        #warnings.warn("test")
+    if (parameters['nbhid']> 0 and parameters['noct']> 0):
+        #pass
+        warnings.warn('\nWarning: !!!!! Using octants and maximum ' + \
+                      ' number of samples per drillholes at the same '  + \
+                      ' time may produce unexpected results !!!!!!')
         
-        #raise NameError(' \nWarning: !!!!! Using octants and maximum ' + \
-                      #'  number of samples per drillholes at the same '  + \
-                       #' time may produce unexpected results !!!!!!')
 
     # prepare the output
     output = {}
@@ -240,15 +239,15 @@ def kt3d(parameters):
     output['dbgytg'],     
     output['dbgztg'],     
     output['dbgkvector'], 
-    output['dbgkmatrix'], error, warnings) =__gslib__kt3d.pykt3d(**parameters)
+    output['dbgkmatrix'], error, fwarnings) =__gslib__kt3d.pykt3d(**parameters)
 
 
 
     if len(error.strip())>0:
         raise NameError(error.strip())
 
-    if len(warnings.strip())>0:
-        warnings.warn(warnings.strip())
+    if len(fwarnings.strip())>0:
+        fwarnings.warn(fwarnings.strip())
 
 
     estimate['x']=parameters['outx']
