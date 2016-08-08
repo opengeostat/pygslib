@@ -95,18 +95,18 @@ subroutine rotscale(X,Y,Z,nd,X0,Y0,Z0,ang1,ang2,ang3,anis1,anis2,invert,Xr,Yr,Zr
         end do
     else
         do i=1,nd
-            !shift 
-            X1 = X(i)+X0
-            Y1 = Y(i)+Y0
-            Z1 = Z(i)+Z0
-            ! rotate using equation 5 on http://www.ccgalberta.com/ccgresources/report06/2004-403-angle_rotations.pdf
-            X2= (cosa*cost+sina*sinb*sint)*X1 + (sina*cosb)*Y1 + (cosa*sint-sina*sinb*cost)*Z1
-            Y2=(-sina*cost+cosa*sinb*sint)*X1 + (cosa*cosb)*Y1 +(-sina*sint-cosa*sinb*cost)*Z1
-            Z2=               (-cosb*sint)*X1 +      (sinb)*Y1 +                (cosb*cost)*Z1
             !rescale
             Xr(i)= X2
             Yr(i)= Y2/afac1
             Zr(i)= Z2/afac2
+            ! rotate using equation 5 on http://www.ccgalberta.com/ccgresources/report06/2004-403-angle_rotations.pdf
+            X2= (cosa*cost+sina*sinb*sint)*X1 + (sina*cosb)*Y1 + (cosa*sint-sina*sinb*cost)*Z1
+            Y2=(-sina*cost+cosa*sinb*sint)*X1 + (cosa*cosb)*Y1 +(-sina*sint-cosa*sinb*cost)*Z1
+            Z2=               (-cosb*sint)*X1 +      (sinb)*Y1 +                (cosb*cost)*Z1
+            !shift 
+            X1 = X(i)+X0
+            Y1 = Y(i)+Y0
+            Z1 = Z(i)+Z0
         end do
     end if 
     

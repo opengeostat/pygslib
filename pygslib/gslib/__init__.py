@@ -19,8 +19,9 @@ import __gslib__kt3d
 import __gslib__postik
 import numpy as np
 import matplotlib.pyplot as plt
-
-
+import pygslib.vtktools as vtktools
+import pygslib
+import vtk
 
 # Set default parameters in the Fortran common module
 
@@ -173,7 +174,8 @@ def kt3d(parameters):
             'dbgytg'     : ,  #float
             'dbgztg'     : ,  #float
             'dbgkvector' : ,  #rank-1 array('f') with bounds (ndmax + 11)
-            'dbgkmatrix' : }  #rank-2 array('f') with bounds (ndmax + 11,ndmax + 11)
+            'dbgkmatrix' : ,
+            'ellipsoid'  :  } #vtkpolydata object with ellipsoid
         dict
             estimation summary
             {} TODO: not implemented yet
@@ -247,7 +249,7 @@ def kt3d(parameters):
         raise NameError(error.strip())
 
     if len(fwarnings.strip())>0:
-        fwarnings.warn(fwarnings.strip())
+        warnings.warn(fwarnings.strip())
 
 
     estimate['x']=parameters['outx']
@@ -298,6 +300,55 @@ def kt3d(parameters):
             plt.colorbar()
 
             debug['plotxy'] = ax.get_figure()
+            
+            
+            # get Ellipsoid in vtk format
+            # a) we generate an sphere with center at (0,0,0) and radius a
+            source = vtk.vtkSphereSource()
+            source.SetThetaResolution (32)
+            source.SetPhiResolution (32)
+            source.SetRadius(parameters['radius'])
+            source.Update()
+            ellipsoid = source.GetOutput()
+                                    
+            # now we rotate the points... gslib rotations
+            # a) get points and rotate + rescale
+            
+            p = vtktools.GetPointsInPolydata(ellipsoid)
+            
+            # rescall and rotate 
+            
+            anis1 = float(parameters['radius1'])/parameters['radius']
+            anis2 = float(parameters['radius2'])/parameters['radius']
+            
+            p[:,1] = p[:,1]*anis1
+            p[:,2] = p[:,2]*anis2
+            
+            ang1 = parameters['sang1']
+            ang2 = parameters['sang2']
+            ang3 = parameters['sang3']
+            
+            # this emulates the GSLIB set rottion matrix function
+            rotmat = __setrotmatrix__(ang1,ang2,ang3, 1., 1.)
+            
+
+            # Transposing the rotation matrix produces back transformation
+            pp = np.dot(rotmat.T, p.T).T
+            
+            
+            # b) translate 
+            xr = pp[:,0] + debug['dbgxtg']
+            yr = pp[:,1] + debug['dbgytg']
+            zr = pp[:,2] + debug['dbgztg']
+            
+            p[:,0] = xr
+            p[:,1] = yr
+            p[:,2] = zr
+            
+            # update ellipsoid
+            vtktools.SetPointsInPolydata(ellipsoid, p) 
+            
+            debug['ellipsoid'] = ellipsoid
 
     #TODO: Implement the estimation summary
 
@@ -306,7 +357,53 @@ def kt3d(parameters):
     return estimate, debug, summary
 
 
+def __setrotmatrix__(ang1,ang2,ang3, anis1, anis2):
+    """
+    Internal function
+    
+    This emulates the setrot.f90 function
+    
+    """
+    rotmat = np.zeros([3,3])
+    
+    # constants
+    DEG2RAD=3.141592654/180.0
+    EPSLON=1.e-20
+    
+    # set angles in radians
+    if ang1 >= 0.0 and ang1 < 270.0:
+        alpha = (90.0   - ang1) * DEG2RAD
+    else:
+        alpha = (450.0  - ang1) * DEG2RAD
 
+    beta  = -1.0 * ang2 * DEG2RAD
+    theta =        ang3 * DEG2RAD
+
+
+    # Get the required sines and cosines:
+
+    sina  = np.sin(alpha)
+    sinb  = np.sin(beta)
+    sint  = np.sin(theta)
+    cosa  = np.cos(alpha)
+    cosb  = np.cos(beta)
+    cost  = np.cos(theta)
+
+    # Construct the rotation matrix in the required memory:
+
+    afac1 = 1.0 / max(anis1,EPSLON)
+    afac2 = 1.0 / max(anis2,EPSLON)
+    rotmat[0,0] =       (cosb * cosa)
+    rotmat[0,1] =       (cosb * sina)
+    rotmat[0,2] =       (-sinb)
+    rotmat[1,0] = afac1*(-cost*sina + sint*sinb*cosa)
+    rotmat[1,1] = afac1*(cost*cosa + sint*sinb*sina)
+    rotmat[1,2] = afac1*( sint * cosb)
+    rotmat[2,0] = afac2*(sint*sina + cost*sinb*cosa)
+    rotmat[2,1] = afac2*(-sint*cosa + cost*sinb*sina)
+    rotmat[2,2] = afac2*(cost * cosb)
+
+    return rotmat
 
 #-----------------------------------------------------------------------------------------------------------------
 #
