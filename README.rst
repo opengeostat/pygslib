@@ -12,7 +12,7 @@ This is two things:
 
 Current version
 ----------
-version = '0.0.0.3.7'
+version = '0.0.0.3.8'
 
 This means that we are in a very early developing stage and the package 
 is experimental!
@@ -70,21 +70,21 @@ This is the most update but unstable development version. You may manually
 install all the dependencies and make sure you have gfortran available:: 
 
 
-	git clone https://github.com/opengeostat/pygslib.git
-	cd pygslib
-	python setup.py install 
+    git clone https://github.com/opengeostat/pygslib.git
+    cd pygslib
+    python setup.py install 
 
 
 To update this module as contributor, make changes and the update git (requesting a pull).
 To update the pypi repository::
 
-	python setup.py sdist upload -r pypi
+    python setup.py sdist upload -r pypi
 
 To update conda repository(Linux)::
 
-	conda skeleton pypi pygslib
-	conda build pygslib
-	anaconda upload /home/adrian/anaconda/conda-bld/linux-64/pygslib-0.0.0.3.#-nppy27_0.tar.bz2
+    conda skeleton pypi pygslib
+    conda build pygslib
+    anaconda upload /home/adrian/anaconda/conda-bld/linux-64/pygslib-0.0.0.3.#-nppy27_0.tar.bz2
 
 
 Usage

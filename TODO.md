@@ -11,6 +11,7 @@ Avoid bugs and improve compilation
 - [ ] Initialize arrays
 - [ ] Remove old kt3D function 
 - [ ] test dtype of dict parameters at python level to avoid dtype complains and error from fortran at gslib.kt3d function
+- [ ] Rewrite rotscale.f90 into a Cython function (use wireframe ellipse in kt3d as reference)
 
 Testing
 ----
