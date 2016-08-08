@@ -28,29 +28,9 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=16
-FILE_NAME_0=12402;Python;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib%5Cgslib%5C__init__.py;0;4
-FILE_NAME_1=19147;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Ckt3d%5Ckt3d.f90;0;4
-FILE_NAME_2=1290;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Ckt3d%5Cgslib%5Csqdist.f90;0;4
-FILE_NAME_3=646;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Ckt3d%5Cgslib%5Csetrot.f90;0;4
-FILE_NAME_4=3960;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Crotscale.f90;0;4
-FILE_NAME_5=3647;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Ckt3d%5Cgslib%5Csrchsupr.f90;0;4
-FILE_NAME_6=56325;Python;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib%5C__init__.py;0;4
-FILE_NAME_7=1380;Python;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Csetup.py;0;4
-FILE_NAME_8=0;None;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5C.gitignore;0;4
-FILE_NAME_9=0;None;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5CCHANGELOG.txt;0;4
-FILE_NAME_10=0;None;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cconda;0;4
-FILE_NAME_11=0;None;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5CLICENSE.txt;0;4
-FILE_NAME_12=0;None;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Clog.txt;0;4
-FILE_NAME_13=0;None;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5CMANIFEST.in;0;4
-FILE_NAME_14=365;reStructuredText;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5CREADME.rst;0;4
-FILE_NAME_15=0;Conf;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Csetup.cfg;0;4
-FILE_NAME_16=770;Markdown;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5CTODO.md;0;4
-FILE_NAME_17=0;None;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib_conda%5Cpygslib_Win64%5Creadme.txt;0;4
-FILE_NAME_18=440;YAML;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib_conda%5Cpygslib_Win64%5Cmeta.yaml;0;4
-FILE_NAME_19=0;Batch;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib_conda%5Cpygslib_Win64%5Cbld.bat;0;4
-FILE_NAME_20=0;Sh;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib_conda%5Cpygslib_Linux64%5Cbuild.sh;0;4
-FILE_NAME_21=141;YAML;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib_conda%5Cpygslib_Linux64%5Cmeta.yaml;0;4
+current_page=1
+FILE_NAME_0=0;None;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib_conda%5Cpygslib_Win64%5Creadme.txt;0;4
+FILE_NAME_1=1187;YAML;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib_conda%5Cpygslib_Win64%5Cmeta.yaml;0;4
 
 [VTE]
 last_dir=/home/adrian/bitbucket/public/pygslib
