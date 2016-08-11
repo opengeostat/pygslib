@@ -1,6 +1,6 @@
 '''
 PyGSLIB Drillhole, Module to handle drillhole data, desurvey 
-interval tables and other drillhole relate process.  
+interval tables and other drillhole relate processes.  
 
 Copyright (C) 2015 Adrian Martinez Vargas 
 
@@ -35,19 +35,18 @@ import warnings
 #-------------------------------------------------------------------
 cpdef ang2cart( float azm,
                 float dip):
-    """
-    ang2cart(azm, dip)
+    """ang2cart(float azm, float dip)
     
-    Convert azimuth and dip to x, y, z. 
+    Converts azimuth and dip to x, y, z. 
     
-    Return the x,y,z coordinates of a 1 unit vector with origin of 
+    Returns the x,y,z coordinates of a 1 unit vector with origin of 
     coordinates at 0,0,0 and direction defined by azm (azimuth) and 
     dip (downward positive) angles. 
     
     
     Parameters
     ----------
-    azm, dip : float, in degrees
+    azm,dip : float, in degrees
         The direction angles azimuth, with 0 or 360 pointing north and
         the dip angle measured from horizontal surface positive downward
     
@@ -56,22 +55,23 @@ cpdef ang2cart( float azm,
     out : tuple of floats, ``(x, y, z)``
         Cartesian coordinates.
     
+    Examples
+    --------
+    >>>
+    >>> print ang2cart( azm = 45, dip = 75)
+    (0.1830127239227295, 0.1830127090215683, -0.9659258127212524)
+    >>>
+    
     See Also
     --------
     cart2ang
     
-    Notes
+    Note
     -----
-    This function is to convert direction angle into a cartesian 
+    This function is to convert direction angle into a Cartesian 
     representation, which are easy to interpolate. To convert
     back x,y,z values to direction angles use the function cart2ang.
     
-    Examples
-    --------
-    
-    >>> ang2cart(45,75)
-    (0.1830127239227295, 0.1830127090215683, -0.9659258127212524)
-
     """
 
     # output
@@ -104,18 +104,17 @@ cpdef ang2cart( float azm,
 cpdef cart2ang( float x,
                 float y,
                 float z):
-    """
-    cart2ang(x, y, z)
+    """cart2ang(float x, float y, float z)
     
-    Convert x, y, z to azimuth and dip. 
+    Converts x, y, z to azimuth and dip. 
     
-    Return the azimuth and dip of a 1 unit vector with origin of 
+    Returns the azimuth and dip of a 1 unit vector with origin of 
     coordinates at p1 [0,0,0] and p2 [x, y, z]. 
     
     
     Parameters
     ----------
-    x, y, z : float
+    x,y,z : float
         Coordinates x, y, z of one unit length vector with origin of 
         coordinates at p1 [0,0,0]
         
@@ -132,19 +131,17 @@ cpdef cart2ang( float x,
         The direction angles azimuth, with 0 or 360 pointing north and
         the dip angle measured from horizontal surface positive downward
     
+    Examples
+    --------
+    >>>
+    >>> print cart2ang(x = 0.18301, y = 0.18301, z = -0.96593)
+    (45.0, 75.00092315673828)
+    >>>
+    
     See Also
     --------
     ang2cart
-    
-    Notes
-    -----
-    See function cart2ang.
-    
-    Examples
-    --------
-    
-    >>> cart2ang(0.18301, 0.18301, -0.96593)
-    (45.0, 75.00092315673828)
+        
     
     """
 
@@ -198,10 +195,9 @@ cpdef interp_ang1D( float azm1,
                     float dip2,
                     float len12,
                     float d1):
-    """    
-    interp_ang1D(azm1, dip1, azm2, dip2, len12, d1)
-    
-    Interpolate the azimuth and dip angle over a line. 
+    """interp_ang1D( float azm1, float dip1, float azm2, float dip2, float len12, float d1)
+      
+    Interpolates the azimuth and dip angle over a line. 
     
     Given a line with length ``len12`` and endpoints with direction 
     angles ``azm1, dip1, azm2, dip2``, this function returns the 
@@ -211,7 +207,7 @@ cpdef interp_ang1D( float azm1,
     
     Parameters
     ----------
-    azm1, dip1, azm2, dip2, len12, d1 : float
+    azm1,dip1,azm2,dip2,len12,d1 : float
         azm1, dip1, azm2, dip2 are direction angles azimuth, with 0 or 
         360 pointing north and dip angles measured from horizontal 
         surface positive downward. All these angles are in degrees.
@@ -225,23 +221,30 @@ cpdef interp_ang1D( float azm1,
     out : tuple of floats, ``(azm, dip)``
         The direction angles azimuth, with 0 or 360 pointing north and
         the dip angle measured from horizontal surface positive downward
+
+    Example
+    --------
+    >>>
+    >>> print interp_ang1D(azm1=45, 
+                           dip1=75, 
+                           azm2=90, 
+                           dip2=20, 
+                           len12=10, 
+                           d1=5)
+    (80.74163055419922, 40.84182357788086)
+    >>>
     
     See Also
     --------
     ang2cart, cart2ang
     
-    Notes
+    Note
     -----
     The output direction angles are interpolated using average weighted  
     by the distances ``d1`` and ``len12-d1``. To avoid issues with 
     angles the azimuth and dip are converted to x,y,z, then interpolated 
     and finally converted back to azimuth,dip angles.
-    
-    Example
-    --------
-    
-    >>> interp_ang1D(azm1=45, dip1=75, azm2=90, dip2=20, len12=10, d1=5)
-    (80.74163055419922, 40.84182357788086)
+   
 
     """
     # output
@@ -282,10 +285,9 @@ cpdef dsmincurb( float len12,
                  float azm2,
                  float dip2):
                      
-    """    
-    dsmincurb(len12, azm1, dip1, azm2, dip2)
-    
-    Desurvey one interval with minimum curvature 
+    """dsmincurb( float len12, float azm1, float dip1, float azm2, float dip2)
+         
+    Desurveys one interval with minimum curvature 
     
     Given a line with length ``len12`` and endpoints p1,p2 with 
     direction angles ``azm1, dip1, azm2, dip2``, this function returns 
@@ -294,7 +296,7 @@ cpdef dsmincurb( float len12,
     
     Parameters
     ----------
-    len12, azm1, dip1, azm2, dip2: float
+    len12,azm1,dip1,azm2,dip2: float
         len12 is the length between a point 1 and a point 2.
         azm1, dip1, azm2, dip2 are direction angles azimuth, with 0 or 
         360 pointing north and dip angles measured from horizontal 
@@ -307,14 +309,22 @@ cpdef dsmincurb( float len12,
         Differences in elevation, north coordinate (or y) and 
         east coordinate (or x) in an Euclidean coordinate system. 
     
+    Example
+    --------
+    >>>
+    >>> print dsmincurb(len12=10, azm1=45, dip1=75, azm2=90, dip2=20)
+    (7.207193374633789, 1.0084573030471802, 6.186459064483643)
+    >>>
+
     See Also
     --------
-    ang2cart, 
+    ang2cart 
     
-    Notes
+    Note
     -----
-    The equations were derived from the paper: 
-        http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf
+    The equations were derived from the paper
+     
+        `http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf`
     
     The minimum curvature is a weighted mean based on the
     dog-leg (dl) value and a Ratio Factor (rf = 2*tan(dl/2)/dl )
@@ -322,12 +332,6 @@ cpdef dsmincurb( float len12,
     tangential desurvey method. The dog-leg is zero if the direction 
     angles at the endpoints of the desurvey intervals are equal.  
     
-    Example
-    --------
-    
-    >>> dsmincurb(len12=10, azm1=45, dip1=75, azm2=90, dip2=20)
-    (7.207193374633789, 1.0084573030471802, 6.186459064483643)
-
     """
 
     # output
@@ -382,10 +386,9 @@ cpdef desurv1dh(int indbs,
                float lpt,
                bint warns=True):
 
-    """
-    desurv1dh(indbs, indes, ats, azs, dips, xc, xy, zc, lpt)
+    """desurv1dh(int indbs, int indes, np.ndarray[double, ndim=1] ats, np.ndarray[double, ndim=1] azs, np.ndarray[double, ndim=1] dips, float xc, float yc, float zc, float lpt, bint warns=True)
     
-    Desurvey one point with minimum curvature given survey array
+    Desurveys one point with minimum curvature given survey array
     and collar coordinates
     
     It takes an array of survey points ``ats, azs, dips`` with a given
@@ -401,30 +404,45 @@ cpdef desurv1dh(int indbs,
     
     Parameters
     ----------
-    len12, azm1, dip1, azm2, dip2: float
+    len12,azm1,dip1,azm2,dip2: float
         len12 is the length between a point 1 and a point 2.
         azm1, dip1, azm2, dip2 are direction angles azimuth, with 0 or 
         360 pointing north and dip angles measured from horizontal 
         surface positive downward. All these angles are in degrees.
-        
-        
+
+               
     Returns
     -------
     out : tuple of floats, ``(azt,dipt,xt,yt,zt)``
         Direction angles and coordinates at a point lpt
+        
+    Example
+    -------
+    >>>
+    >>> azt,dipt,xt,yt,zt = desurv1dh(indbs, 
+                                    indes,
+                                    ats,
+                                    azs,
+                                    dips,
+                                    xc,
+                                    yc,
+                                    zc,
+                                    lpt,
+                                    warns=True)
+    >>>
     
     See Also
     --------
     Drillhole.desurvey 
     
-    Notes
+    Note
     -----
     This function is a convenience function call by Drillhole.desurvey
     it was exposed here for validation purpose. 
     
     TODO
     ----
-    Make this function hidden. 
+    Hide this function
     
    
     """
@@ -543,10 +561,9 @@ cpdef composite1dh(double[:] ifrom,
                    double[:] ivar, 
                    double cint = 1., 
                    double minlen=-1.):
-    '''
-    cfrom, cto, clen, cvar, cacum= composite(ifrom, ito, ivar, cint = 1, minlen=-1)
-    
-    Composite intervals in a single drillhole. The From-To intervals may be sorted. 
+    """composite1dh(double[:] ifrom, double[:] ito, double[:] ivar, double cint = 1., double minlen=-1.)
+       
+    Composites intervals in a single drillhole. The From-To intervals may be sorted. 
     
     Note
     ----
@@ -556,7 +573,7 @@ cpdef composite1dh(double[:] ifrom,
     
     Parameters
     ----------
-    ifrom, ito:     1D arrays of floats 
+    ifrom,ito:     1D arrays of floats 
         From - To  interval
     ivar :   1D array of floats
         variable to be composited
@@ -565,9 +582,8 @@ cpdef composite1dh(double[:] ifrom,
     minlen: Optional, float, default -1.  
         minimum length of the composite, if <=0 then minlen = cint/2.
     
-    Return
+    Returns
     ------- 
-    (cfrom, cto, clen, cvar, cacum)
     cfrom, cto:  1D arrays of floats
          From, To composited intervals 
     clen, cvar, cacum:  1D arrays of floats     
@@ -575,7 +591,25 @@ cpdef composite1dh(double[:] ifrom,
          variable composited 
          variable accumulated
     
-    '''
+    Example
+    -------
+    >>> 
+    >>> cfrom, cto, clen, cvar, cacum= composite(ifrom, 
+                                                ito, 
+                                                ivar, 
+                                                cint = 1, 
+                                                minlen=-1)
+    >>>
+
+    See Also
+    --------
+    Drillhole.downh_composite
+
+    TODO
+    ----
+    Hide this function
+
+    """
     
     
     assert len(ifrom) == len(ito)==len(ivar), "Error: ifrom, ito or ivar with different shapes"
@@ -698,20 +732,28 @@ cdef min_int(double la,
              double ia, 
              double ib, 
              double tol=0.01):
-    """
-    ia, ib, l = min_int(la, lb, ia, ib, tol=0.01)
+    """min_int(double la, double lb, double ia, double ib, double tol=0.01)
+             
+    This is an internal function used by merge_one_dhole
     
-    This is a function to be used from merge_one_dhole
-    
-    Given two complete drillholes A, B (no gaps and up to the end of the drillhole), this function returns
-    the smaller of two intervals FromA[ia] FromB[ib] and updates the 
+    Given two complete drillholes A, B (no gaps and up to the end of 
+    the drillhole), this function returns the smaller of two 
+    intervals la = FromA[ia] lb = FromB[ib] and updates the 
     indices ia and ib. There are three posible outcomes
     
-    - FromA[ia]==FromB[ib]+/- tol. Returns mean of FromA[ia], FromB[ib] and ia+1, ib+1
-    - FromA[ia] <FromB[ib]. Returns FromA[ia] and ia+1, ib
-    - FromA[ia]> FromB[ib]. Returns FromB[ia] and ia, ib+1
+    - FromA[ia] == FromB[ib]+/- tol. Returns mean of FromA[ia], FromB[ib] and ia+1, ib+1
+    - FromA[ia] <  FromB[ib]. Returns FromA[ia] and ia+1, ib
+    - FromA[ia] >  FromB[ib]. Returns FromB[ia] and ia, ib+1
     
+    Example
+    -------
+    >>>
+    >>> ia, ib, l = min_int(la, lb, ia, ib, tol=0.01)
+    >>>
     
+    TODO
+    ----
+    Hide this function
     
     """
     
@@ -732,21 +774,32 @@ cdef merge_one_dhole(double[:] la,
               long[:] ida, 
               long[:] idb, 
               double tol=0.01):
-    """
-    n, lab, newida, newidb = merge_one_dhole(la,lb, ida, idb, tol=0.01)
-    
+    """ merge_one_dhole(double[:] la, double[:] lb, long[:] ida, long[:] idb, double tol=0.01)
+              
     Function to merge one drillhole. 
     
-    Notes: 
+    Note
+    ---- 
     - Full drillhole is required (no gaps) and note that length are used 
     instead From-To. 
     - The length at the end of the drillhole must be the same
     
-    Returns:
+    Returns
+    -------
     n: number of intervals
     lab: length from collar of each interval
     newida, newidb: Id linking data with the original tables a, b.
     
+    Example 
+    -------
+    
+    >>>
+    >>> n, lab, newida, newidb = merge_one_dhole(la,lb, ida, idb, tol=0.01)
+    >>>
+    
+    TODO
+    ----
+    Hide this function
     """
     
     # general declarations
@@ -794,13 +847,13 @@ cdef fillgap1Dhole(double[:] in_f,
             long[:] id, 
             double tol=0.01,
             double endhole=-1):
-    """
-    np_nf,np_nt,np_nID,np_gap,np_overlap = illgap(in_f, in_t, id, tol=0.01, endhole=-1)
+    """fillgap1Dhole(double[:] in_f, double[:] in_t, long[:] id, double tol=0.01, double endhole=-1)
     
     Function to fill gaps in one drillhole. 
     
-    Input:
-    in_f, in_t, id: from, to intervals and interval ID.
+    Parameters
+    ----------
+    in_f,in_t,id: from, to intervals and interval ID.
         The insterval ID is required to link back sample values after
         adding gaps
     tol: default 0.01. Tolerance
@@ -809,11 +862,22 @@ cdef fillgap1Dhole(double[:] in_f,
         if endhole>-1 a gap will be added if TO.last< endhole +/- tol
         if endhole>-1 and TO.last> endhole +/- tol a warning will be raised
     
-    Returns:
+    Returns
+    -------
     np_nf,np_nt,np_nID: numpy 1D arrays with new from, to and interval ID
     np_gap,np_overlap: numpy 1D arrays with FROM position where gaps and 
                        overlaps where detected.
     
+    Example
+    -------
+    >>>
+    >>> np_nf,np_nt,np_nID,np_gap,np_overlap = illgap(in_f, in_t, id, tol=0.01, endhole=-1)
+    >>>
+    
+    TODO
+    ----
+    Hide this function
+
     """
     
     cdef: 
@@ -971,47 +1035,61 @@ cdef fillgap1Dhole(double[:] in_f,
 #  Drillhole class
 #-------------------------------------------------------------------
 cdef class Drillhole:
-    """
-    Drillhole(collar, survey)
-    
-    Drillhole working database object with functions to desurvey and
+    """Drillhole object with functions to desurvey and
     validate drillholes.
+   
     
     Parameters
     ----------
-    collar : Pandas DataFrame 
-        Collar table containing compulsory fields: BHID with any dtype
-        and XCOLLAR,YCOLLAR, ZCOLLAR with dtypes float64.  
-        Collar table containing compulsory field: LENGTH with dtypes 
-        float64. This is the length of drillhole and can be used in 
-        some functions, for example, to fill gaps. 
+    collar : Pandas DataFrame     
     survey : Pandas DataFrame 
-        Survey table containing compulsory fields: BHID with any dtype
-        and AT,AZ, DIP with dtypes float64. 
+
+    Example
+    -------
+    >>>
+    >>> mydrillhole = pygslib.drillhole.Drillhole(collar, survey)
+    >>> mydrillhole.addtable(assay, 'assay' ,overwrite = False)
+    >>>
+
+
+    The collar table may contain the fields:
+     
+     - BHID with any dtype
+     - XCOLLAR, YCOLLAR, ZCOLLAR with dtypes `float64`.  
+     - (Optional) LENGTH with dtypes `float64`. This is the length of 
+       drillhole and can be used in some functions, for example, 
+       to fill gaps.
     
+    The survey table may contain the fields: 
+    
+      - BHID with any dtype
+      - AT,AZ, DIP with dtypes `float64`. 
+        
     Attributes
     ----------
     collar : Pandas DataFrame 
+        The collar table
     survey : Pandas DataFrame 
+        The survey table
     tables : [Pandas DataFrame]
-        list with Pandas DataFrame with interval tables (ex. assay)
+        list with Pandas DataFrames with interval tables (e.j. assay)
         containing compulsory fields: BHID with any dtype
-        and FROM, TO with dtypes float64.
+        and FROM, TO with dtypes `float64`.
     table_mames : [str]
         list of table names
     
-    Notes
-    -----
+    Note
+    ----
     A new copy of the input data will be created in memory. To work with 
-    shared memory in an external DataFrame you may copy back the table:
+    shared memory in an external DataFrame you may copy back the table::
     
-    ex. >> shared_collar = mydrillholeDB.collar 
+        >>> shared_collar = mydrillholeDB.collar 
     
-    1) To add interval tables use addtable
-    2) Only the existence of compulsory fields are validated in 
-       object initialization and when adding interval tables
-    3) Survey tables may have at least 2 interval and interval AT=0 is 
-       required for desurvey
+    - To add interval tables use ``addtable``
+    - The existence of compulsory fields is only validated during 
+      object initialization and when adding interval tables
+    - Survey tables may have at least 2 intervals and an interval AT=0 
+      is required for desurvey
     
     """ 
     cdef readonly object collar
@@ -1020,11 +1098,22 @@ cdef class Drillhole:
     
     property table_mames:
         def __get__(self):
+            """
+            Property getting
+            """
             return self.table.keys()
     
     def __cinit__(self, collar, survey):
         """
-        add doc string here
+        Class constructor
+        
+        Parameters
+        ----------
+        collar :  Pandas Dataframe
+        
+        survey :  Pandas Dataframe
+        
+
         """
         #check the input is correct
         assert isinstance(collar, pd.DataFrame), "collar is not a pandas DataFrame" 
@@ -1075,10 +1164,9 @@ cdef class Drillhole:
            
     
     cpdef addtable(self,object table,str table_name,bint overwrite =False):
-        """
-        addtable(table, table_name,overwrite = False)
-        
-        Add an interval table and assign a name.
+        """addtable(object table,str table_name,bint overwrite =False)
+               
+        Adds a table and assigns a name.
         
         Parameters
         ----------
@@ -1133,15 +1221,14 @@ cdef class Drillhole:
         self.table[table_name].reset_index(level=None, drop=True, inplace=True, col_level=0, col_fill='')
 
     cpdef del_table(self,str table_name):
-        """
-        del_table(table_name)
+        """del_table(str table_name)
         
-        Delete an interval table from the drillhole database object.
+        Deletes a table.
         
         Parameters
         ----------
         table_name : str 
-                with an the name of the table
+                the name of the table
                 
         Examples
         --------
@@ -1159,40 +1246,40 @@ cdef class Drillhole:
 
 
     cpdef validate(self):
-        """
-        validate()
+        """validate()
         
         Runs a set of basic validations on survey and collar 
-        consisting in: 
+        consisting of: 
+        
         - check existence of Null values
         - check survey without values AT=0
         - check that coordinates and direction angles dtypes are float64
         - check survey without collar and collar without survey 
+
+        Examples
+        --------
+        >>>
+        >>> mydrillhole.validate()
+        >>>
+
         
-        Notes
-        -----
-        a) You may run this validation before doing desurvey
-        b) Only few minimum validation are implemented for now
-        c) No value is returned, it raises an error 
+        Note
+        ----
+        - You may run this validation before doing desurvey
+        - Only few validation test are implemented
+        - Validation errors will raise a python error 
         
         TODO
         ----
-        Implement check relation between table, large variations in
-        survey angles, missing BHID.
-        
-        Collect all errors and return a list of errors. 
-        Collect all warnings and return a list of warnings. 
+        - Implement check relation between table, large variations in
+          survey angles, missing BHID.
+        - Collect all errors and return a list of errors. 
+        - Collect all warnings and return a list of warnings. 
         
         See Also
         --------
         validate_table
-        
-        Examples
-        --------
-        
-        >>> mydrillhole.validate()
-        
-                
+                       
         """  
         
         # Warning:  hasnans() is for pandas 0.16, hasnans for pandas 0.17
@@ -1285,6 +1372,9 @@ cdef class Drillhole:
         # TODO: check survey.AT.last > endofhole
         
     cdef __checkAt0(self,np.ndarray BHID, np.ndarray[double, ndim=1] AT):
+        """
+        This function checks if the first interval is approximatelly zero
+        """
         # this is a hide function
         # the input data is assumed sorted
         cdef int n= AT.shape[0]
@@ -1305,17 +1395,35 @@ cdef class Drillhole:
 
     # TODO: Optimize this one, it is too slow
     cpdef fix_survey_one_interval_err(self, double dummy_at):
-        """
-        fix_survey_one_interval_err(dummy_at)
+        """fix_survey_one_interval_err(self, double dummy_at)
         
-        This function add a dummy survey in records with one survey only
+        Fixes drillholes with a single survey record.
         
-        The desurvey algorithm may produce unexpected results if there is only 
-        one survey interval per drillhole. This function avoid this issue
-        by duplication the survey parameter at a dummy_at position. 
+        Drillholes may have at least two survey records. This function 
+        adds a dummy survey record in drillholes with a single survey 
+        interval at a position ``dummy_at``.
+              
         
-        TODO: use collar length instead dummy_at, if LENGTH is defined
+        Parameters
+        ----------
+        dummy_at : float
+            this value will be used as a dummy `AT` value at survey 
         
+        Example
+        -------
+        >>> 
+        >>> mydrillhole.fix_survey_one_interval_err(dummy_at = 900.0) 
+        >>>
+        
+        Note
+        ----
+        The dummy records added are a duplicated of the unique record 
+        available but with ``AT = dummy_at``. The result will be a 
+        straight drillhole. 
+        
+        You will not be able to desurvey if there are drillholes with 
+        only one survey record. 
+                       
         """
         
         
@@ -1342,21 +1450,21 @@ cdef class Drillhole:
             self.survey.sort_values(by=['BHID','AT'], inplace=True)
                 
         
-    cpdef validate_table(self, table_name): 
-        """
-        validate_table()
+    cpdef validate_table(self,str table_name): 
+        """validate_table(str table_name)
         
         Runs a set of basic validations on interval tables 
-        consisting in: 
-        - check null values in table BHID
-        - check null values in From/To
-        - check that FROM and TO dtypes are float64
+        consisting of:
+         
+        - checks null values in table BHID
+        - checks null values in From/To
+        - checks that FROM and TO dtypes are float64
         
-        Notes
-        -----
-        a) You may run this validation before doing desurvey
-        b) Ony few minimum validation are implemented for now
-        c) No value is returned, it raises an error 
+        Note
+        ----
+        - You may run this validation before doing desurvey
+        - Only few minimum validations are implemented for now
+        - No value is returned, it raises an error 
         
         TODO
         ----
@@ -1379,7 +1487,6 @@ cdef class Drillhole:
         """  
            
         #check the input is correct
-        assert isinstance(table_name, str), 'table_name is not a string'
         assert table_name in self.table, '%s not exist in this drillhole database' % table_name
         
         #check table
@@ -1425,31 +1532,31 @@ cdef class Drillhole:
 
     
     cpdef txt2intID(self, str table_name):
-        """
-        txt2intID(table_name)
+        """txt2intID(str table_name)
         
-        Creates an alternative BHID of type integer on the 
-        table[table_name] and in collar. The new field BHIDint is just
-        and ordered list of integers. 
+        Creates an alternative BHID of type integer
         
-        BHIDint may be required in some functions compiles in fortran 
-        for pyslib.gamv.
+        A new ``BHIDint`` will be created on the ``table[table_name]`` 
+        and in collar. ``BHIDint`` is just and ordered list of integers. 
+        
+        BHIDint may be required in some functions compiles in Fortran,
+        for example ``pyslib.gslib.gamv`` and ``pyslib.gslib.kt3d``.
         
         Parameters
         ----------
         table_name : str
         
-        
-        Notes
-        -----
-        The Collar and the table may be sorted. 
-        
         Examples
         --------
-        
+        >>>
         >>> mydrillhole.collar.sort(['BHID'], inplace=True)
         >>> mydrillhole.table['assay'].sort(['BHID', 'FROM'], inplace=True)
         >>> mydrillhole.txt2intID('assay')
+        >>>
+        
+        Note
+        ----
+        The Collar and the table may be sorted. 
         
         """
 
@@ -1498,41 +1605,38 @@ cdef class Drillhole:
 
     cpdef desurvey(self, str table_name, bint endpoints=False, 
                    bint warns=True):
-        """
-        desurvey(table_name, endpoints=False)
+        """desurvey(str table_name, bint endpoints=False, bint warns=True)
+        
+        Desurvey a drillhole table.
         
         Create coordinates and direction angles at table midpoint 
-        intervals. If endpoints=True it also create coordinate fields
-        at end point intervals
-        
-        This function calls the function desurv1dh at each interval 
-        point of the table. The result are added as new fields. If the 
-        coordinate field exist they will be overwrited
-        
+        intervals. If ``endpoints=True`` it also creates coordinate fields
+        at end point intervals. The existing coordinate fields will be 
+        overwritten.
         
         Parameters
         ----------
         table_name : str
         endpoints : boolean 
         
-        See Also
-        --------
-        dsmincurb, desurv1dh
-        
-        
-        Notes
-        -----
-        The Collar, Survey and the table may be sorted. 
-        If you call the function with endpoints=False end points already
-        desurveyed may not be overwrited. 
-        
         Examples
         --------
-        
-        >>> mydrillhole.collar.sort(['BHID'], inplace=True)
+        >>> # sort with pandas function DataFrame.sort
+        >>> mydrillhole.collar.sort(['BHID'], inplace=True) 
         >>> mydrillhole.survey.sort(['BHID', 'AT'], inplace=True)
         >>> mydrillhole.table['assay'].sort(['BHID', 'FROM'], inplace=True)
+        >>> # desurvey
         >>> mydrillhole.desurvey('assay', endpoints=True)
+        >>>
+        
+        Note
+        ----
+        `collar`, `survey` and the input table may be sorted. 
+        If you call the function with `endpoints=False` end points already
+        desurveyed may not be overwritten. 
+        
+        This function calls dsmincurb() and desurv1dh() functions to 
+        calculate the desurvey value.
         
         """
         
@@ -1689,20 +1793,20 @@ cdef class Drillhole:
                           bint endhole=False,
                           bint clean=True):
         
-        """
-        mydrillhole.add_gaps(table_name, new_table_name,
-                             overwrite =False, tol=0.01,
-                             endhole=False, clean=True)
+        """add_gaps(str table_name, str new_table_name, bint overwrite =False, double tol=0.01, bint endhole=False, bint clean=True)
         
-        Fill gaps in one drillhole with new FROM-TO intervals, including 
-        the gaps at collar and at the end of drillholes. 
+        Fills gaps with new FROM-TO intervals.
         
-        _id0 will be added to the new table and the existing table, 
-        it links input table rows with the output table rows, gaps 
-        have _id0= -999
+        All the gaps, including the gaps at collar and at the end of 
+        drillholes will be filled with ``NaN`` intervals. 
+        
+        A code field ``_id0`` will be added to new and existing tables. 
+        ``_id0`` can be used to link input table rows with the output 
+        table rows. Gaps will have ``_id0= -999``
         
                
-        Input:
+        Parameters
+        ----------
         table_name: name of the table to add gaps
             it must be an existing table at drillhole.table.keys()
         new_table_name: name of the new table with gaps added
@@ -1724,11 +1828,32 @@ cdef class Drillhole:
         clean: default True.
             Delete temporary columns created with suffix __tmp__. 
         
-        Returns:
+        Returns
+        -------
+        gap,overlap: list
         
-        gap,overlap: _id0 of the raw before the gap or the overlap was 
-                     detected. Gaps and overlaps ate the end of the 
-                     drillhole (if endhole==True) have value -888.
+        
+        Example
+        -------
+        >>>
+        >>> gap,overlap= mydrillhole.add_gaps(table_name = 'assay', 
+                                             new_table_name = 'tmp', 
+                                             overwrite=False, 
+                                             tol=0.01, 
+                                             endhole=False, 
+                                             clean=True)
+        >>>
+        
+        
+        Note
+        ----
+        The output ``gap`` and ``overlap`` contain ``_id0` of the raws 
+        before the gap or the overlap was detected. 
+        Gaps and overlaps at the end of the drillhole 
+        (if endhole==True) _id0 will have value -888.
+        
+        
+        
         
         """
         
@@ -1807,18 +1932,17 @@ cdef class Drillhole:
                      bint overwrite =False, 
                      double tol=0.01,
                      bint clean=True):
+        """merge(str table_A, str table_B, str new_table_name, bint overwrite =False, double tol=0.01, bint clean=True)
         
-        """
-        mydrillhole.merge(table_A, table_B, new_table_name,
-                          overwrite =False, tol=0.01, clean=True)
-        
-        Combine two tables in one by intersecting intervals. 
+        Combines two tables by intersecting intervals. 
         
         This function requires drillholes without gaps and overlaps. 
-        run add_gaps in table_A and table_B before using this function
+        You may un add_gaps in table_A and table_B before using 
+        this function.
         
                
-        Input:
+        Parameters
+        ----------
         table_A: name of the first table
             it must be an existing table at drillhole.table.keys()
         table_B: name of the second table
@@ -1827,18 +1951,25 @@ cdef class Drillhole:
             it may not exists at drillhole.table.keys()
         overwrite: default True. 
             If new_table_name exists and overwrite == True the existing 
-            table will be overwrite. 
+            table will be overwritten. 
         tol: default 0.01. 
             segments, gaps and overlays within tol will be ignore but 
             adjusted
         clean: default True.
             Delete temporary columns created with suffix __tmp__. 
         
-        Returns:
+                     
+        Example
+        -------
         
-        gap,overlap: _id0 of the raw before the gap or the overlap was 
-                     detected. Gaps and overlaps ate the end of the 
-                     drillhole (if endhole==True) have value -888.
+        >>> mydrillhole.merge(table_A = 'assay', 
+                            table_B = 'litho', 
+                            new_table_name = 'tmp', 
+                            overwrite =False, 
+                            tol=0.01, 
+                            clean=True)
+        >>>
+        >>>
         
         """
         
@@ -2034,31 +2165,24 @@ cdef class Drillhole:
                           bint clean = True,
                           bint endhole=False,
                           bint addgaps=True):
+        """fix_zero_interval(str table_name, str new_table_name, bint overwrite = False, double tol = 0.01, bint clean = True, bint endhole=False, bint addgaps=True)
+            
+        Removes zero length intervals 
         
+        The function removes zero intervals and   
+        adds gaps if the gap length is longer than the tolerance. 
         
-        """
-        gap_assay,overlap_assay = mydrillhole.fix_zero_interval(
-                          table_name, new_table_name,
-                          overwrite =False, tol=0.01, clean = True,
-                          endhole=False, addgaps=True)
+
         
-        Remove zero length intervals 
-        
-        The function first removes zero intervals and then  
-        add gaps if the gap length is longer than the tolerance. 
-        
-        Note: 
-        This function remove zero intervals and the calls the add_gaps
-        function. 
-        
-        Input:
+        Parameters
+        ----------
         table_name: name of the table
         
         new_table_name: name of the new table
             it may not exists at drillhole.table.keys()
         overwrite: default True. 
             If new_table_name exists and overwrite == True the existing 
-            table will be overwrite. 
+            table will be overwritten. 
         tol: default 0.01. 
             segments with length<= 0.01 will be considered as zero
             length and removed
@@ -2070,7 +2194,28 @@ cdef class Drillhole:
             undefined values at LENGTH. Warnings will be raised is the 
             TO  > LENGTH.
         clean: default True.
-            Delete temporary columns created with suffix __tmp__.                         
+            Delete temporary columns created with suffix __tmp__.     
+
+
+        Example 
+        -------
+        >>>
+        >>> gap,overlap = mydrillhole.fix_zero_interval(table_name= 'assay', 
+                                                new_table_name = 'tmp',
+                                                overwrite = False, 
+                                                tol = 0.01, 
+                                                clean = True,
+                                                endhole = False, 
+                                                addgaps = True)
+        >>>
+        
+        
+            
+        Note
+        ----
+        This function removes zero intervals and the calls the add_gaps
+        function.                     
+        
         """
 
         # check that the table is not in the database
@@ -2108,36 +2253,36 @@ cdef class Drillhole:
         # return outputs
         return gap_assay,overlap_assay
         
-
                 
 
-    # TODO: develop this: 
-    # compositing
-    
-    cpdef collar2table(self, str table_name, 
-                      str new_table_name,
-                      collar_prop,
-                      bint overwrite=False):
-        """
-                         
-        mydhole.collar2table(table_name, new_table_name, 
-                     collar_prop= ['TYPE', 'Comment'],
-                     overwrite=False)                          
-        
-        Add collar properties to a table 
+    cpdef collar2table(self, str table_name,
+                       str new_table_name,
+                       object collar_prop,
+                       bint overwrite=False):
+        """collar2table(str table_name, str new_table_name, list collar_prop, bint overwrite=False)
+                                            
+        Add collar properties to a table.
         
         
-        Input:
-        table_name: name of the table
-        new_table_name: name of the output table
-                
-        collar_prop=: [list] with property names in collar 
+        Parameters
+        ----------
+        table_name : name of the table
+        new_table_name : name of the output table                
+        collar_prop : list with property names in collar 
             the property names may exist at drillhole.collar.columns
             if collar_prop= Null all the Collar properties will be copied
-        
-        overwrite: default False 
+        overwrite : default False 
             If new_table_name exists and overwrite == True the existing 
-            table will be overwrite.             
+            table will be overwrite.   
+        
+        Example
+        -------
+        >>>
+        >>> mydrillhole.collar2table(table_name = 'assay',
+                                     new_table_name = 'assay',
+                                     collar_prop = ['TYPE', 'COMMENT'],
+                                     overwrite = True)
+        >>>       
         
         """
         
@@ -2178,19 +2323,13 @@ cdef class Drillhole:
                           double minlen=-1,                          
                           bint overwrite =False):
 
-        """
-        mydrillhole.downh_composite(
-                          table_name, 
-                          variable_name, 
-                          new_table_name, 
-                          cint = 1, 
-                          minlen=-1,                          
-                          overwrite =False)
+        """downh_composite(str table_name, str variable_name, str new_table_name, double cint = 1, double minlen=-1, bint overwrite =False)
         
-        Down hole composite (one variable at the time)
+        Downhole composites one variable at the time
         
-               
-        Input:
+            
+        Parameters
+        ----------
         table_name: name of the table with drillhole intervals
             it must be an existing table at drillhole.table.keys()
         variable_name: name of the variable in "table_name" table
@@ -2204,13 +2343,24 @@ cdef class Drillhole:
             if < 0 then minlen will be cint/2.
         overwrite: default True. 
             If the table exist and overwrite = True the existing table 
-            will be overwrite. 
+            will be overwritten. 
         
-        Notes
+        Example
+        -------
+        >>>
+        >>> mydrillhole.downh_composite(table_name = 'assay',
+                                        variable_name = 'Au',
+                                        new_table_name = 'cmp',
+                                        cint = 1,
+                                        minlen =-1,
+                                        overwrite = False)
+        >>>
+        
+        Note
         ---
         Undefined intervals in 'variable_name' will be excluded. 
         
-        To composite per lithology you can filter out each lithology
+        To composite per lithology, you can filter out each lithology
         composite and then combine the composite tables.
         
         This algorithm starts from distance zero and no residual will 
@@ -2219,9 +2369,9 @@ cdef class Drillhole:
         for 2 m composites. This produce consistent results if different
         tables are composited, making easier later table combination
         
-        The accumulation output '_acum' can be use to produce accumulated
+        The accumulation output '_acum' can be used to produce accumulated
         variables, to identify number of intervals in each composite or 
-        to track categoric variables (coded as number) compositing. 
+        to track categorical variables (coded as number) compositing. 
 
         """
         
@@ -2280,6 +2430,12 @@ cdef class Drillhole:
                          double zmax,
                          double bench,
                          double tolerance=0.01):
+        """bench_composite(str table_name, double zmax, double bench, double tolerance=0.01)
+        
+        This function is not implemented yet.
+        """                  
+                             
+                             
         print 'we are working on that'        
     
 
@@ -2287,8 +2443,7 @@ cdef class Drillhole:
     #       VTK export 
     #-------------------------------------------------------------------
     cpdef export_core_vtk_line(self, str table_name, str filename,  double nanval=0, str title = '', bint binary=True):
-        """
-        export_core_vtk_line(table_name, filename, nanval=0, binary=True)
+        """ export_core_vtk_line(str table_name, str filename,  double nanval=0, str title = '', bint binary=True)
         
         Export desurveyed drillhole table to vtk lines. Endpoints 
         are required.
@@ -2312,14 +2467,19 @@ cdef class Drillhole:
         --------
         pygslib.vtktool 
         
-        Notes
-        -----
-        Note: To export to VTK points see pygslib.vtktool 
+        
+        Note
+        ----
+        To export to VTK points see pygslib.vtktool 
         
         Examples
         --------
-        
-        >>> mydrillhole.export_core_vtk_line('assay', 'assay_line.vtk')
+        >>>
+        >>> mydrillhole.export_core_vtk_line(table_name = 'assay', 
+                                            filename = 'assay_line.vtk'
+                                            nanval=-999, 
+                                            binary=True)
+        >>>
         
         """ 
         

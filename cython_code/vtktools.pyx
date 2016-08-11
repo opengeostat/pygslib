@@ -27,18 +27,12 @@ import pyevtk.hl
 import vtk.util.numpy_support as vtknumpy
 
 
-cpdef vtk_show(renderer, width=400, height=300, 
+cpdef vtk_show(object renderer, double width=400, double height=300, 
              camera_position=None, 
              camera_focalpoint=None):
-    """
+    """vtk_show(object renderer, double width=400, double height=300, double camera_position=None, double camera_focalpoint=None)
     
-    vtk_show(renderer, 
-             width=400, 
-             height=300,
-             camera_position=None,
-             camera_focalpoint=None)
-    
-    Display a vtk renderer in Ipython Image
+    Displays a vtk renderer in Ipython Image
     
     Parameters
     ----------
@@ -57,9 +51,9 @@ cpdef vtk_show(renderer, width=400, height=300,
     --------
     polydata2renderer, loadSTL
        
-    Notes
-    -----
-    This Code was modified fron the original code by Adamos Kyriakou
+    Note
+    ----
+    This Code was modified from the original code by Adamos Kyriakou
     published in https://pyscience.wordpress.com/
     
     """
@@ -90,10 +84,8 @@ cpdef vtk_show(renderer, width=400, height=300,
     return Image(data)
 
 
-cpdef loadSTL(filenameSTL):
-    """
-    
-    loadSTL(filenameSTL)
+cpdef loadSTL(str filenameSTL):
+    """loadSTL(str filenameSTL)
     
     Load a STL wireframe file
     
@@ -106,8 +98,8 @@ cpdef loadSTL(filenameSTL):
     polydata : VTK Polydata object 
            
        
-    Notes
-    -----
+    Note
+    ----
     Code by Adamos Kyriakou
     published in https://pyscience.wordpress.com/
     
@@ -130,13 +122,8 @@ cpdef loadSTL(filenameSTL):
     
 cpdef polydata2renderer(polydata, color=(1.,0.,0.), 
                       opacity=1, background=(1.,1.,1.)):    
-    """
-    
-    polydata2renderer(polydata, 
-             color=None, 
-             opacity=None, 
-             background=None)
-    
+    """polydata2renderer(object polydata,object color=(1.,0.,0.),double opacity=1,object background=(1.,1.,1.))
+        
     Creates vtk renderer from vtk polydata
     
     Parameters
@@ -159,9 +146,9 @@ cpdef polydata2renderer(polydata, color=(1.,0.,0.),
     --------
     vtk_show, loadSTL
     
-    Notes
-    -----
-    This Code was modified fron the original code by Adamos Kyriakou
+    Note
+    ----
+    This Code was modified from the original code by Adamos Kyriakou
     published in https://pyscience.wordpress.com/
     
     """
@@ -181,12 +168,8 @@ cpdef polydata2renderer(polydata, color=(1.,0.,0.),
     return VtkRenderer
 
 
-cpdef addPoint(renderer, p, radius=1.0, color=(0.0, 0.0, 0.0)):
-    """
-    addPoint(renderer, 
-             p, 
-             radius=1.0, 
-             color=(0.0, 0.0, 0.0))
+cpdef addPoint(object renderer,object p,double radius=1.0,object color=(0.0, 0.0, 0.0)):
+    """addPoint(object renderer,object p,double radius=1.0,object color=(0.0, 0.0, 0.0))
     
     Adds a point into an existing VTK renderer 
     
@@ -209,9 +192,9 @@ cpdef addPoint(renderer, p, radius=1.0, color=(0.0, 0.0, 0.0)):
     --------
     vtk_show, loadSTL
     
-    Notes
-    -----
-    This Code was modified fron the original code by Adamos Kyriakou
+    Note
+    ----
+    This Code was modified from the original code by Adamos Kyriakou
     published in https://pyscience.wordpress.com/
     
     """
@@ -233,15 +216,9 @@ cpdef addPoint(renderer, p, radius=1.0, color=(0.0, 0.0, 0.0)):
     return renderer
 
 
-
     
-    
-cpdef addLine(renderer, p1, p2, color=(0.0, 0.0, 1.0)):
-    """
-    addLine(renderer, 
-             p1,
-             p2,  
-             color=(0.0, 0.0, 1.0))
+cpdef addLine(object renderer, object p1, object p2, object color=(0.0, 0.0, 1.0)):
+    """addLine(object renderer, object p1, object p2, object color=(0.0, 0.0, 1.0))
     
     Adds a line into an existing VTK renderer 
     
@@ -264,9 +241,9 @@ cpdef addLine(renderer, p1, p2, color=(0.0, 0.0, 1.0)):
     --------
     vtk_show, loadSTL
     
-    Notes
-    -----
-    This Code was modified fron the original code by Adamos Kyriakou
+    Note
+    ----
+    This Code was modified from the original code by Adamos Kyriakou
     published in https://pyscience.wordpress.com/
     
     """
@@ -285,9 +262,8 @@ cpdef addLine(renderer, p1, p2, color=(0.0, 0.0, 1.0)):
     
     return renderer 
 
-cpdef vtk_raycasting(surface, pSource, pTarget):
-    """
-    vtk_raycasting(surface, pSource, pTarget)
+cpdef vtk_raycasting(object surface, object pSource, object pTarget):
+    """vtk_raycasting(object surface, object pSource, object pTarget)
     
     Intersects a line defined by two points with a polydata vtk object,
     for example a closed surface. 
@@ -321,9 +297,9 @@ cpdef vtk_raycasting(surface, pSource, pTarget):
     --------
     vtk_show, loadSTL
     
-    Notes
-    -----
-    This Code was modified fron the original code by Adamos Kyriakou
+    Note
+    ----
+    This Code was modified from the original code by Adamos Kyriakou
     published in https://pyscience.wordpress.com/
     
     """
@@ -358,16 +334,15 @@ cpdef vtk_raycasting(surface, pSource, pTarget):
 # ----------------------------------------------------------------------
 #   Functions for point querying 
 # ----------------------------------------------------------------------
-cpdef pointquering(surface, 
+cpdef pointquering(object surface, 
                    double azm,
                    double dip,
                    np.ndarray [double, ndim=1] x, 
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
                    int test):
-    """
-    query = pygslib.vtktools.pointquering(surface, azm, dip, x, y, z, test)
-    
+    """pointquering(object surface, double azm, double dip, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, int test)
+        
     Find points inside, over and below surface/solid
         
     
@@ -382,11 +357,13 @@ cpdef pointquering(surface,
     x,y,z   : 1D array of floats
            coordinates of the points to be tested
     test    : integer
-           1 test inside closed surface. Here we use 
-             vtkOBBTree::InsideOrOutside. Closed surface are required
-           2 test 'above' surface 
-           3 test 'below' surface 
-           4 test 'inside' surface (the surface can be open)
+           If ``test==1`` it queries points inside closed surface. It 
+           only works with closed solids. 
+           If ``test==2`` it queries point above surface.
+           If ``test==3`` it queries point below surface.
+           If ``test==4`` it queries point above and below the surface.
+           ``test==4`` is similar to ``test==1`` but it works with 
+           open surfaces.  
     
     Returns
     -------
@@ -402,8 +379,8 @@ cpdef pointquering(surface,
     --------
     vtk_raycasting
     
-    Notes
-    -----
+    Note
+    ----
     The test 1 requires the surface to be close, to find points between
     two surfaces you can use test=4
     The test, 2,3 and 4 use raycasting and rays orientation are defined
@@ -537,15 +514,14 @@ cpdef pointquering(surface,
 # ----------------------------------------------------------------------
 #   Functions for point querying 
 # ----------------------------------------------------------------------
-cpdef pointinsolid(surface, 
+cpdef pointinsolid(object surface, 
                    np.ndarray [double, ndim=1] x, 
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
                    double tolerance = .000001 ):
-    """
-    inside = pygslib.vtktools.pointinsolid(surface, x, y, z)
+    """pointinsolid(object surface, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double tolerance = .000001)
     
-    Find points inside a closed surface using vtkSelectEnclosedPoints
+    Finds points inside a closed surface using vtkSelectEnclosedPoints
         
     
     Parameters
@@ -567,15 +543,16 @@ cpdef pointinsolid(surface,
     --------
     vtk_raycasting, pointquering
     
-    Notes
-    -----
+    Note
+    ----
     It is assumed that the surface is closed and manifold.  
     Note that if this check is not performed and the surface is not 
     closed, the results are undefined.
     
+    TODO: add check to verify that a surface is closed
+    
     """
     
-    #TODO: add check to verify that the surface is closed 
     
     cdef int i
     
@@ -621,10 +598,11 @@ cpdef dmtable2wireframe(
                    np.ndarray [long, ndim=1] pid2,
                    np.ndarray [long, ndim=1] pid3,
                    str filename = None):
-    """
-    mywireframe = dmtable2wireframe(x, y, z, pid1,pid2,pid3) 
+    """dmtable2wireframe(np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, np.ndarray [long, ndim=1] pid, np.ndarray [long, ndim=1] pid1, np.ndarray [long, ndim=1] pid2, np.ndarray [long, ndim=1] pid3, str filename = None)
     
-    Takes a wireframe defined by two table: 
+    Takes a wireframe defined by two tables and creates a VTK polydata wireframe object. 
+    
+    The input tables are as follow:
     
     - x, y, z : This is the points table
     - pid1,pid2,pid3: This is another table defining triangles with 
@@ -646,8 +624,8 @@ cpdef dmtable2wireframe(
            wireframe imported
     
     
-    Notes
-    -----
+    Note
+    ----
     ``pid`` is the row number in the point table.
     
     ``pid`` indices start at zero
@@ -656,21 +634,26 @@ cpdef dmtable2wireframe(
     
     a point table
     
-    | x | y | z |
-    -------------
-    | 0 | 0 | 0 |
-    | 1 | 0 | 0 | 
-    | 0 | 1 | 0 |
+    +----+----+----+
+    | x  | y  | z  |
+    +====+====+====+
+    | .0 | .0 | .0 |
+    +----+----+----+
+    | 1. | .0 | .0 |
+    +----+----+----+
+    | 0. | 1. | .0 |
+    +----+----+----+
     
     a triangle table
     
+    +----+----+----+
     |pid1|pid2|pid3|
-    -------------
+    +====+====+====+
     | 0  | 1  | 2  |
+    +----+----+----+
     
     """
     
-    # TODO: test this 
     
     cdef int i
     
@@ -719,18 +702,17 @@ cpdef dmtable2wireframe(
     return trianglePolyData
 
 
-cpdef GetPointsInPolydata(polydata):
-    """
+cpdef GetPointsInPolydata(object polydata):
+    """GetPointsInPolydata(object polydata)
     
-    p= GetPointsInPolydata(polydata)
-    
-    Returns the points coordinates in a polydata (e.j. wireframe) 
+    Returns the point coordinates in a polydata (e.j. wireframe) 
     as a numpy array. 
     
     
     Parameters
     ----------
     polydata : VTK polydata
+        vtk object with data, ej. wireframe
     
         
     Returns
@@ -753,27 +735,25 @@ cpdef GetPointsInPolydata(polydata):
     return p
         
     
-cpdef SetPointsInPolydata(polydata, points):
-    """
-    
-    SetPointsInPolydata(polydata)
-    
-    Set the points coordinates in a polydata (e.j. wireframe). 
+cpdef SetPointsInPolydata(object polydata, object points):
+    """SetPointsInPolydata(object polydata, object points)
+        
+    Set the points coordinates in a VTK polydata object (e.j. wireframe). 
     
     
     Parameters
     ----------
     polydata : VTK polydata
+        vtk object with data, ej. wireframe
     points   : 2D array 
-            New points coordinates to be set in the polydata
-            points shape may be equal to [polydata.GetNumberOfPoints(),3] 
+        New points coordinates to be set in the polydata
+        points shape may be equal to [polydata.GetNumberOfPoints(),3] 
     
         
     See also
     --------
     GetPointsInPolydata, SavePolydata
-    
-        
+            
     """    
     npoints = polydata.GetNumberOfPoints()
 
@@ -790,19 +770,18 @@ cpdef SetPointsInPolydata(polydata, points):
     polydata.SetPoints(p)
 
 
-cpdef SavePolydata(polydata, path):
-    """
-    
-    SavePolydata(polydata, path)
-    
-    Save polydata in a VTK XML polydata file (ext vtp) 
+cpdef SavePolydata(object polydata, str path):
+    """SavePolydata(object polydata, str path)
+        
+    Saves polydata into a VTK XML polydata file ('*.vtp') 
     
     
     Parameters
     ----------
     polydata : VTK polydata
+        vtk object with data, ej. wireframe
     path : str 
-            Extension (*.vtp) will be added if not provided  
+        Extension (*.vtp) will be added if not provided  
     
             
     """  
@@ -817,10 +796,8 @@ cpdef SavePolydata(polydata, path):
     writer.Write()
 
 
-cpdef getbounds(polydata):    
-    """
-    
-    boundingbox(polydata)
+cpdef getbounds(object polydata):    
+    """getbounds(object polydata)
     
     Returns the bounding box limits x,y,z minimum and maximum
     
@@ -828,11 +805,12 @@ cpdef getbounds(polydata):
     Parameters
     ----------
     polydata : VTK polydata
+        vtk object with data, ej. wireframe
     
         
     Returns
     -------
-    xmin,xmax, ymin,ymax, zmin,zmax : float
+    xmin,xmax,ymin,ymax,zmin,zmax : float
         The geometry bounding box 
     
     """
@@ -844,23 +822,21 @@ cpdef points2vtkfile(str path,
                    np.ndarray [double, ndim=1] x, 
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
-                   data):
-    """
-    
-    bpoints2vtkfile(path, x,y,z, data)
+                   object data):
+    """points2vtkfile(str path, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, object data)
     
     Save points in vtk file
     
     
     Parameters
     ----------
-    
-    
+    path : str
+        file path (relative or absolute) and name 
+    x,y,z : np.ndarray
+        coordinates of the points
+    data : array like 
+        array with variable values. 
         
-    Returns
-    -------
-    
-    
     """
     
     pyevtk.hl.pointsToVTK(path, x, y, z, data = data) 
@@ -871,23 +847,20 @@ cpdef grid2vtkfile(str path,
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
                    data):  
-    """
+    """grid2vtkfile(str path, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, object data)
     
-    grid2vtkfile(path, x,y,z, data)
-    
-    save grid in vtk file if x,y,z are 1D it saves VtkRectilinearGrid,
-    if are 3D it saves VtkStructuredGrid
+    Saves data in a Vtk Rectilinear Grid file
     
     
     Parameters 
     ----------
-    
-    
+    path : str
+        file path (relative or absolute) and name 
+    x,y,z : np.ndarray
+        coordinates of the points
+    data : array like 
+        array with variable values. 
         
-    Returns
-    -------
-    
-    
     """
     
 
@@ -903,22 +876,21 @@ cpdef partialgrid2vtkfile(str path,
                    double DZ,
                    object var,
                    object varname):
-    """
-    
-    partialgrid2vtkfile(path, x,y,z, dx,dy,dz,var, varname)
-    
-    save unstructurw vtk grid of parent blocks into a file
+    """partialgrid2vtkfile(str path, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double DX, double DY, double DZ, object var, object varname)
+        
+    Saves data in a VTK Unstructured Grid file
     
     
     Parameters
     ----------
-    
-    
-        
-    Returns
-    -------
-    
-    
+    path : str
+        file path (relative or absolute) and name 
+    x,y,z : np.ndarray
+        coordinates of the points
+    DX,DY,DZ : float
+        block sizes
+    data : array like 
+        array with variable values.     
     """
 
     # add extension to path 

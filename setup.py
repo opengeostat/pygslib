@@ -105,29 +105,28 @@ if __name__ == '__main__':
     # this is the gslib code too modified 
     # define extensions here:
     #-----------------------------------------------------  
-    rotscale = Extension(name = 'pygslib.__rotscale',
+    gslib_rotscale = Extension(name = 'pygslib.gslib.__rotscale',
                      sources = ['for_code/rotscale.f90'] )
                      
-    block_covariance = Extension(name = 'pygslib.__block_covariance',
+    gslib_block_covariance = Extension(name = 'pygslib.gslib.__block_covariance',
                      sources = ['for_code/block_covariance.f90'] )
                      
-    read_gslib = Extension(name = 'pygslib.__read_gslib',
+    gslib_read_gslib = Extension(name = 'pygslib.gslib.__read_gslib',
                      sources = ['for_code/read_gslib.f90'] )
                      
-    addcoord = Extension(name = 'pygslib.__addcoord',
+    gslib_addcoord = Extension(name = 'pygslib.gslib.__addcoord',
                      sources = ['for_code/addcoord.f90'] )                 
                      
+    gslib_general = Extension(name = 'pygslib.gslib.__general',
+                     sources = ['for_code/general.f90'] )  
 
-    kt3d = Extension(name = 'pygslib.__kt3d',
-                     sources = ['for_code/kt3d.f90'] )  
-
-    plot = Extension(name = 'pygslib.__plot',
+    gslib_plot = Extension(name = 'pygslib.gslib.__plot',
                      sources = ['for_code/plot.f90'] ) 
 
-    declus = Extension(name = 'pygslib.__declus',
+    gslib_declus = Extension(name = 'pygslib.gslib.__declus',
                      sources = ['for_code/declus.f90'] ) 
                      
-    dist_transf = Extension(name = 'pygslib.__dist_transf',
+    gslib_dist_transf = Extension(name = 'pygslib.gslib.__dist_transf',
                      sources = ['for_code/dist_transf.f90'],
                      f2py_options=[ 'only:', 'backtr', 'anatbl',
                                     'nscore', 'ns_ttable', ':'] ) 
@@ -140,20 +139,20 @@ if __name__ == '__main__':
                                     'nscore', 'ns_ttable', ':'] ) 
     """
 
-    variograms = Extension(name = 'pygslib.__variograms',
+    gslib_variograms = Extension(name = 'pygslib.gslib.__variograms',
                      sources = ['for_code/variograms.f90'] ) 
                      
-    bigaus = Extension(name = 'pygslib.__bigaus',
+    gslib_bigaus = Extension(name = 'pygslib.gslib.__bigaus',
                      sources = ['for_code/bigaus.f90'] ) 
 
-    bicalib = Extension(name = 'pygslib.__bicalib',
+    gslib_bicalib = Extension(name = 'pygslib.gslib.__bicalib',
                      sources = ['for_code/bicalib.f90'] ) 
 
                      
-    trans = Extension(name = 'pygslib.__trans',
+    gslib_trans = Extension(name = 'pygslib.gslib.__trans',
                      sources = ['for_code/trans.f90'] ) 
                      
-    draw = Extension(name = 'pygslib.__draw',
+    gslib_draw = Extension(name = 'pygslib.gslib.__draw',
                      sources = ['for_code/draw.f90'] ) 
     
     # define fortran code setup in here 
@@ -173,21 +172,21 @@ if __name__ == '__main__':
           tests_require=['numpy', 'pandas', 'matplotlib', 'nose', 'mock'],
           cmdclass={'test': PyTest},   
           install_requires=['numpy', 'pandas', 'matplotlib'],
-          ext_modules = [variograms,
-                         bigaus,
-                         bicalib,
-                         trans,
-                         draw,
-                         addcoord,
-                         rotscale,
-                         read_gslib, 
-                         declus,
-                         dist_transf,
-                         block_covariance,
-                         kt3d,
-                         plot,
+          ext_modules = [gslib_variograms,
+                         gslib_bigaus,
+                         gslib_bicalib,
+                         gslib_trans,
+                         gslib_draw,
+                         gslib_addcoord,
+                         gslib_rotscale,
+                         gslib_read_gslib, 
+                         gslib_declus,
+                         gslib_dist_transf,
+                         gslib_block_covariance,
+                         gslib_plot,
                          gslib_kt3d,
-                         gslib_postik])
+                         gslib_postik,
+                         gslib_general])
                          
     #Cython code extension
     #-------------------------------------------------------------------
@@ -211,14 +210,14 @@ if __name__ == '__main__':
     nonlinear = CYExtension( 'pygslib.nonlinear', 
                             ['cython_code/nonlinear.pyx'],
                             include_dirs=[numpy.get_include()]) 
+    #deprecated
+    #neighborhood = CYExtension( 'pygslib.neighborhood', 
+                            #['cython_code/neighborhood.pyx'],
+                            #include_dirs=[numpy.get_include()]) 
 
-    neighborhood = CYExtension( 'pygslib.neighborhood', 
-                            ['cython_code/neighborhood.pyx'],
-                            include_dirs=[numpy.get_include()]) 
-
-    interpolators = CYExtension( 'pygslib.interpolators', 
-                            ['cython_code/interpolators.pyx'],
-                            include_dirs=[numpy.get_include()])
+    #interpolators = CYExtension( 'pygslib.interpolators', 
+                            #['cython_code/interpolators.pyx'],
+                            #include_dirs=[numpy.get_include()])
 
                             
     setup(name=name,
@@ -240,7 +239,5 @@ if __name__ == '__main__':
           ext_modules = [drillhole,
                         blockmodel,
                         vtktools,
-                        nonlinear,
-                        neighborhood,
-                        interpolators])
+                        nonlinear])
 

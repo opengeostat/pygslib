@@ -31,8 +31,7 @@ import pygslib
 cpdef x2ix(np.ndarray [double, ndim=1] x,
            double xorg,
            double dx):
-    """
-    x2ix(x, xorg,dx)
+    """x2ix(np.ndarray [double, ndim=1] x, double xorg, double dx)
     
     Calculates the block index (ix, iy or iz) 
     
@@ -57,24 +56,25 @@ cpdef x2ix(np.ndarray [double, ndim=1] x,
     -------
     ix : 1D array of integers
         Index of the blocks where points with coordinates x are located
+        
+    Example
+    -------
+    >>>
+    >>> a=np.array([2.1,7.8,15.9,20,30,31])
+    >>> x2ix(a,xorg=2., dx=1)
+    array([ 0,  5, 13, 18, 28, 29])
+    >>>
     
     See Also
     --------
     ind2ijk, ijk2ind
     
-    Notes
-    -----
-    The index start at zero (first block)
-    If there is a point i with coordinate x[i] < xorg  and error will be 
+    Note
+    ----
+    The index starts at zero (first block)
+    If there is a point i with coordinate x[i] < xorg and error will be 
     raised
     
-    
-    Examples
-    --------
-    >>> a=np.array([2.1,7.8,15.9,20,30,31])
-    >>> x2ix(a,xorg=2., dx=1)
-    array([ 0,  5, 13, 18, 28, 29])
-
     """
  
     assert  xorg < x.min(), '\nError:\n x.min ={0} < xorg = {1}, values out of grid. Redefine xorg<= {0}'.format(x.min(),xorg)
@@ -92,8 +92,7 @@ cpdef x2ix(np.ndarray [double, ndim=1] x,
 cpdef ix2x(np.ndarray [long, ndim=1] ix,
            double xorg,
            double dx):
-    """
-    ix2x(ix, xorg,dx)
+    """ix2x(np.ndarray [long, ndim=1] ix, double xorg, double dx)
     
     Calculates the block coordinate (x, y or z) 
     
@@ -120,14 +119,9 @@ cpdef ix2x(np.ndarray [long, ndim=1] ix,
     
     Notes
     -----
-    The index start at zero (first block)
-    If there is a point i with coordinate x[i] < xorg  and error will be 
-    raised
-    
-    
-    Examples
-    --------
-  
+    The index starts at zero (first block)
+    If there is a point i with coordinate x[i] < xorg and error will be 
+    raised  
 
     """
     
@@ -148,19 +142,18 @@ cpdef ind2ijk(np.ndarray [long, ndim=1] ix,
               unsigned int nx,
               unsigned int ny, 
               unsigned int nz):
-    """
-    ind2ijk(ix,iy,iz, nx,ny,nz)
+    """ind2ijk(np.ndarray [long, ndim=1] ix, np.ndarray [long, ndim=1] iy, np.ndarray [long, ndim=1] iz, unsigned int nx, unsigned int ny, unsigned int nz)
     
     Calculates the IJK block index
     
-    The IJK block index is an unique identifier of each block position.
-    This is equivalent to the position of a block in a gslib grid file. 
+    The IJK block index is a unique identifier of each block position.
+    This is equivalent to the position of a block in a `gslib` grid file. 
     All the points within a block will have the same IJK number. 
     
     
     Parameters
     ----------
-    ix, iy, iz : 1D array of integers 
+    ix,iy,iz : 1D array of integers 
            arbitrary raw, level and column indices
     nx,ny,nz   : integers
            number of blocks per row, column, level
@@ -170,24 +163,25 @@ cpdef ind2ijk(np.ndarray [long, ndim=1] ix,
     ijk : 1D array of integers
         Unique identifier of block location
     
-    See Also
+    Example
     --------
-    x2ix, ijk2ind
-    
-    Notes
-    -----
-    The index ijk start at zero (first block) and ends at nx*ny*nz
-    
-    
-    Examples
-    --------
+    >>>
     >>> # a 2D grid with 2x2x1 cells 
     >>> ix=np.array([0,1,0,1])
     >>> iy=np.array([1,1,0,0])
     >>> iz=np.array([0,0,0,0])
     >>> ind2ijk(ix,iy,iz,2,2,1)
     array([2, 3, 0, 1])
-
+    >>>
+    
+    See Also
+    --------
+    x2ix, ijk2ind
+    
+    Note
+    -----
+    The index IJK start at zero (first block) and ends at nx*ny*nz
+    
     """
     
     assert ix.shape[0]==iy.shape[0]==iz.shape[0], 'Error: wrong shape ix, iy and iz may have same shape'
@@ -210,20 +204,19 @@ cpdef ijk2ind(np.ndarray [long, ndim=1] ijk,
               unsigned int nx,
               unsigned int ny, 
               unsigned int nz):
-    """
-    ijk2ind(ijk,nx,ny,nz)
+    """ijk2ind(np.ndarray [long, ndim=1] ijk, unsigned int nx, unsigned int ny, unsigned int nz)
     
     Calculates the raw, column, level indices ``ix, iy, iz`` from IJK.
     
-    The IJK block index is an unique identifier of each block position.
-    This is equivalent to the position of a block in a gslib grid file. 
+    The IJK block index is a unique identifier of each block position.
+    This is equivalent to the position of a block in a `gslib` grid file. 
     All the points within a block will have the same IJK number. 
     
-    From IJK you can calculate ix,iy and iz as:
-    
-    iz =  ijk / nx*ny
-    iy = (ijk-iz*nx*ny)/nx
-    ix =  ijk-iz*nx*ny - iy*nx
+    From IJK you can calculate ix, iy and iz as::
+        
+        iz =  ijk / nx*ny
+        iy = (ijk-iz*nx*ny)/nx
+        ix =  ijk-iz*nx*ny - iy*nx
     
     
     Parameters
@@ -237,18 +230,10 @@ cpdef ijk2ind(np.ndarray [long, ndim=1] ijk,
     -------
     ix,iy,iz : 1D array of integers
         The raw, column and level indices
-    
-    See Also
-    --------
-    x2ix, ijk2ind
-    
-    Notes
-    -----
-    The indices ix, iy and iz start at zero
-    
-    
-    Examples
-    --------
+        
+    Example
+    -------
+    >>>
     >>> ijk= np.array([0, 1, 2, 3, 4, 5, 6, 7])
     >>> ix,iy,iz = ijk2ind(ijk,2,2,2)
     >>> print ix
@@ -257,6 +242,15 @@ cpdef ijk2ind(np.ndarray [long, ndim=1] ijk,
     [0 1 0 1 0 1 0 1]
     [0 0 1 1 0 0 1 1]
     [0 0 0 0 1 1 1 1]
+    >>>
+    
+    See Also
+    --------
+    x2ix, ijk2ind
+    
+    Note
+    ----
+    The indices ix, iy and iz start at zero
 
     """ 
     cdef float fnx, fny,fnz
@@ -293,10 +287,9 @@ cpdef ijk2ind(np.ndarray [long, ndim=1] ijk,
 #-------------------------------------------------------------------
 cdef class Blockmodel:
     """
-    Blockmodel(nx,ny,nz,xorg,yorg,zorg,dx,dy,dz)
+    Blockmodel object.
     
-    Blockmodel working database object with functions to handle 
-    block models.
+    
     
     Parameters
     ----------
@@ -309,18 +302,25 @@ cdef class Blockmodel:
     
     Attributes
     ----------
+    nx, ny, nz : int
+        number of rows, columns, levels 
+        
+    xorg, yorg, zorg : float
+        coordinates of the left lower corner of the first block
 
+    dx, dy, dz : float
+        sizes of the blocks
+
+    bmtable : Pandas DataFrame
+        Table with blocks
     
-    Notes
-    -----
- 
-    
+        
     """ 
     cdef readonly int nx,ny,nz  # nrows,cols,levels
     cdef readonly int ndx,ndy,ndz  # ndiscretization
-    cdef readonly bint randisc     # is the discretization random?
-    cdef readonly bint subcell     # has subcells? 
-    cdef readonly bint percent     # has percent?  Can be both percent+subcell 
+    #cdef readonly bint randisc     # is the discretization random?
+    #cdef readonly bint subcell     # has subcells? 
+    #cdef readonly bint percent     # has percent?  Can be both percent+subcell 
     cdef readonly double xorg,yorg,zorg,dx,dy,dz # origin of coordinate + block size
     cdef readonly object bmtable    # the actual block model 
     
@@ -343,15 +343,20 @@ cdef class Blockmodel:
         # self.bmtable=None
         
     cpdef set_block_size(self, float dx,float dy, float dz):
-        """
-        set_block_size(dx,dy,dz) 
+        """set_block_size(float dx,float dy, float dz) 
                 
         Set block sizes  
+        
+        Parameters
+        ----------
+        dx,dy,dz : float
+            sizes of the blocks
                         
         Examples
         --------
-        
+        >>>
         >>> myblockmodel.set_block_size(dx=10,dy=10,dz=5)
+        >>>
                 
         """   
         
@@ -364,17 +369,22 @@ cdef class Blockmodel:
         
             
     cpdef set_origin(self, float xorg,float yorg, float zorg):
-        """
-        set_origin(xorg,yorg, zorg)
+        """set_origin(float xorg,float yorg, float zorg)
                 
         Set the block model origin of coordinate. This is the lower 
         left corner of the lower left block (not-the centroid). 
+        
+        Parameters
+        ----------
+        xorg,yorg,zorg : float
+            coordinates of the left lower corner of the first block
                         
         Examples
         --------
-        
+        >>>
         >>> myblockmodel.set_origin(xorg=-5,yorg=-5, zorg=0)
-                
+        >>>
+             
         """   
         assert xorg>0 and yorg>0 and zorg>0
         self.xorg=xorg
@@ -382,26 +392,28 @@ cdef class Blockmodel:
         self.zorg=zorg
         
     cpdef set_rcl(self, int nx,int ny, int nz):
-        """
-        set_rcl(nx,ny,nz)
+        """set_rcl(int nx,int ny, int nz)
                 
         Set number of blocks at row, call, level
         
-        Two conditions apply: 
-        a)  nx,ny and nz may be greater than zero   
-        b)  nx*ny*nz may be equal to the actual number of blocks
+        Two conditions apply
+         
+        - nx,ny and nz may be greater than zero   
+        - nx*ny*nz may be equal to the actual number of blocks
         
-        Note
-        ----
-        This function basically reorder the blocks along rows, columns  
-        and levels without changing the total number of blocks. 
-                        
         Examples
         --------
-        
+        >>>
         >>> myblockmodel.set_rcl(nx=10,ny=10,nz=10)
         >>> myblockmodel.set_rcl(nx=10,ny=100,nz=1)
-                
+        >>>
+
+        Note
+        ----
+        This function basically reorders the blocks along rows, columns  
+        and levels without changing the total number of blocks. 
+                        
+               
         """ 
         assert nx>0 and ny>0 and nz>0, 'nx<=0 or ny<=0 or nz<=0'
         assert nx*ny*nz==self.nx*self.ny*self.nz, 'nx*ny*nz may be equal to {}'.format(self.nx*self.ny*self.nz)
@@ -412,23 +424,17 @@ cdef class Blockmodel:
 
     
     cpdef set_blocks(self, object bmtable):
-        """
-        set_blocks(bmtable)
+        """set_blocks(object bmtable)
                 
-        Assign an external block model stored in a Pandas DataFrame
+        Assigns an external block model stored in a Pandas DataFrame
         table.  
-        
+                        
         One or many conditions apply 
-        a)  The blockmodel has IJK field  
-        b)  Or/And has IX,IY and IZ fields
-        b)  Or/And has XC,YC and ZC fields
         
-        Note
-        ----
-        One or the above conditions is required. In case that two or 
-        more of the special fields mentioned above are defined the 
-        validity of the fields is not verified, for example the
-        valid IJK representation of fields IX,IY and IZ is not tested.
+         - the block model has IJK field  
+         - or/and has IX, IY and IZ fields
+         - or/and has XC, YC and ZC fields
+        
         
         Parameters
         ----------
@@ -438,14 +444,20 @@ cdef class Blockmodel:
                         
         Examples
         --------
+        >>>
         >>> bmtable=pd.DataFrame({'IJK':np.array([1,2,3,4], dtype=np.int32)})
         >>> myblockmodel.set_blocks(bmtable)
+        >>>
         
-        Comments
-        -------
+        Note
+        ----
         Make sure IJK, IX,IY and IZ have dtype int32. XC,YC and ZC may 
         have dtype float32
-         
+
+        One of the above conditions is required. In case that two or 
+        more of the special fields mentioned above are defined the 
+        validity of the fields is not verified, for example the
+        valid IJK representation of fields IX, IY and IZ is not tested.
                 
         """ 
         cdef bint has_ijk, has_ixyz, has_cxyz 
@@ -462,32 +474,31 @@ cdef class Blockmodel:
         self.bmtable=bmtable
         
     cpdef delete_blocks(self):
-        """
-        delete_blocks()
+        """delete_blocks()
                 
-        Delete the block model table   
+        Deletes the block model table   
         
+        Examples
+        --------
+        >>>
+        >>> myblockmodel.delete_blocks()
+        >>> print myblockmodel.bmtable
+        None
+        >>>
         
         Note
         ----
         This functions makes Blockmodel.bmtable=None. The data will
         be preserved in any external instance of bmtable.   
-                                   
-        Examples
-        --------
-        >>> myblockmodel.delete_blocks()
-        >>> print myblockmodel.bmtable
-        None
-                
+                                               
         """ 
                
         self.bmtable=None
 
     cpdef calc_ixyz_fromxyz(self, bint overwrite=False):
-        """
-        calc_ixyz_fromxyz(overwrite=False)
+        """calc_ixyz_fromxyz(bint overwrite=False)
                 
-        Calculate the IX, IY, IZ fields from XC, YC, ZC coordinates
+        Calculates the IX, IY, IZ fields from XC, YC, ZC coordinates
         If IX, IY, IZ exist and overwrite=True the existing values 
         will be overwritten. 
         
@@ -496,12 +507,15 @@ cdef class Blockmodel:
         ----------
         overwrite : Boolean, default False           
                         
-        Examples
-        --------
+        Example
+        -------
+        >>>
         >>> myblockmodel.calc_ixyz_fromxyz()
         >>> myblockmodel.calc_ixyz_fromxyz(overwrite=True)
+        >>>
                 
-        """ 
+        """
+         
         cdef bint has_ixyz 
         
         assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
@@ -515,10 +529,9 @@ cdef class Blockmodel:
         self.bmtable['IZ']= x2ix (self.bmtable['ZC'].values.astype('float'), self.zorg, self.dz)
         
     cpdef calc_xyz_fromixyz(self, bint overwrite=False):
-        """
-        calc_xyz_fromixyz(overwrite=False)
+        """calc_xyz_fromixyz(bint overwrite=False)
                 
-        Calculate the XC, YC, ZC coordinates from IX, IY, IZ indices
+        Calculates the XC, YC, ZC coordinates from IX, IY, IZ indices
         If XC, YC, ZC exist and overwrite=True the existing values 
         will be overwritten. 
         
@@ -529,8 +542,10 @@ cdef class Blockmodel:
                         
         Examples
         --------
+        >>>
         >>> myblockmodel.calc_xyz_fromixyz()
         >>> myblockmodel.calc_xyz_fromixyz(overwrite=True)
+        >>>
                 
         """ 
         cdef bint has_xyz 
@@ -546,24 +561,26 @@ cdef class Blockmodel:
         self.bmtable['ZC']= ix2x (self.bmtable['IZ'].values.astype('int'), self.zorg, self.dz)
         
     cpdef calc_ijk(self, bint overwrite=False):
-        """
-        calc_ijk(overwrite=False)
+        """calc_ijk(bint overwrite=False)
                 
-        Calculate the IJK field from IX, IY, IZ indices
+        Calculates the IJK field from IX, IY, IZ indices
         If IJK exist and overwrite=True the existing values 
         will be overwritten. 
         
         
         Parameters
         ----------
-        overwrite : Boolean, default False           
+        overwrite : Boolean, default False   
+                If True overwrites any existing IJK field
                         
-        Examples
-        --------
+        Example
+        -------
+        >>>
         >>> myblockmodel.calc_ijk()
         >>> myblockmodel.calc_ijk(overwrite=True)
-                
-        """         
+        >>>
+        """
+                 
         assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
         assert set(('IX', 'IY', 'IZ')).issubset(self.bmtable.columns),  'Error: No IX,IY,IZ indices in bmtable'
         if overwrite==False:
@@ -577,10 +594,9 @@ cdef class Blockmodel:
                                        self.nz)
 
     cpdef calc_ixyz_fromijk(self, bint overwrite=False):
-        """
-        calc_ixyz_fromijk(overwrite=False)
+        """calc_ixyz_fromijk(bint overwrite=False)
                 
-        Calculate the IX, IY, IZ fields from IJK index
+        Calculates the IX, IY, IZ fields from IJK index
         If IX, IY, IZ exist and overwrite=True the existing values 
         will be overwritten. 
         
@@ -589,12 +605,15 @@ cdef class Blockmodel:
         ----------
         overwrite : Boolean, default False           
                         
-        Examples
-        --------
+        Example
+        -------
+        >>>
         >>> myblockmodel.calc_ixyz_fromijk()
         >>> myblockmodel.calc_ixyz_fromijk(overwrite=True)
-                
+        >>>
+        
         """         
+        
         cdef bint has_ixyz
 
         assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
@@ -607,16 +626,15 @@ cdef class Blockmodel:
 
 
     cpdef reblock(self, double dx, double dy, double dz):
-        """
-        mymodel.reblock()
+        """reblock(double dx, double dy, double dz)
         
-        Reblock models         
+        Reblocks a block model
         
         The model is reblocked using IJK calculated from XC, YC, ZC
         coordinates and averaging all points with same IJK. 
         
         Note that this is like a point to block conversion and subblock
-        overlapings are not taked into account. 
+        overlapping are not taken into account. 
         
         Parameters
         ----------
@@ -633,7 +651,7 @@ cdef class Blockmodel:
         
         Warning
         -------
-        The existin model will be overwritten
+        The existing model will be overwritten
         
         """         
 
@@ -700,20 +718,21 @@ cdef class Blockmodel:
 
     cpdef create_IJK(self, bint overwrite=False):
         
-        """
-        create_IJK(overwrite=False)
+        """create_IJK(bint overwrite=False)
                 
-        Creates a new block set consisting in IJK indices.  
-          
-        Notes
-        -----        
+        Creates a new block model table with IJK indices.  
+                
+        Examples
+        --------
+        >>>
+        >>> create_IJK(overwrite=True)
+        >>>
+        
+        Note
+        ----        
         A new set of blocks will be created if there is not block 
         defined. If there are blocks in the model and overwrite==True
         the blocks will be removed first. 
-        
-        Examples
-        --------
-        >>> create_IJK(overwrite=True)
                 
         """        
         
@@ -731,10 +750,9 @@ cdef class Blockmodel:
                     int test=1, 
                     bint overwrite=False):
         
-        """
-        blockinsurface(surface, field, azm, dip, test, overwrite=False)
+        """blockinsurface(object surface, str field, double azm=0, double dip =90, int test=1, bint overwrite=False)
                 
-        Creates blocks given a VTK surface (polydata) depending on a 
+        Creates blocks given a VTK surface (polydata) depending on  
         test criteria: 
           
         Parameters
@@ -745,20 +763,26 @@ cdef class Blockmodel:
                Name of the new field with selection results
         azm, dip: float, default 0, 90
                rotation defining the direction we will use to test the points
-               azm 0 will point north and dip positive meas downward direction
+               azm 0 will point north and dip positive means downward direction
                (like surface drillholes)
         test    : integer, default 1
-               1 test inside closed surface. Here we use 
+               ``test == 1`` test inside closed surface. Here we use 
                  vtkOBBTree::InsideOrOutside. Closed surface are required
-               2 test 'above' surface 
-               3 test 'below' surface 
-               4 test 'inside' surface (the surface can be open)
+               ``test == 2`` test 'above' surface 
+               ``test == 3`` test 'below' surface 
+               ``test == 4`` test 'inside' surface (the surface can be open)
          overwrite : boolean
                overwrite flag, if true and field exist in bmtable the 
                values will be overwritten
         
-        Notes
-        -----
+        Example
+        -------
+        >>>
+        >>> fillblocks(surface, azm, dip, test, overwrite=False)
+        >>>
+        
+        Note
+        ----
         This function calls vtktools.pointquering for all the points 
         existing in the block model. The function is not optimized
         for large model. 
@@ -766,10 +790,6 @@ cdef class Blockmodel:
         A new set of blocks will be created if there is not block 
         defined. If there are blocks in the model and overwrite==True
         the blocks will be removed first. 
-        
-        Examples
-        --------
-        >>> fillblocks(surface, azm, dip, test, overwrite=False)
                 
         """         
         
@@ -783,29 +803,31 @@ cdef class Blockmodel:
         self.bmtable[field], p1=pygslib.vtktools.pointquering(surface, azm, dip, self.bmtable['XC'].values, self.bmtable['YC'].values, self.bmtable['ZC'].values, test)
         
     cpdef blocks2vtkRectilinearGrid(self, str path):
-        """
-        blocks2vtkRectilinearGrid(self, str path)
+        """blocks2vtkRectilinearGrid(str path)
                 
-        Export blocks of a full grid to a vtkRectilinearGrid file. 
+        Exports blocks of a full grid to a vtkRectilinearGrid file. 
           
         Parameters
         ----------
         path : string 
                file name and path, without extension. The file extension
                (*.vtr) will be added automatically.  
- 
-        Notes
-        -----
+
+        Examples
+        --------
+        >>>
+        >>> blocks2vtkRectilinearGrid('myfile')
+        >>> 
+
+        Note
+        ----
         This will only work for full grid, in other words, if all the 
         nx*ny*nz are defined.
         
         All the fields defined in the block model will be exported
-        
-        Examples
-        --------
-        >>> blocks2vtkRectilinearGrid('myfile')
                 
-        """   
+        """ 
+        
         cdef np.ndarray [double, ndim=1] x,y,z
         
         assert  self.bmtable.shape[0]==self.nx*self.ny*self.nz, 'Error: this work only with full grid, ex. bmtable.shape[0]==nx*ny*nz'
@@ -823,10 +845,9 @@ cdef class Blockmodel:
 
 
     cpdef blocks2vtkUnstructuredGrid(self, str path, str varname= None):
-        """
-        blocks2vtkUnstructuredGrid(self, str path, str varname = None)
+        """blocks2vtkUnstructuredGrid(str path, str varname = None)
                 
-        Export blocks of a partial grid to a vtkRectilinearGrid file. 
+        Exports blocks of a partial grid to a vtkRectilinearGrid file. 
           
         Parameters
         ----------
@@ -838,20 +859,23 @@ cdef class Blockmodel:
                 If None export all columns, otherwise export only
                 the column varname
  
-        Notes
-        -----
+               
+        Examples
+        --------
+        >>>
+        >>> blocks2vtkUnstructuredGrid('myfile', 'AU')
+        >>>
+ 
+        Note
+        ----
         Require XC, YC and ZC.
         
         Only numeric variables can be exported 
         TODO: export all
         
         This call pygslib.vtktools.partialgrid2vtkfile 
-              
-        Examples
-        --------
-        >>> blocks2vtkUnstructuredGrid('myfile', 'AU')
-                
-        """   
+
+        """
         
         
         cdef np.ndarray [double, ndim=1] x,y,z
@@ -880,29 +904,30 @@ cdef class Blockmodel:
                             np.ndarray [double, ndim=1] y,
                             np.ndarray [double, ndim=1] z, 
                             str prop_name):
-        """
-        block2point( x, y, z, prop_name)
+        """block2point(np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, str prop_name)
                 
-        assign a block property to the points inside a block  
-               
-          
+        Assigns a block property to the points inside a block  
+        
+        
         Parameters
         ----------
-        x, y, z  Float 1D numpy arrays
+        x,y,z : float 1D numpy arrays
             coordinates of the points. Array shapes may be equal
-        prop_name str
+        prop_name : str
             name of the property at block model
         
-        Notes
-        -----
-        Points not laying in an existing block will be returned with 
-        value numpy.nan  
         
-        
-        Examples
-        --------
+        Example
+        -------
+        >>>
         >>> Au_at_point= point2block( x, y, z, prop_name= 'Au')
-                
+        >>>
+           
+        
+        Note
+        ----
+        Points not laying in an existing block will be returned with 
+        value numpy.nan       
         """   
         
         cdef long i, n
@@ -947,44 +972,43 @@ cdef class Blockmodel:
     cpdef point2block(self, np.ndarray [double, ndim=1] x, 
                             np.ndarray [double, ndim=1] y,
                             np.ndarray [double, ndim=1] z, 
-                            prop,
+                            object prop,
                             str prop_name,
                             bint average = False,
                             bint overwrite = False):
-        """
-        point2block( x, y, z, prop, prop_name)
+        """point2block(np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z,object prop, str prop_name, bint average = False, bint overwrite = False)
                 
-        assign point to block  
+        Assigns data in a point to a block
         
-        TODO: pass array of properties np.ndarray [double, ndim=2] prop and [prop_names]
-        
-          
         Parameters
         ----------
-        x, y, z  Float 1D numpy arrays
+        x,y,z : Float 1D numpy arrays
             coordinates of the points. Array shapes may be equal
-        prop  array like
+        prop : array like
             array with property shape[0] == x.shape[0]
             note that prop can be an array of array, for example, an
             array of indicators arrays
-        prop_name str
+        prop_name: str
             name of the property at block model
-        average bool
+        average : bool
             If there are more than one point at block 
             average the points. If true the average will be created, 
-            this may fail if prop is not numeric. If false the last 
+            this may fail if prop is not numeric. If False the last 
             point in the block will be used to assign the value. 
-        overwrite bool
-            If False an existing property will not be overwrited  
+        overwrite : bool
+            If False an existing property will not be overwritten  
         
-        Notes
-        -----
-        Points not laying in an existing block will be ignored.  
-        
-        
-        Examples
-        --------
+        Example
+        -------
+        >>>
         >>> point2block( x, y, z, prop, prop_name= 'Au',  average = False, overwrite = False)
+        >>>
+        
+        TODO: pass array of properties np.ndarray [double, ndim=2] prop and [prop_names]
+        
+        Note
+        ----
+        Points not laying in an existing block will be ignored.  
                 
         """   
         
@@ -1044,16 +1068,15 @@ cdef class Blockmodel:
                     float toll=0, 
                     bint overwrite=False):
         
-        """
-        fillwireframe(surface, toll, overwrite=False)
+        """fillwireframe(object surface, float toll=0, bint overwrite=False)
                 
         Creates a full block model given a VTK surface (polydata) using 
         vtkPolyDataToImageStencil. The results consist of blocks with
         parameter ``in``  with value between 0 and 1. 
         
-        ``in = 0 `` represent blocks completely outside the wireframe
-        ``in = 1 `` represent blocks completely inside the wireframe
-        ``1 >in > 0 `` represent blocks cut by the wireframe
+        ``in = 0`` represent blocks completely outside the wireframe
+        ``in = 1`` represent blocks completely inside the wireframe
+        ``1 >in > 0`` represent blocks cut by the wireframe
         
         The parameter in is calculated as the sum of corners of the 
         block, each corner is equal to 1 if is inside the block or equal 
@@ -1064,12 +1087,12 @@ cdef class Blockmodel:
         and the resolution/complexity of the wireframe. 
               
         The method may fail if the wireframe is narrower than a block,
-        e.j. larg blocks in narrow veins. To avoid this you can set 
+        e.j. larg blocks in narrow veins. In this case you can set 
         a tolerance value 1>=toll>=0. The output may not be used as 
         volume, only as selection of blocks within a wireframe 
         (with ``in>0``). 
         
-          
+                  
         Parameters
         ----------
         surface : VTK polydata
@@ -1078,21 +1101,25 @@ cdef class Blockmodel:
                number in interval [0. , 1.] 
                you may use tol>0 if the blocks are large and the 
                wireframe is narrower than the block size. 
-         overwrite : boolean
+        overwrite : boolean
                overwrite flag, if true the entire block model will be 
                overwritten
         
+        Example
+        -------
+        >>>
+        >>> mymodel.fillwireframe(surface, toll=0, overwrite=False)
+        >>>     
         
-        
-        Notes
-        -----
+        Note
+        ----
         The tolerance only works on x, y plane, not in z. 
         
+        This function works well with closed surfaces 
         
-        Examples
-        --------
-        >>> mymodel.fillwireframe(surface, toll=0, overwrite=False)
-                
+        This function works well with large and complicated wireframes,
+        for example, Leapfrog grade shells.
+        
         """ 
         
         #check the model do not exist 
