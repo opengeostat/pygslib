@@ -668,8 +668,9 @@ cdef class Blockmodel:
                                               self.zorg,
                                               dx,dy,dz)
 
-        # add tables
-        tmpmod.set_blocks(self.bmtable)
+
+        # add tables as a deep copy
+        tmpmod.set_blocks(self.bmtable.copy(deep =True))
         
         # calk ix iy and iz
         tmpmod.calc_ixyz_fromxyz(overwrite=True)
