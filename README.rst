@@ -14,8 +14,16 @@ Current version
 ----------
 version = '0.0.0.3.8'
 
+
 This means that we are in a very early developing stage and the package 
 is experimental!
+
+
+Need some help? 
+------ 
+User manual at https://opengeostat.github.io/pygslib/
+Youtube chanel https://www.youtube.com/c/opengeostat
+
 
 Ipython notebook templates and examples.
 --------------------------
@@ -37,7 +45,7 @@ The code is organized in two separated folders
 - cython_code
 - for_code
 
-The fortran code is in the folder ``for_code`` and has 3 levels of 
+The fortran code is in the folder ``for_code`` and has 2 levels of 
 implementation: 
 
 
@@ -50,8 +58,7 @@ implementation:
    These are for high end users only and to develop algorithms. 
    The examples (Ipython notebooks) that use this code are named with 
    prefix *_raw*.
-3. [Deprecated] The algorithms modules, which are intended to simplify 
-   the use of pygslib.
+
 
 Installation in Anaconda distribution (Linux/Window/ {OS not implemented yet})
 ------------
@@ -73,9 +80,14 @@ install all the dependencies and make sure you have gfortran available::
     git clone https://github.com/opengeostat/pygslib.git
     cd pygslib
     python setup.py install 
+    
+    or 
 
+    python setup.py develop
+    
 
 To update this module as contributor, make changes and the update git (requesting a pull).
+
 To update the pypi repository::
 
     python setup.py sdist upload -r pypi
@@ -102,7 +114,7 @@ Supported by Opengeostat Consulting @ http://opengeostat.com/
 This software may be modified and distributed under the terms of the 
 MIT license.  See the LICENSE.txt file for details.
 
-Monday 18 July 2016
+Monday 12 August 2016
 
 
 
