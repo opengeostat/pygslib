@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 '''
 
+import os
 import vtk
 from IPython.display import Image
 from libc.math cimport sin
@@ -84,6 +85,42 @@ cpdef vtk_show(object renderer, double width=400, double height=300,
     return Image(data)
 
 
+cpdef loadVTP(str filenameVTP):
+    """loadVTP(str filenameVTP)
+    
+    Load an XML VTK Polydata file
+    
+    Parameters
+    ----------
+    filenameVTP : file path
+    
+    Returns
+    -------
+    polydata : VTK Polydata object 
+           
+    
+    
+    """
+    
+    # check file exists
+    assert os.path.isfile(filenameVTP), 'Error: file path'
+    
+    readerVTP = vtk.vtkXMLPolyDataReader()
+    readerVTP.SetFileName(filenameVTP)
+    # 'update' the reader i.e. read the .VTP file
+    readerVTP.Update()
+
+    polydata = readerVTP.GetOutput()
+
+    # If there are no points in 'vtkPolyData' something went wrong
+    if polydata.GetNumberOfPoints() == 0:
+        raise ValueError(
+            "No point data could be loaded from '" + filenameVTP)
+        return None
+    
+    return polydata
+
+
 cpdef loadSTL(str filenameSTL):
     """loadSTL(str filenameSTL)
     
@@ -95,15 +132,12 @@ cpdef loadSTL(str filenameSTL):
     
     Returns
     -------
-    polydata : VTK Polydata object 
-           
-       
-    Note
-    ----
-    Code by Adamos Kyriakou
-    published in https://pyscience.wordpress.com/
-    
+    polydata : VTK Polydata object          
+   
     """
+    
+    # check file exists
+    assert os.path.isfile(filenameSTL), 'Error: file path'
     
     readerSTL = vtk.vtkSTLReader()
     readerSTL.SetFileName(filenameSTL)

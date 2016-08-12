@@ -461,10 +461,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     ! computations start here
     ! =================
 
-    ! initialize array to count number of samples per dhole
-    nnbhid(:) = 0
-
-
+    
     ! we define the array where we estimate externally (like in jackknife) 
     nloop = nout
 
@@ -675,6 +672,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
         nzsup,zmnsup,zsizsup,nclose,close,infoct)
     
         ! Load the nearest data in xa,ya,za,vra,vea:
+    
+        ! initialize array to count number of samples per dhole
+        if (nbhid > 0) nnbhid(:) = 0
     
         na = 0
         do i=1,nclose
