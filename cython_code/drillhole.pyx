@@ -279,13 +279,13 @@ cpdef interp_ang1D( float azm1,
 
     return azm, dip
 
-cpdef dsmincurb( float len12,
+cpdef __dsmincurb( float len12,
                  float azm1,
                  float dip1,
                  float azm2,
                  float dip2):
                      
-    """dsmincurb( float len12, float azm1, float dip1, float azm2, float dip2)
+    """__dsmincurb( float len12, float azm1, float dip1, float azm2, float dip2)
          
     Desurveys one interval with minimum curvature 
     
@@ -312,7 +312,7 @@ cpdef dsmincurb( float len12,
     Example
     --------
     >>>
-    >>> print dsmincurb(len12=10, azm1=45, dip1=75, azm2=90, dip2=20)
+    >>> print __dsmincurb(len12=10, azm1=45, dip1=75, azm2=90, dip2=20)
     (7.207193374633789, 1.0084573030471802, 6.186459064483643)
     >>>
 
@@ -375,7 +375,7 @@ cpdef dsmincurb( float len12,
 
     return dz,dn,de
 
-cpdef desurv1dh(int indbs,
+cpdef __desurv1dh(int indbs,
                int indes,
                np.ndarray[double, ndim=1] ats,
                np.ndarray[double, ndim=1] azs,
@@ -386,7 +386,7 @@ cpdef desurv1dh(int indbs,
                float lpt,
                bint warns=True):
 
-    """desurv1dh(int indbs, int indes, np.ndarray[double, ndim=1] ats, np.ndarray[double, ndim=1] azs, np.ndarray[double, ndim=1] dips, float xc, float yc, float zc, float lpt, bint warns=True)
+    """__desurv1dh(int indbs, int indes, np.ndarray[double, ndim=1] ats, np.ndarray[double, ndim=1] azs, np.ndarray[double, ndim=1] dips, float xc, float yc, float zc, float lpt, bint warns=True)
     
     Desurveys one point with minimum curvature given survey array
     and collar coordinates
@@ -419,7 +419,7 @@ cpdef desurv1dh(int indbs,
     Example
     -------
     >>>
-    >>> azt,dipt,xt,yt,zt = desurv1dh(indbs, 
+    >>> azt,dipt,xt,yt,zt = __desurv1dh(indbs, 
                                     indes,
                                     ats,
                                     azs,
@@ -438,12 +438,7 @@ cpdef desurv1dh(int indbs,
     Note
     -----
     This function is a convenience function call by Drillhole.desurvey
-    it was exposed here for validation purpose. 
-    
-    TODO
-    ----
-    Hide this function
-    
+    it was exposed here for validation purpose.   
    
     """
     
@@ -497,7 +492,7 @@ cpdef desurv1dh(int indbs,
             za = zc
             # desurvey interval at survey... table
             
-            dz,dn,de = dsmincurb(len12,azm1,dip1,azm2,dip2)
+            dz,dn,de = __dsmincurb(len12,azm1,dip1,azm2,dip2)
 
             xb = xa+de
             yb = ya+dn
@@ -509,7 +504,7 @@ cpdef desurv1dh(int indbs,
             za = zb
             # desurvey interval at zurvey... table
             
-            dz,dn,de = dsmincurb(len12,azm1,dip1,azm2,dip2)
+            dz,dn,de = __dsmincurb(len12,azm1,dip1,azm2,dip2)
             xb = xa+de
             yb = ya+dn
             zb = za-dz
@@ -522,7 +517,7 @@ cpdef desurv1dh(int indbs,
             azt,dipt = interp_ang1D(azm1,dip1,azm2,dip2,len12,d1)
 
             # desurvey at interval table 
-            dz,dn,de = dsmincurb(d1,azm1,dip1,azt,dipt)
+            dz,dn,de = __dsmincurb(d1,azm1,dip1,azt,dipt)
 
             xt = xa+de
             yt = ya+dn
@@ -539,7 +534,7 @@ cpdef desurv1dh(int indbs,
     if lpt>=a:
         d1= lpt- a
         # desurvey at interval table 
-        dz,dn,de = dsmincurb(d1,azm1,dip1,azt,dipt)
+        dz,dn,de = __dsmincurb(d1,azm1,dip1,azt,dipt)
         xt = xb+de
         yt = yb+dn
         zt = zb-dz 
@@ -556,12 +551,12 @@ cpdef desurv1dh(int indbs,
 #-------------------------------------------------------------------
 #  General functions for compositing 
 #-------------------------------------------------------------------
-cpdef composite1dh(double[:] ifrom, 
+cpdef __composite1dh(double[:] ifrom, 
                    double[:] ito, 
                    double[:] ivar, 
                    double cint = 1., 
                    double minlen=-1.):
-    """composite1dh(double[:] ifrom, double[:] ito, double[:] ivar, double cint = 1., double minlen=-1.)
+    """__composite1dh(double[:] ifrom, double[:] ito, double[:] ivar, double cint = 1., double minlen=-1.)
        
     Composites intervals in a single drillhole. The From-To intervals may be sorted. 
     
@@ -605,9 +600,6 @@ cpdef composite1dh(double[:] ifrom,
     --------
     Drillhole.downh_composite
 
-    TODO
-    ----
-    Hide this function
 
     """
     
@@ -727,14 +719,14 @@ cpdef composite1dh(double[:] ifrom,
 #-------------------------------------------------------------------
 #  General functions for fill gaps and merge
 #-------------------------------------------------------------------
-cdef min_int(double la, 
+cdef __min_int(double la, 
              double lb, 
              double ia, 
              double ib, 
              double tol=0.01):
-    """min_int(double la, double lb, double ia, double ib, double tol=0.01)
+    """__min_int(double la, double lb, double ia, double ib, double tol=0.01)
              
-    This is an internal function used by merge_one_dhole
+    This is an internal function used by __merge_one_dhole
     
     Given two complete drillholes A, B (no gaps and up to the end of 
     the drillhole), this function returns the smaller of two 
@@ -748,7 +740,7 @@ cdef min_int(double la,
     Example
     -------
     >>>
-    >>> ia, ib, l = min_int(la, lb, ia, ib, tol=0.01)
+    >>> ia, ib, l = __min_int(la, lb, ia, ib, tol=0.01)
     >>>
     
     TODO
@@ -769,12 +761,12 @@ cdef min_int(double la,
     if lb<la:
         return ia, ib+1, lb
 
-cdef merge_one_dhole(double[:] la,
+cdef __merge_one_dhole(double[:] la,
               double[:] lb, 
               long[:] ida, 
               long[:] idb, 
               double tol=0.01):
-    """ merge_one_dhole(double[:] la, double[:] lb, long[:] ida, long[:] idb, double tol=0.01)
+    """ __merge_one_dhole(double[:] la, double[:] lb, long[:] ida, long[:] idb, double tol=0.01)
               
     Function to merge one drillhole. 
     
@@ -794,7 +786,7 @@ cdef merge_one_dhole(double[:] la,
     -------
     
     >>>
-    >>> n, lab, newida, newidb = merge_one_dhole(la,lb, ida, idb, tol=0.01)
+    >>> n, lab, newida, newidb = __merge_one_dhole(la,lb, ida, idb, tol=0.01)
     >>>
     
     TODO
@@ -830,7 +822,7 @@ cdef merge_one_dhole(double[:] la,
     #loop on drillhole
     while inhole: 
         # get the next l interval and l idex for drillhole a and b
-        ia, ib, l = min_int(la[ia], lb[ib], ia, ib, tol=0.01)
+        ia, ib, l = __min_int(la[ia], lb[ib], ia, ib, tol=0.01)
         n+=1
         newida[n]=ida[ia-1]
         newidb[n]=idb[ib-1]
@@ -842,12 +834,12 @@ cdef merge_one_dhole(double[:] la,
     
     return n, np_lab[:n+1], np_newida[:n+1], np_newidb[:n+1]
 
-cdef fillgap1Dhole(double[:] in_f, 
+cdef __fillgap1Dhole(double[:] in_f, 
             double[:] in_t, 
             long[:] id, 
             double tol=0.01,
             double endhole=-1):
-    """fillgap1Dhole(double[:] in_f, double[:] in_t, long[:] id, double tol=0.01, double endhole=-1)
+    """__fillgap1Dhole(double[:] in_f, double[:] in_t, long[:] id, double tol=0.01, double endhole=-1)
     
     Function to fill gaps in one drillhole. 
     
@@ -1635,7 +1627,7 @@ cdef class Drillhole:
         If you call the function with `endpoints=False` end points already
         desurveyed may not be overwritten. 
         
-        This function calls dsmincurb() and desurv1dh() functions to 
+        This function calls __dsmincurb() and __desurv1dh() functions to 
         calculate the desurvey value.
         
         """
@@ -1751,14 +1743,14 @@ cdef class Drillhole:
                     mid = fromt[jt] + (tot[jt]-fromt[jt])/2.
                     
                     azmt[jt],dipmt[jt],xmt[jt],ymt[jt],zmt[jt] = \
-                    desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],mid,warns)
+                    __desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],mid,warns)
                     
                     if endpoints==True:
                         tmpaz,tmpdip,xbt[jt],ybt[jt],zbt[jt] = \
-                        desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],fromt[jt],warns)
+                        __desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],fromt[jt],warns)
                         
                         tmpaz,tmpdip,xet[jt],yet[jt],zet[jt] = \
-                        desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],tot[jt],warns)  
+                        __desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],tot[jt],warns)  
                         
         
         self.table[table_name]['azm'] = azmt
@@ -1892,7 +1884,7 @@ cdef class Drillhole:
             else:
                 l_endhole=-1
             
-            nf,nt,nID,gap,overlap=fillgap1Dhole(in_f = group.get_group(i)['FROM'].values, 
+            nf,nt,nID,gap,overlap=__fillgap1Dhole(in_f = group.get_group(i)['FROM'].values, 
                                           in_t = group.get_group(i)['TO'].values, 
                                           id = group.get_group(i)['_id0'].values, 
                                           tol=tol,
@@ -2076,7 +2068,7 @@ cdef class Drillhole:
                     endf = la[nk]
                 
                 # merge drillhole i
-                n, np_lab, np_newida, np_newidb = merge_one_dhole(la[:nk+1],lb[:nj+1], ida[:nk+1], idb[:nj+1], tol=0.01)
+                n, np_lab, np_newida, np_newidb = __merge_one_dhole(la[:nk+1],lb[:nj+1], ida[:nk+1], idb[:nj+1], tol=0.01)
 
                 # dhid
                 nBHID[:n]=i
@@ -2401,7 +2393,7 @@ cdef class Drillhole:
         nnlen = []
         for i in BHID:
                                                      
-            nf, nt, nlen, nvar, nacum= composite1dh(ifrom= group.get_group(i)['FROM'].values,
+            nf, nt, nlen, nvar, nacum= __composite1dh(ifrom= group.get_group(i)['FROM'].values,
                                                      ito= group.get_group(i)['TO'].values, 
                                                      ivar=group.get_group(i)[variable_name].values, 
                                                      cint=cint, minlen=minlen)
