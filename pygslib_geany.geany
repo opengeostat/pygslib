@@ -28,10 +28,8 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=2
-FILE_NAME_0=2101;Fortran;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cfor_code%5Ckt3d%5Cgslib%5Csetsupr.f90;0;4
-FILE_NAME_1=22164;Cython;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Ccython_code%5Cblockmodel.pyx;0;4
-FILE_NAME_2=3337;reStructuredText;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5CREADME.rst;0;4
+current_page=0
+FILE_NAME_0=42390;Python;0;EUTF-8;1;1;0;C%3A%5COG_Python%5Cpygslib%5Cpygslib%5Cgslib%5C__init__.py;0;4
 
 [VTE]
 last_dir=/home/adrian/bitbucket/public/pygslib

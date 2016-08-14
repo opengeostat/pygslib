@@ -1061,15 +1061,16 @@ def kt3d(parameters):
         parameters['cut'] =[0]
     
     # check that bhid is provided if nbhid > 0
-    if parameters['nbhid']> 0 :
-        assert parameters['bhid'] is not None, 'Error: BHID required if nbhid > 0'
+    if 'nbhid' in parameters:
+        if parameters['nbhid']> 0 :
+            assert parameters['bhid'] is not None, 'Error: BHID required if nbhid > 0'
 
-    # check not using octants and min
-    if (parameters['nbhid']> 0 and parameters['noct']> 0):
-        #pass
-        warnings.warn('\nWarning: !!!!! Using octants and maximum ' + \
-                      ' number of samples per drillholes at the same '  + \
-                      ' time may produce unexpected results !!!!!!')
+        # check not using octants and min
+        if (parameters['nbhid']> 0 and parameters['noct']> 0):
+            #pass
+            warnings.warn('\nWarning: !!!!! Using octants and maximum ' + \
+                          ' number of samples per drillholes at the same '  + \
+                          ' time may produce unexpected results !!!!!!')
         
 
     # prepare the output
