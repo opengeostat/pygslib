@@ -28,4 +28,4 @@
 .spyderworkspace
 
 #geany
-.geany
+*.geany

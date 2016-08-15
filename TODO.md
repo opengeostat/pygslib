@@ -23,8 +23,8 @@ User manual and help
 ----
 - [ ] Simplify examples
 - [ ] Do all in one example
-- [ ] Review doc string
-- [ ] Write user manual
+- [x] Review doc string
+- [x] Write user manual
 
 TODO at drillhole module 
 ----
