@@ -2561,9 +2561,9 @@ cdef class Drillhole:
         for i in self.table[table_name].columns:
             # assign the right vtk type 
             dtype = self.table[table_name][i].dtype
-            if dtype==np.int: 
+            if dtype==np.int8 or dtype==np.int16 or dtype==np.int32 or dtype==np.int64: 
                 vtkfields[i]= vtk.vtkIntArray()
-            elif dtype==np.float or dtype==np.double: 
+            elif dtype==np.float16 or dtype==np.float32 or dtype==np.float64: 
                 vtkfields[i]= vtk.vtkDoubleArray()
             else:
                 vtkfields[i]= vtk.vtkStringArray()
@@ -2574,7 +2574,7 @@ cdef class Drillhole:
             vtkfields[i].SetNumberOfTuples(dlen)
 
             # deep copy data
-            if dtype==np.int or dtype==np.float or dtype==np.double:
+            if  dtype==np.int8 or dtype==np.int16 or dtype==np.int32 or dtype==np.int64 or dtype==np.float16 or dtype==np.float32 or dtype==np.float64:
                 for l in range(dlen): 
                     if np.isnan(self.table[table_name][i][l]):
                         vtkfields[i].SetValue(l,nanval)
