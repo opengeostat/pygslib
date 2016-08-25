@@ -1839,7 +1839,7 @@ cdef class Drillhole:
         
         Note
         ----
-        The output ``gap`` and ``overlap`` contain ``_id0` of the raws 
+        The output ``gap`` and ``overlap`` contain ``_id0`` of the raws 
         before the gap or the overlap was detected. 
         Gaps and overlaps at the end of the drillhole 
         (if endhole==True) _id0 will have value -888.

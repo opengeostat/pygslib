@@ -150,6 +150,10 @@ cpdef ind2ijk(np.ndarray [long, ndim=1] ix,
     This is equivalent to the position of a block in a `gslib` grid file. 
     All the points within a block will have the same IJK number. 
     
+    IJK is calculated as follow:
+    
+    ``ijk = iz*nx*ny+ iy*nx + ix ``
+    
     
     Parameters
     ----------

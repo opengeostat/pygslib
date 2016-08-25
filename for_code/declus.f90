@@ -319,7 +319,7 @@ subroutine declus( &
         ! this is the report for each cell size
         rxcs(lp) = xcs
         rycs(lp) = ycs
-        rzcs(lp) = xcs
+        rzcs(lp) = zcs
         rvrcr(lp) = vrcr                                                    
     
         ! see if this weighting is optimal:

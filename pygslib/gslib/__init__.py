@@ -263,7 +263,7 @@ def gamv(parameters):
                     
     Warnings
     --------
-    bhid must be an integer            
+    bhid must be an array of integers           
     
     Returns
     -------   
@@ -815,7 +815,7 @@ def declus(parameters):
         rxcs  : rank-1 array('d') with bounds (ncell + 1), xcell size 
         rycs  : rank-1 array('d') with bounds (ncell + 1), ycell size 
         rzcs  : rank-1 array('d') with bounds (ncell + 1), zcell size 
-        rvrcr : rank-1 array('d') with bounds (ncell + 1), declustering weight  
+        rvrcr : rank-1 array('d') with bounds (ncell + 1), declustering mean  
     
     Note
     -------
@@ -823,11 +823,17 @@ def declus(parameters):
     Minimun and maximum valid data values are not tested. Filter out ``vr`` 
     values before using this function.
     
+    TODO
+    ----
+    Create nice output for errors
+    
+    
     """
 
     wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr = __declus.declus(**parameters)
     
     if (error>0):
+        print 'There was an Error = {}, check your parameters and see __doc__'.format(error)  
         warnings.warn('Error > 0, check your parameters')
 
     return wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr
