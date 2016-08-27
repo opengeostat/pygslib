@@ -231,7 +231,6 @@ compositing algorithm.
 
     >>> # Calculating length of sample intervals
     >>> mydholedb.table['assay']['Length']= mydholedb.table['assay']['TO']- mydholedb.table['assay']['FROM']
-    >>> 
     >>> # printing length mode
     >>> print 'The Length Mode is:', mydholedb.table['assay']['Length'].mode()[0]
     
@@ -723,7 +722,7 @@ and the search ellipsoid.
     >>> pygslib.vtktools.SavePolydata(debug['ellipsoid'], 'search_ellipsoid')
 
 
-The result may look like this in Paraview.
+The results may look like this in Paraview.
 
 .. figure:: Tutorial_files/figure6.JPG
    :alt: Ellipsoid

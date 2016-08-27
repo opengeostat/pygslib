@@ -326,7 +326,6 @@ different lengths you may &#8220;resample&#8221; the drillhole intervals using a
 compositing algorithm.</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Calculating length of sample intervals</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydholedb</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;assay&#39;</span><span class="p">][</span><span class="s1">&#39;Length&#39;</span><span class="p">]</span><span class="o">=</span> <span class="n">mydholedb</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;assay&#39;</span><span class="p">][</span><span class="s1">&#39;TO&#39;</span><span class="p">]</span><span class="o">-</span> <span class="n">mydholedb</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;assay&#39;</span><span class="p">][</span><span class="s1">&#39;FROM&#39;</span><span class="p">]</span>
-<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># printing length mode</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="s1">&#39;The Length Mode is:&#39;</span><span class="p">,</span> <span class="n">mydholedb</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;assay&#39;</span><span class="p">][</span><span class="s1">&#39;Length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mode</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -728,7 +727,7 @@ and the search ellipsoid.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pygslib</span><span class="o">.</span><span class="n">vtktools</span><span class="o">.</span><span class="n">SavePolydata</span><span class="p">(</span><span class="n">debug</span><span class="p">[</span><span class="s1">&#39;ellipsoid&#39;</span><span class="p">],</span> <span class="s1">&#39;search_ellipsoid&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The result may look like this in Paraview.</p>
+<p>The results may look like this in Paraview.</p>
 <div class="figure">
 <img alt="Ellipsoid" src="_images/figure6.JPG" />
 </div>
