@@ -13,6 +13,7 @@ of the MIT license.  See the LICENSE.txt file for details.
          
 """                                                                      
 
+import sys
 import os.path
 import pandas as pd
 import drillhole
@@ -48,7 +49,9 @@ x.innerHTML = '<img  title="Opengeostat" alt="Opengeostat" src="data:image/jpeg;
 
 """
 
-display(HTML(javascript))
+# change logo if running in ipython notebook
+if 'ipykernel' in sys.modules:
+    display(HTML(javascript))
 
 
 

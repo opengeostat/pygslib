@@ -829,6 +829,9 @@ def declus(parameters):
     
     
     """
+    
+    assert parameters['ncell']>0, 'Error, parameter ncell<=0' 
+    
 
     wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr = __declus.declus(**parameters)
     
