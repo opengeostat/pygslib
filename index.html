@@ -132,6 +132,23 @@
             
   <div class="section" id="welcome-to-pygslib-documentation">
 <h1>Welcome to PyGSLIB documentation!<a class="headerlink" href="#welcome-to-pygslib-documentation" title="Permalink to this headline">¶</a></h1>
+<p>PyGSLIB is an open source python package designed to do Mineral Resource Estimations with scripts.
+It was inspired by Datamine Studio ® macros. Its philosophy is reproducibility and auditability.
+With PyGSLIB you can write a script to do the entire resource estimate process,
+from reading drillhole tables to estimation and validation.
+You can rerun the entire script with different parameters until you get the desired output,
+share it with your colleagues or send it to a peer reviewer for auditing.
+PyGSLIB may be also useful to automatize an estimation process such as grade control model updates,
+or to do loops required by some nonconventional applications such as drillhole
+spacing studies with conditional simulations.</p>
+<p>PyGSLIB is subdivided into five modules:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">gslib</span></code>. This is for geostatistics and interpolation. It was built with GSLIB FORTRAN code enhanced and linked to Python.</li>
+<li><code class="docutils literal"><span class="pre">drillhole</span></code>. This is for basic drillhole operation, such as compositing and desurveying.</li>
+<li><code class="docutils literal"><span class="pre">blockmodel</span></code>. This is for block modelling, it has functions to fill wireframes with blocks, reblocking, among others.</li>
+<li><code class="docutils literal"><span class="pre">vtktools</span></code>. This is for 3D computational geometry based on VTK, for example, to select samples within wireframes.  It also handles VTK files.</li>
+<li><code class="docutils literal"><span class="pre">nonlinear</span></code>. <strong>This module is Under construction!</strong>  It is an experimental module for nonlinear geostatistics based on the Discrete Gaussian Model.</li>
+</ul>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
@@ -142,7 +159,7 @@
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#creating-drillhole-object">Creating drillhole object</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#compositing">Compositing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#desurveying">Desurveying</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#createing-a-bhid-of-type-integer">Createing a BHID of type integer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#creating-a-bhid-of-type-integer">Creating a BHID of type integer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#rendering-drillhole-intervals-in-paraview-and-exporting-drillhole-data">Rendering drillhole intervals in Paraview and exporting drillhole data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#tagging-samples-with-domain-code">Tagging samples with domain code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#block-modeling">Block modeling</a></li>

@@ -6,6 +6,27 @@
 Welcome to PyGSLIB documentation!
 =================================================
 
+PyGSLIB is an open source python package designed to do Mineral Resource Estimations with scripts.
+It was inspired by Datamine Studio ® macros. Its philosophy is reproducibility and auditability. 
+With PyGSLIB you can write a script to do the entire resource estimate process, 
+from reading drillhole tables to estimation and validation. 
+You can rerun the entire script with different parameters until you get the desired output, 
+share it with your colleagues or send it to a peer reviewer for auditing.  
+PyGSLIB may be also useful to automatize an estimation process such as grade control model updates, 
+or to do loops required by some nonconventional applications such as drillhole 
+spacing studies with conditional simulations.
+
+
+PyGSLIB is subdivided into five modules:
+
+- ``gslib``. This is for geostatistics and interpolation. It was built with GSLIB FORTRAN code enhanced and linked to Python. 
+- ``drillhole``. This is for basic drillhole operation, such as compositing and desurveying. 
+- ``blockmodel``. This is for block modelling, it has functions to fill wireframes with blocks, reblocking, among others.
+- ``vtktools``. This is for 3D computational geometry based on VTK, for example, to select samples within wireframes.  It also handles VTK files. 
+- ``nonlinear``. **This module is Under construction!**  It is an experimental module for nonlinear geostatistics based on the Discrete Gaussian Model.
+
+
+
 Contents:
 
 .. toctree::
