@@ -42,7 +42,17 @@ This video shows a demonstration of installation in Windows
       <iframe width="560" height="315" src="https://www.youtube.com/embed/cbWXi7BfZVg" frameborder="0" allowfullscreen></iframe>
     </div>
 
+Demonstration
+--------------
+You may read the :doc:`Tutorial  </Tutorial>` page and see the following video for a demonstration on resource estimation using PyGSLIB.
+ 
 
+.. raw:: html
+
+    <div style="margin-top:10px;">
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/SEwKy6wJbLE" frameborder="0" allowfullscreen></iframe>
+    </div>
+	
 Contents:
 
 .. toctree::
