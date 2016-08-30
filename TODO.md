@@ -11,7 +11,7 @@ Avoid bugs and improve compilation
 - [ ] Initialize arrays
 - [ ] Remove old kt3D function 
 - [ ] test dtype of dict parameters at python level to avoid dtype complains and error from fortran at gslib.kt3d function
-- [ ] Rewrite rotscale.f90 into a Cython function (use wireframe ellipse in kt3d as reference)
+
 
 Testing
 ----
@@ -22,7 +22,7 @@ Testing
 User manual and help
 ----
 - [ ] Simplify examples
-- [ ] Do all in one example
+- [x] Do all in one example
 - [x] Review doc string
 - [x] Write user manual
 
@@ -79,6 +79,8 @@ TODO at nonlinear module
 
 TODO at vtk tools module 
 ----
+- [ ] send VTK data directly to Paraview using Collaboration
+- [ ] Modify Paraview python module to avoid conflict with local VTK module
 - [x] pointquering with vtkOBBTree is too slow with some wireframes, try vtkCellLocator or optimize with grid/image locator or vtkSelectEnclosedPoints
 - [ ] Replace save polydata (for points) in vtk legacy and add save/read polydata (for surfaces) in xml
 - [ ] Add boolean operations (find alternative to vtkbooleanoperationpolydatafilter, e.j. vtkImplicitBoolean)
@@ -86,7 +88,7 @@ TODO at vtk tools module
 - [ ] Add slice operation
 - [x] Do more testing on VTK selection
 - [ ] Replace pyevtk with vtk.util.numpy_support
-- [ ] Update the code to properly export grids, use this code:
+- [ ] Update the code to properly export grids (now we are using pyevtk), use this code:
 
     ``` python
 
