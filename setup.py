@@ -54,7 +54,7 @@ class PyTest(TestCommand):
     2 for release candidate
     3 for (final) release
 """
-version = '0.0.0.3.8.2'
+version = '0.0.0.3.8.3'
 description = 'Python wrap of GSLIB modified code and general geostatistical package'
 name='pygslib'
 long_description=open("README.rst").read()
@@ -187,7 +187,9 @@ if __name__ == '__main__':
                          gslib_kt3d,
                          gslib_postik,
                          gslib_general])
-                         
+    
+    print " OPENGEOSTAT SAYS FORTRAN CODE COMPILED"
+	
     #Cython code extension
     #-------------------------------------------------------------------
     from distutils.core import setup    # this is the standard setup
@@ -241,3 +243,4 @@ if __name__ == '__main__':
                         vtktools,
                         nonlinear])
 
+    print " OPENGEOSTAT SAYS CYTHON CODE COMPILED"

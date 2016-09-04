@@ -4,7 +4,7 @@
 #c:\>conda install libpython
 package:
   name: pygslib
-  version: "0.0.0.3.8.2"
+  version: "0.0.0.3.8.3"
 
 source:
   path: c:/OG_Python/pygslib/
@@ -14,7 +14,8 @@ source:
    # List any patch files here
    # - fix.patch
 
-# build:
+build:
+  script: python setup.py config --compiler=mingw32 build --compiler=mingw32 install
   # noarch_python: True
   # preserve_egg_dir: True
   # entry_points:
@@ -39,17 +40,13 @@ requirements:
     - numpy 
     - pandas
     - matplotlib
-    - nose
-    - mock
-    - scipy
+    - scipy 0.16.0
 
   run:
     - python
     - numpy
     - pandas
     - matplotlib
-    - nose
-    - mock
     - scipy
     - vtk
     - ipython
@@ -57,7 +54,7 @@ requirements:
     - mingw
     - libpython
 
-test:
+# test:
   # Python imports
   #imports:
   #  - pygslib
@@ -70,7 +67,7 @@ test:
   # You can also put a file called run_test.py in the recipe that will be run
   # at test time.
 
-  #requires:
+  # requires:
   #  - matplotlib
   #  - mock
   #  - nose
