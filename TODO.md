@@ -7,7 +7,7 @@ Avoid bugs and improve compilation
 - [ ] Check compilation warning ``getarrdims:warning: assumed shape array, using 0 instead of '*'``
 - [ ] Check compilation warnings ``Warning: Possible change of value in conversion`` and ``Type mismatch in argument``. This already created some issues in some of the FORTRAN programs by transferring Real*8 to Real arrays.
 - [ ] Clean a bit the code ``Warning: Label 4 at (1) defined but not used`` and  ``Warning: Unused dummy argument``.
-- [ ] Initialize arrays ``Warning: ‘####’ may be used uninitialized in this function``
+- [ ] Initialize arrays ``Warning: '####' may be used uninitialized in this function``
 - [ ] Initialize arrays
 - [ ] Remove old kt3D function 
 - [ ] test dtype of dict parameters at python level to avoid dtype complains and error from fortran at gslib.kt3d function
@@ -41,7 +41,7 @@ TODO at drillhole module
 - [x] Create warning in desurvey if there are intervals undefined (not created)
 - [ ] Add a dictionary with drillholes names, traces and properties for faster programming in class members and to create user's reports. Add summary of drillholes in Drillhole class.
 - [ ] Generate reposts with reportlab??? for example for log files. 
-- [ ] VTK export is too slow, optimize. Consider to use directly VTK code in C+ or Python. VTK write XML polydata format, in other words: PolyData (.vtp) — Serial vtkPolyData (unstructured).
+- [ ] VTK export is too slow, optimize. Consider to use directly VTK code in C+ or Python. VTK write XML polydata format, in other words: PolyData (.vtp) - Serial vtkPolyData (unstructured).
 - [ ] Create export in other formats, example inventor (see vtkIVWriter).
 - [ ] Create a dictionary with warning and errors in validations and do only one warning. 
 - [ ] Remove the need for one interval error ?

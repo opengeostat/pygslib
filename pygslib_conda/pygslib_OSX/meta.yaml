@@ -6,7 +6,6 @@ package:
 source:
   path: ../../
 
-
 requirements:
   build:
     - python
@@ -15,7 +14,6 @@ requirements:
     - pandas
     - matplotlib
     - scipy
-    - libgfortran
 
   run:
     - python
@@ -26,7 +24,6 @@ requirements:
     - vtk
     - ipython
     - pyevtk
-    - libgfortran
 
 test:
   # Python imports
@@ -48,7 +45,6 @@ test:
     - numpy
     - pandas >=0.17
     - scipy
-    - libgfortran
     # Put any additional test requirements here.  For example
     # - nose
 

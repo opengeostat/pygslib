@@ -439,8 +439,8 @@ create those blocks you may:
 -  create a block model object ``pygslib.blockmodel.Blockmodel``
 -  fill the mineralized domain with blocks
 
-In PyGSLIB we use percent blocks, similar to GEMS ®. In the future we
-will implement subcell style, similar to Surpac ®, using Adaptive Mesh
+In PyGSLIB we use percent blocks, similar to GEMS. In the future we
+will implement subcell style, similar to Surpac, using Adaptive Mesh
 Refinement (AMR).
 
 Blocks are stored in the class member ``bmtable``, this is a Pandas
@@ -454,7 +454,7 @@ Only one table will be available in a block model object.
 The block model definition is stored in the members
 ``nx, ny, nz, xorg, yorg, zorg, dx, dy, dz``. The origin
 ``xorg, yorg, zorg`` refers to the lower left corner of the lower left
-block (not the centroid), like in Datamine Studio ®.
+block (not the centroid), like in Datamine Studio.
 
 .. code:: python
 
@@ -511,7 +511,7 @@ Some basic stats
 You may spend some time doing exploratory data analysis, looking at
 statistical plots, 3D views and 2D sections of your data. A good
 comersial software for this is `Supervisor
-® <http://opengeostat.com/software-solutions/>`__, open source options
+<http://opengeostat.com/software-solutions/>`__, open source options
 are Pandas, `Statsmodels <http://statsmodels.sourceforge.net/>`__,
 `Seaborn <https://stanford.edu/~mwaskom/software/seaborn/>`__ and
 `glueviz <http://glueviz.org/en/stable/>`__.
@@ -687,7 +687,7 @@ output will be correct but the running time may be longer.
 
 
 The variogram model was modeled with `Supervisor
-® <http://opengeostat.com/software-solutions/>`__.
+<http://opengeostat.com/software-solutions/>`__.
 
 .. figure:: Tutorial_files/figure5.JPG
    :alt: Variograms
@@ -792,7 +792,7 @@ validations you can use Paraview, for example:
     
 
 The swath plots and the global change of support were calculated with
-`Supervisor ® <http://opengeostat.com/software-solutions/>`__. These
+`Supervisor <http://opengeostat.com/software-solutions/>`__. These
 validation tests show that the model is not good enough.
 
 To fix the estimate you can rerun this Ipython Notebook after changing
