@@ -7,7 +7,7 @@ Welcome to PyGSLIB documentation!
 =================================================
 
 PyGSLIB is an open source python package designed to do Mineral Resource Estimations with scripts.
-It was inspired by Datamine Studio ® macros. Its philosophy is reproducibility and auditability. 
+It was inspired by Datamine Studio macros. Its philosophy is reproducibility and auditability.
 With PyGSLIB you can write a script to do the entire resource estimate process, 
 from reading drillhole tables to estimation and validation. 
 You can rerun the entire script with different parameters until you get the desired output, 
