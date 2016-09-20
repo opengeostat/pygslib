@@ -1,30 +1,11 @@
-# TODO: Remove constraint scipy 0.16 after Anaconda get fixed the isue with libgfortran3 
+
 package:
   name: pygslib
-  version: "0.0.0.3.8.4"
+  version: "0.0.0.3.8.3"
 
 source:
-  path: /home/adrian/bitbucket/public/pygslib
+  path: ../../
 
-#  patches:
-   # List any patch files here
-   # - fix.patch
-
-# build:
-  # noarch_python: True
-  # preserve_egg_dir: True
-  # entry_points:
-    # Put any entry points (scripts to be generated automatically) here. The
-    # syntax is module:function.  For example
-    #
-    # - pygslib = pygslib:main
-    #
-    # Would create an entry point called pygslib that calls pygslib.main()
-
-
-  # If this is a new build for the same version, increment the build
-  # number. If you do not include this key, it defaults to 0.
-  # number: 1
 
 requirements:
   build:
@@ -33,19 +14,19 @@ requirements:
     - numpy 
     - pandas
     - matplotlib
-    - scipy 0.16.0
-    - libgfortran 1.0
+    - scipy
+    - libgfortran
 
   run:
     - python
     - numpy
     - pandas
     - matplotlib
-    - scipy 0.16.0
+    - scipy
     - vtk
     - ipython
     - pyevtk
-    - libgfortran 1.0
+    - libgfortran
 
 test:
   # Python imports
@@ -66,8 +47,8 @@ test:
     - nose
     - numpy
     - pandas >=0.17
-    - scipy 0.16.0
-    - libgfortran 1.0
+    - scipy
+    - libgfortran
     # Put any additional test requirements here.  For example
     # - nose
 
