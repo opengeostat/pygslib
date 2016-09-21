@@ -25,7 +25,7 @@ This means that we are in a very early developing stage and the package is exper
 
 Need some help? 
 ------ 
-Visit [the PyGSLIB online help](https://opengeostat.github.io/pygslib/)
+Visit [the PyGSLIB online help](https://opengeostat.github.io/pygslib/).
 There is also a [Youtube channel](https://www.youtube.com/c/opengeostat) with some demonstrations
 
 You can also find some examples at the 
@@ -39,6 +39,9 @@ The code is organized in two separated folders
 
 - one with Cython code named [cython_code]( https://github.com/opengeostat/pygslib/tree/master/cython_code)
 - one with Fortran 90 code named [for_code](https://github.com/opengeostat/pygslib/tree/master/for_code)
+
+In addition you have the ``pygslib`` and ``pygslib/gslib`` folder with some sample data and the __init__.py 
+files that link the submodules written in fortran and cython. 
 
 
 Installation in Anaconda distribution (Linux, Window and OS)
@@ -82,8 +85,12 @@ Copyright 2016, Adrian Martinez Vargas
 Supported by Opengeostat Consulting @ http://opengeostat.com/
                                                                  
 This software may be modified and distributed under the terms of the 
-MIT and GPL licenses.  See the LICENSE.txt file for details.
+[MIT](https://github.com/opengeostat/pygslib/blob/master/LICENSE.txt) and [GPL](https://www.gnu.org/licenses/gpl-3.0.en.html) licenses.  
 
-Monday 12 August 2016
+
+Wednesday, 21 of September 2016
+
+
+
 
 
