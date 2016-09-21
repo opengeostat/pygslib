@@ -9,13 +9,13 @@ Avoid bugs and improve compilation
 - [ ] Clean a bit the code ``Warning: Label 4 at (1) defined but not used`` and  ``Warning: Unused dummy argument``.
 - [ ] Initialize arrays ``Warning: ‘####’ may be used uninitialized in this function``
 - [ ] Initialize arrays
-- [ ] Remove old kt3D function 
+- [x] Remove old kt3D function 
 - [ ] test dtype of dict parameters at python level to avoid dtype complains and error from fortran at gslib.kt3d function
-
+- [ ] review cython c declarations to avoid rounding error. Use ``cdef double`` instead of ``cdef float``.
+- [ ] Implement constants at python level to define integer inputs like variogram types, type of desurvey, kriging options, etc. 
 
 Testing
 ----
-- [ ] Complete the estimation part for n node, blocks or polygons (kt3D program)
 - [ ] Optimize speed/Identify slow code and bottleneck 
 
 
@@ -33,7 +33,8 @@ TODO at drillhole module
 - [ ] Implement bench composite.
 - [ ] Add HTMLbar tables.
 - [ ] Update Ipython templates.
-- [ ] Optimize code for desurvey and composite
+- [x] Optimize code for desurvey
+- [ ] Optimize code for compositing
 - [x] Do more testing on desurvey drillhole
 - [x] Make numeric but non float float before importing
 - [x] Validate and test composite.
@@ -63,14 +64,12 @@ TODO at block model module
 - [ ] Add validation of IJK vs IX,IY,IZ, vs XC,YC and ZC. Hint: Use calc_ixyz_fromijk, calc_xyz_fromixyz and calc_ijk to create temporary variables and compare with numpy.isclose.
 - [ ] Add VTK export of debug data in KT3D function, including search ellipse and target block/point
 
-
-TODO at interpolators module 
+TODO at gslib module 
 ----
-- [ ] Review or Reimplement 
-
-TODO at neighborhood module 
-----
-- [ ] Review or Reimplement 
+-[ ] implement kriging with proportions
+-[ ] implement ID power of the distance on top of KT3D
+-[ ] implement simulation programs
+-[ ] implement cokriging
 
 
 TODO at nonlinear module 
