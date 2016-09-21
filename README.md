@@ -4,7 +4,7 @@ PyGSLIB
 This is an open source python module for mineral resource estimation and geostatistics. 
 It consists of four main sub modules:  
 
-- ``gslib``. This is for geostatistics and interpolation. It was built with [GSLIB Fortran 77 code] ( http://www.statios.com/Quick/gslib.html)enhanced and linked to Python. 
+- ``gslib``. This is for geostatistics and interpolation. It was built with [GSLIB Fortran 77 code] (http://www.statios.com/Quick/gslib.html) enhanced and wrapped to Python with ``f2py``. 
 - ``drillhole``. This is for basic drillhole operations, such as compositing and desurveying. 
 - ``blockmodel``. This is for block modelling, it has functions to fill wireframes with blocks, reblocking, among others.
 - ``vtktools``. This is for 3D computational geometry based on VTK, for example, to select samples within wireframes. It also handles VTK files.
