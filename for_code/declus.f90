@@ -256,9 +256,9 @@ subroutine declus( &
         yfac = amin1((ycs/roff),(0.5*(ymax-ymin)))
         zfac = amin1((zcs/roff),(0.5*(zmax-zmin)))
         
-        write (*,*) 'Origin: ', xo1, yo1, zo1
-        write (*,*) 'cell size: ', xcs, ycs, zcs
-        write (*,*) 'xo, ', 'yo, ', 'zo'
+        ! write (*,*) 'Origin: ', xo1, yo1, zo1
+        ! write (*,*) 'cell size: ', xcs, ycs, zcs
+        ! write (*,*) 'xo, ', 'yo, ', 'zo'
         
         do kp=1,noff
             xo = xo1 - (real(kp)-1.0)*xfac
