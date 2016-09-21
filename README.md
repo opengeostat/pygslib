@@ -73,8 +73,7 @@ To update this module as contributor, make changes and the update git (requestin
 
 Usage
 -----
-See  [tutorial] (https://opengeostat.github.io/pygslib/Tutorial.html),  
-[video demonstrations]( https://youtu.be/SEwKy6wJbLE) and 
+See this [tutorial] (https://opengeostat.github.io/pygslib/Tutorial.html), this [video demonstrations]( https://youtu.be/SEwKy6wJbLE) and 
 the [Ipython notebook examples] ( https://github.com/opengeostat/pygslib/tree/master/pygslib/Ipython_templates). 
 
 

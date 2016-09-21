@@ -25,7 +25,7 @@ PyGSLIB is subdivided into five modules:
 - ``vtktools``. This is for 3D computational geometry based on VTK, for example, to select samples within wireframes.  It also handles VTK files. 
 - ``nonlinear``. **This module is Under construction!**  It is an experimental module for nonlinear geostatistics based on the Discrete Gaussian Model.
 
-Installation
+Installation (Win64, Linux64, OSX64)
 -------------
 The easiest way to install and work with PyGSLIB is using the Python distribution `Anaconda <https://www.continuum.io/downloads>`_. 
 To install PyGSLIB in the root environment of your anaconda distribution simply type in a terminal:
@@ -34,7 +34,7 @@ To install PyGSLIB in the root environment of your anaconda distribution simply 
 
 You may also install `Paraview <http://www.paraview.org/download/>`_, this is required for visualization.
 
-This video shows a demonstration of installation in Windows
+This video shows a demonstration of installation in Windows, these steps are similar for Linux or Mac installation. 
 
 .. raw:: html
 
