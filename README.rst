@@ -4,16 +4,11 @@ PyGSLIB
 This is an open source python module for mineral resource estimation and geostatistics. 
 It consists of four main sub modules:  
 
-- ``gslib``. This is for geostatistics and interpolation. It was built 
-with [GSLIB Fortran 77 code] ( http://www.statios.com/Quick/gslib.html)
-enhanced and linked to Python. 
-- ``drillhole``. This is for basic drillhole operations, such as compositing and desurveying.
-- ``blockmodel``. This is for block modelling, it has functions to fill 
-wireframes with blocks, reblocking, among others.
-- ``vtktools``. This is for 3D computational geometry based on VTK, 
-for example, to select samples within wireframes. It also handles VTK files.
-- ``nonlinear``. This module is under construction! It is an experimental 
-module for nonlinear geostatistics based on the Discrete Gaussian Model.
+- ``gslib``. This is for geostatistics and interpolation. It was built with [GSLIB Fortran 77 code] ( http://www.statios.com/Quick/gslib.html)enhanced and linked to Python. 
+- ``drillhole``. This is for basic drillhole operations, such as compositing and desurveying. 
+- ``blockmodel``. This is for block modelling, it has functions to fill wireframes with blocks, reblocking, among others.
+- ``vtktools``. This is for 3D computational geometry based on VTK, for example, to select samples within wireframes. It also handles VTK files.
+- ``nonlinear``. This module is under construction! It is an experimental module for nonlinear geostatistics based on the Discrete Gaussian Model.
 
 Current version
 ----------
@@ -47,9 +42,9 @@ The easiest way to install and work with PyGSLIB is using an Anaconda
 (conda) distribution. To install PyGSLIB in the root environment of 
 your anaconda distribution simply type in a terminal:  
 
-```
+``
 $ conda install -c opengeostat pygslib
-```
+``
 
 
 Installation from source (from github.com)
@@ -58,11 +53,11 @@ This is the most update but unstable development version. You may manually
 install all the dependencies and make sure you have gfortran available.  
 For development use the following shell script/commands. 
 
-```
+``
 $ git clone https://github.com/opengeostat/pygslib.git
 $ cd pygslib
 $ python setup.py develop
-```
+``
   
     
 To update this module as contributor, make changes and the update git (requesting a pull).
