@@ -1,12 +1,19 @@
 PyGSLIB
 =======
 
-This is an open source python module for mineral resource estimation and geostatistics. It consists of four main sub modules:  
-- ``gslib``. This is for geostatistics and interpolation. It was built with [GSLIB Fortran 77 code] ( http://www.statios.com/Quick/gslib.html) enhanced and linked to Python. 
-- ``drillhole``. This is for basic drillhole operations, such as compositing and desurveying.
-- ``blockmodel``. This is for block modelling, it has functions to fill wireframes with blocks, reblocking, among others.
-- ``vtktools``. This is for 3D computational geometry based on VTK, for example, to select samples within wireframes. It also handles VTK files.
-- ``nonlinear``. This module is under construction! It is an experimental module for nonlinear geostatistics based on the Discrete Gaussian Model.
+This is an open source python module for mineral resource estimation and geostatistics. 
+It consists of four main sub modules:  
+
+ - ``gslib``. This is for geostatistics and interpolation. It was built 
+   with [GSLIB Fortran 77 code] ( http://www.statios.com/Quick/gslib.html)
+   enhanced and linked to Python. 
+ - ``drillhole``. This is for basic drillhole operations, such as compositing and desurveying.
+ - ``blockmodel``. This is for block modelling, it has functions to fill 
+   wireframes with blocks, reblocking, among others.
+ - ``vtktools``. This is for 3D computational geometry based on VTK, 
+    for example, to select samples within wireframes. It also handles VTK files.
+ - ``nonlinear``. This module is under construction! It is an experimental 
+    module for nonlinear geostatistics based on the Discrete Gaussian Model.
 
 Current version
 ----------
@@ -21,13 +28,17 @@ Need some help?
 Visit [the PyGSLIB online help](https://opengeostat.github.io/pygslib/)
 There is also a [Youtube channel](https://www.youtube.com/c/opengeostat) with some demonstrations
 
-You can also find some examples at the [Ipython notebook templates and examples]( https://github.com/opengeostat/pygslib/tree/master/pygslib/Ipython_templates), but keep in mind that this may not include some new functionality.
+You can also find some examples at the 
+[Ipython notebook templates and examples](https://github.com/opengeostat/pygslib/tree/master/pygslib/Ipython_templates), 
+but keep in mind that this may not include some new functionality.
+
 Notes
 -----
 If you are planning to use or modify this library you may understand the code organization. 
 The code is organized in two separated folders
-- one with Cython code named [cython_code]( https://github.com/opengeostat/pygslib/tree/master/cython_code)
-- one with Fortran 90 code named [for_code](https://github.com/opengeostat/pygslib/tree/master/for_code)
+
+ - one with Cython code named [cython_code]( https://github.com/opengeostat/pygslib/tree/master/cython_code)
+ - one with Fortran 90 code named [for_code](https://github.com/opengeostat/pygslib/tree/master/for_code)
 
 
 Installation in Anaconda distribution (Linux, Window and OS)
@@ -42,7 +53,9 @@ your anaconda distribution simply type in a terminal:
 Installation from source (from github.com)
 --------------------
 This is the most update but unstable development version. You may manually 
-install all the dependencies and make sure you have gfortran available.  For development use the following shell script/commands. 
+install all the dependencies and make sure you have gfortran available.  
+For development use the following shell script/commands. 
+
 ```
 $ git clone https://github.com/opengeostat/pygslib.git
 $ cd pygslib
@@ -55,7 +68,9 @@ To update this module as contributor, make changes and the update git (requestin
 
 Usage
 -----
-See  [tutorial] (https://opengeostat.github.io/pygslib/Tutorial.html),  [video demonstrations]( https://youtu.be/SEwKy6wJbLE) and the [Ipython notebook examples] ( https://github.com/opengeostat/pygslib/tree/master/pygslib/Ipython_templates). 
+See  [tutorial] (https://opengeostat.github.io/pygslib/Tutorial.html),  
+[video demonstrations]( https://youtu.be/SEwKy6wJbLE) and 
+the [Ipython notebook examples] ( https://github.com/opengeostat/pygslib/tree/master/pygslib/Ipython_templates). 
 
 
 License 
