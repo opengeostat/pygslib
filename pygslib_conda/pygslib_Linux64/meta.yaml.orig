@@ -1,12 +1,21 @@
 
 package:
   name: pygslib
+<<<<<<< HEAD
+  version: "0.0.0.3.8.3"
+
+source:
+  path: ../../
+
+
+=======
   version: "0.0.0.3.8.4"
 
 source:
   path: ../../
 
 
+>>>>>>> 816f9ca59de7541cc439f7da0ff24ae577ea4518
 requirements:
   build:
     - python

@@ -1,0 +1,119 @@
+<<<<<<< HEAD
+
+package:
+  name: pygslib
+  version: "0.0.0.3.8.3"
+
+source:
+  path: ../../
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - numpy 
+    - pandas
+    - matplotlib
+    - scipy
+
+  run:
+    - python
+    - numpy
+    - pandas
+    - matplotlib
+    - scipy
+    - vtk
+    - ipython
+    - pyevtk
+
+test:
+  # Python imports
+  #imports:
+  #  - pygslib
+
+  # commands:
+    # You can put test commands to be run here.  Use this to test that the
+    # entry points work.
+
+
+  # You can also put a file called run_test.py in the recipe that will be run
+  # at test time.
+
+  requires:
+    - matplotlib
+    - mock
+    - nose
+    - numpy
+    - pandas >=0.17
+    - scipy
+    # Put any additional test requirements here.  For example
+    # - nose
+
+about:
+  home: https://github.com/opengeostat/pygslib
+  license: MIT License
+  summary: 'Python wrap of GSLIB modified code and general geostatistical package'
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
+=======
+
+package:
+  name: pygslib
+  version: "0.0.0.3.8.4"
+
+source:
+  path: ../../
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - numpy 
+    - pandas >=0.17
+    - matplotlib
+    - scipy
+
+  run:
+    - python
+    - numpy
+    - pandas >=0.17
+    - matplotlib
+    - scipy
+    - vtk
+    - ipython
+    - pyevtk
+
+test:
+  # Python imports
+  #imports:
+  #  - pygslib
+
+  # commands:
+    # You can put test commands to be run here.  Use this to test that the
+    # entry points work.
+
+
+  # You can also put a file called run_test.py in the recipe that will be run
+  # at test time.
+
+  requires:
+    - matplotlib
+    - mock
+    - nose
+    - numpy
+    - pandas >=0.17
+    - scipy
+    # Put any additional test requirements here.  For example
+    # - nose
+
+about:
+  home: https://github.com/opengeostat/pygslib
+  license: MIT License
+  summary: 'Python wrap of GSLIB modified code and general geostatistical package'
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
+>>>>>>> 816f9ca59de7541cc439f7da0ff24ae577ea4518

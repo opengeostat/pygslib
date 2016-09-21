@@ -1,7 +1,7 @@
 
 package:
   name: pygslib
-  version: "0.0.0.3.8.3"
+  version: "0.0.0.3.8.4"
 
 source:
   path: ../../
@@ -11,14 +11,14 @@ requirements:
     - python
     - setuptools
     - numpy 
-    - pandas
+    - pandas >=0.17
     - matplotlib
     - scipy
 
   run:
     - python
     - numpy
-    - pandas
+    - pandas >=0.17
     - matplotlib
     - scipy
     - vtk

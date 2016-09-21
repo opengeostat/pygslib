@@ -160,7 +160,6 @@ cpdef cart2ang( float x,
         float EPSLON=1.0e-4
 
     if abs(x)+EPSLON>1.001 or abs(y)+EPSLON>1.001 or abs(z)+EPSLON>1.001:
-        #print x,y,z
         warnings.warn('cart2ang: a coordinate x, y or z is outside the interval [-1,1]')
         
     # check the values are in interval [-1,1] and truncate if necessary
@@ -307,7 +306,7 @@ cpdef __dsmincurb( float len12,
     -------
     out : tuple of floats, ``(dz,dn,de)``
         Differences in elevation, north coordinate (or y) and 
-        east coordinate (or x) in an Euclidean coordinate system. 
+        east coordinate (or x) in a Euclidean coordinate system. 
     
     Example
     --------
@@ -319,6 +318,7 @@ cpdef __dsmincurb( float len12,
     See Also
     --------
     ang2cart 
+    __dstangential
     
     Note
     -----
@@ -347,11 +347,9 @@ cpdef __dsmincurb( float len12,
         float a1
         float i2
         float a2
-        float DEG2RAD
         float rf
         float dl
-
-    DEG2RAD=3.141592654/180.0
+        float DEG2RAD=3.141592654/180.0
 
     i1 = (90 - dip1) * DEG2RAD
     a1 = azm1 * DEG2RAD
@@ -372,83 +370,97 @@ cpdef __dsmincurb( float len12,
     dz = 0.5*len12*(cos(i1)+cos(i2))*rf
     dn = 0.5*len12*(sin(i1)*cos(a1)+sin(i2)*cos(a2))*rf
     de = 0.5*len12*(sin(i1)*sin(a1)+sin(i2)*sin(a2))*rf
+    
+    #print dz, dn, de, i1,a1,i2,a2,dl,rf
 
     return dz,dn,de
+    
+    
+cpdef __dstangential( float len12,
+                 float azm1,
+                 float dip1):
+                     
+    """__dstangential( float len12, float azm1, float dip1)
+         
+    Desurveys one interval with tangential method 
+    
+    Given a line with length ``len12`` and endpoints p1,p2 with 
+    direction angle ``azm1, dip1``, this function returns 
+    the differences in coordinate ``dz,dn,de`` of p2, assuming
+    p1 with coordinates (0,0,0)
+    
+    Parameters
+    ----------
+    len12,azm1,dip1: float
+        len12 is the length between a point 1 and a point 2.
+        azm1, dip1, are direction angle azimuth, with 0 or 
+        360 pointing north and dip angle measured from horizontal 
+        surface positive downward. All these angles are in degrees.
+        
+        
+    Returns
+    -------
+    out : tuple of floats, ``(dz,dn,de)``
+        Differences in elevation, north coordinate (or y) and 
+        east coordinate (or x) in a Euclidean coordinate system. 
+        
 
-cpdef __desurv1dh(int indbs,
+    See Also
+    --------
+    ang2cart 
+    __dsmincurb
+    
+    
+    Note
+    -----
+    The equations were derived from the paper
+     
+        `http://www.cgg.com/data//1/rec_docs/2269_MinimumCurvatureWellPaths.pdf`
+    
+    The tangential method has limitations but the error may be small 
+    for short intervals with direction angles interpolated from two 
+    desurvey points. 
+    
+    
+    """
+
+    # output
+    cdef:
+        float dz
+        float dn
+        float de 
+
+
+    # internal 
+    cdef:
+        float i1
+        float a1
+        float DEG2RAD = 3.141592654/180.0
+
+
+    i1 = (90 - dip1) * DEG2RAD
+    a1 = azm1 * DEG2RAD
+
+
+    dz = len12*cos(i1)
+    dn = len12*sin(i1)*cos(a1)
+    de = len12*sin(i1)*sin(a1)
+
+    return dz,dn,de    
+
+cpdef __angleson1dh(int indbs,
                int indes,
                np.ndarray[double, ndim=1] ats,
                np.ndarray[double, ndim=1] azs,
                np.ndarray[double, ndim=1] dips,
-               float xc,
-               float yc,
-               float zc,
                float lpt,
                bint warns=True):
 
-    """__desurv1dh(int indbs, int indes, np.ndarray[double, ndim=1] ats, np.ndarray[double, ndim=1] azs, np.ndarray[double, ndim=1] dips, float xc, float yc, float zc, float lpt, bint warns=True)
-    
-    Desurveys one point with minimum curvature given survey array
-    and collar coordinates
-    
-    It takes an array of survey points ``ats, azs, dips`` with a given
-    drillhole starting and ending at index ``indbs,indes``, the 
-    coordinates of the collar xc, xy, zc and derurvey a point at depth 
-    ``lpt`` (any point at interval table, ex. a FROM interval in assay). 
-    
-    Warning
-    --------
-    The survey may have ats==0 at index indbs but this is not 
-    checked at this function. 
-    
-    
-    Parameters
-    ----------
-    len12,azm1,dip1,azm2,dip2: float
-        len12 is the length between a point 1 and a point 2.
-        azm1, dip1, azm2, dip2 are direction angles azimuth, with 0 or 
-        360 pointing north and dip angles measured from horizontal 
-        surface positive downward. All these angles are in degrees.
-
-               
-    Returns
-    -------
-    out : tuple of floats, ``(azt,dipt,xt,yt,zt)``
-        Direction angles and coordinates at a point lpt
-        
-    Example
-    -------
-    >>>
-    >>> azt,dipt,xt,yt,zt = __desurv1dh(indbs, 
-                                    indes,
-                                    ats,
-                                    azs,
-                                    dips,
-                                    xc,
-                                    yc,
-                                    zc,
-                                    lpt,
-                                    warns=True)
-    >>>
-    
-    See Also
-    --------
-    Drillhole.desurvey 
-    
-    Note
-    -----
-    This function is a convenience function call by Drillhole.desurvey
-    it was exposed here for validation purpose.   
-   
-    """
     
     # output (angles at begin, mid and end interval)
     cdef:
         float azt
         float dipt
-        float xt
-        float yt
-        float zt
 
     # internal
     cdef:
@@ -463,19 +475,14 @@ cpdef __desurv1dh(int indbs,
         float len12
         float d1
         float EPSLON=1.0e-4
-        float xa
-        float ya
-        float za
-        float xb
-        float yb
-        float zb
-        float dz
-        float dn
-        float de
 
     assert ats[indbs]<EPSLON, 'first survey > 0 at %d' % indbs
 
+
+    # for each point on desurvey
     for i in range (indbs,indes):
+        
+        
         
         # get the segment [a-b] to test interval
         a=ats[i]
@@ -485,67 +492,33 @@ cpdef __desurv1dh(int indbs,
         azm2 = azs[i+1]
         dip2 = dips[i+1]
         len12 = ats[i+1]-ats[i]
-        # desurvey at survey table
-        if ats[i]>=-EPSLON and ats[i]<=EPSLON: #zero interval?
-            xa = xc
-            ya = yc
-            za = zc
-            # desurvey interval at survey... table
-            
-            dz,dn,de = __dsmincurb(len12,azm1,dip1,azm2,dip2)
-
-            xb = xa+de
-            yb = ya+dn
-            zb = za-dz
-            
-        else:
-            xa = xb
-            ya = yb
-            za = zb
-            # desurvey interval at zurvey... table
-            
-            dz,dn,de = __dsmincurb(len12,azm1,dip1,azm2,dip2)
-            xb = xa+de
-            yb = ya+dn
-            zb = za-dz
-
+        
+        
 
         # test if we are in the interval, interpolate angles
-        if lpt>=a  and lpt<b:
+        if lpt>=a and lpt<b:
             d1= lpt- a
 
             azt,dipt = interp_ang1D(azm1,dip1,azm2,dip2,len12,d1)
-
-            # desurvey at interval table 
-            dz,dn,de = __dsmincurb(d1,azm1,dip1,azt,dipt)
-
-            xt = xa+de
-            yt = ya+dn
-            zt = za-dz 
-
-            return azt, dipt, xt, yt, zt
+            
+            return azt, dipt
     
+    # no interva detected, we must be beyond the last survey!
     a=ats[indes]
-    azm1 = azs[indes]
-    dip1 = dips[indes]
-    azt = azm1
-    dipt = dip1
+    azt = azs[indes]
+    dipt = dips[indes]
     # the point is beyond the last survey? 
     if lpt>=a:
-        d1= lpt- a
-        # desurvey at interval table 
-        dz,dn,de = __dsmincurb(d1,azm1,dip1,azt,dipt)
-        xt = xb+de
-        yt = yb+dn
-        zt = zb-dz 
         
+        return   azt, dipt
+                
         if warns==True: 
             warnings.warn('\n point beyond the last survey point at %s' % indes)
     else:
         if warns==True: 
             warnings.warn('\n not interval found at survey, at %s' % indes)
 
-    return   azt, dipt, xt, yt, zt
+        return   np.nan, np.nan
 
 
 #-------------------------------------------------------------------
@@ -731,7 +704,7 @@ cdef __min_int(double la,
     Given two complete drillholes A, B (no gaps and up to the end of 
     the drillhole), this function returns the smaller of two 
     intervals la = FromA[ia] lb = FromB[ib] and updates the 
-    indices ia and ib. There are three posible outcomes
+    indices ia and ib. There are three possible outcomes
     
     - FromA[ia] == FromB[ib]+/- tol. Returns mean of FromA[ia], FromB[ib] and ia+1, ib+1
     - FromA[ia] <  FromB[ib]. Returns FromA[ia] and ia+1, ib
@@ -772,7 +745,7 @@ cdef __merge_one_dhole(double[:] la,
     
     Note
     ---- 
-    - Full drillhole is required (no gaps) and note that length are used 
+    - Full drillhole is required (no gaps) and note that lengths are used 
     instead From-To. 
     - The length at the end of the drillhole must be the same
     
@@ -846,7 +819,7 @@ cdef __fillgap1Dhole(double[:] in_f,
     Parameters
     ----------
     in_f,in_t,id: from, to intervals and interval ID.
-        The insterval ID is required to link back sample values after
+        The interval ID is required to link back sample values after
         adding gaps
     tol: default 0.01. Tolerance
         gaps and overlaps <= tolerance will be ignored
@@ -955,7 +928,7 @@ cdef __fillgap1Dhole(double[:] in_f,
             # large overlap?
             else: 
                 #whe discard next interval by making it 0 length interval
-                # this will happend only in unsorted array... 
+                # this will happen only in unsorted array... 
                 noverlap+=1
                 overlap[noverlap]=id[i]
                 # update to keep consistency in next loopondh
@@ -1258,7 +1231,7 @@ cdef class Drillhole:
         Note
         ----
         - You may run this validation before doing desurvey
-        - Only few validation test are implemented
+        - Only few validation tests are implemented
         - Validation errors will raise a python error 
         
         TODO
@@ -1337,7 +1310,7 @@ cdef class Drillhole:
         self.survey.sort_values(by=['BHID','AT'], inplace=True)
         error = self.__checkAt0(self.survey['BHID'].values, self.survey['AT'].values)
         if error>-1:
-            raise NameError('Firts inteval AT!=0 at survey table, positiom %d' %error) 
+            raise NameError('Firts interval AT!=0 at survey table, position %d' %error) 
         
         #check survey with only one survey occurrence per drillholes: this produces error in desurvey 
         for i in self.survey['BHID'].unique():
@@ -1365,7 +1338,7 @@ cdef class Drillhole:
         
     cdef __checkAt0(self,np.ndarray BHID, np.ndarray[double, ndim=1] AT):
         """
-        This function checks if the first interval is approximatelly zero
+        This function checks if the first interval is approximately zero
         """
         # this is a hide function
         # the input data is assumed sorted
@@ -1596,7 +1569,7 @@ cdef class Drillhole:
 
 
     cpdef desurvey(self, str table_name, bint endpoints=False, 
-                   bint warns=True):
+                   bint warns=True, int method=1):
         """desurvey(str table_name, bint endpoints=False, bint warns=True)
         
         Desurvey a drillhole table.
@@ -1609,7 +1582,14 @@ cdef class Drillhole:
         Parameters
         ----------
         table_name : str
-        endpoints : boolean 
+            a table name existing in drillhole object 
+        endpoints : boolean, optional, default False 
+            if True coordinates at beginning and end intervals are also created
+        warns : boolean, optional, default True
+            if True warns will be raised if inconsistencies are detected
+        method : int, optional, default 1 (minimum curvature)
+            the desurvey method: 1 is minimum curvature and 2 is tangential
+        
         
         Examples
         --------
@@ -1618,7 +1598,7 @@ cdef class Drillhole:
         >>> mydrillhole.survey.sort(['BHID', 'AT'], inplace=True)
         >>> mydrillhole.table['assay'].sort(['BHID', 'FROM'], inplace=True)
         >>> # desurvey
-        >>> mydrillhole.desurvey('assay', endpoints=True)
+        >>> mydrillhole.desurvey('assay', endpoints=True, method=1)
         >>>
         
         Note
@@ -1627,16 +1607,26 @@ cdef class Drillhole:
         If you call the function with `endpoints=False` end points already
         desurveyed may not be overwritten. 
         
-        This function calls __dsmincurb() and __desurv1dh() functions to 
-        calculate the desurvey value.
+        This function calls __dsmincurb() and __desurv1dh() or 
+        __dstangential() functions to calculate the desurvey value.
+        
+        Both desurvey methods (tangential and minimum curvature) use
+        angles interpolated from two desurvey points at Survey table. 
         
         """
         
-        
-        #check the input is correct
+        # check the input is correct
         assert table_name in self.table, "table %s not exist" % table_name
+        assert method==1 or method==2, " invalid parameter method=%, valid inputs are 1 or 2 " % method
         
         
+        # sort tables
+        self.collar.sort_values(by=['BHID'], inplace=True)
+        self.survey.sort_values(by=['BHID', 'AT'], inplace=True)
+        self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
+        
+        
+        # define arrays
         cdef idc = self.collar['BHID'].values
         cdef np.ndarray[double, ndim=1] xc = self.collar['XCOLLAR'].values
         cdef np.ndarray[double, ndim=1] yc = self.collar['YCOLLAR'].values
@@ -1662,8 +1652,19 @@ cdef class Drillhole:
         cdef int indet
         cdef int inds,
         cdef int indt
-        cdef float mid
-        
+        cdef double mid
+        cdef double de
+        cdef double dn
+        cdef double dz
+        cdef double x
+        cdef double y
+        cdef double z        
+        cdef double azm1
+        cdef double azm2
+        cdef double dip1
+        cdef double dip2
+        cdef double at
+                
         # otput
         cdef np.ndarray[double, ndim=1] azmt = np.empty([nt], dtype=float)
         cdef np.ndarray[double, ndim=1] dipmt = np.empty([nt], dtype=float)
@@ -1673,10 +1674,13 @@ cdef class Drillhole:
                 
         
         #if endpoints==true:
-        cdef float tmpaz, tmpdip
+        cdef np.ndarray[double, ndim=1] azbt = np.empty([nt], dtype=float)
+        cdef np.ndarray[double, ndim=1] dipbt = np.empty([nt], dtype=float)
         cdef np.ndarray[double, ndim=1] xbt = np.empty([nt], dtype=float)
         cdef np.ndarray[double, ndim=1] ybt = np.empty([nt], dtype=float)
         cdef np.ndarray[double, ndim=1] zbt = np.empty([nt], dtype=float)
+        cdef np.ndarray[double, ndim=1] azet = np.empty([nt], dtype=float)
+        cdef np.ndarray[double, ndim=1] dipet = np.empty([nt], dtype=float)
         cdef np.ndarray[double, ndim=1] xet = np.empty([nt], dtype=float)
         cdef np.ndarray[double, ndim=1] yet = np.empty([nt], dtype=float)
         cdef np.ndarray[double, ndim=1] zet = np.empty([nt], dtype=float)
@@ -1684,6 +1688,10 @@ cdef class Drillhole:
         # initialize output to nans
         azmt[:] = np.nan
         dipmt[:] = np.nan
+        azbt[:] = np.nan
+        dipbt[:] = np.nan
+        azet[:] = np.nan
+        dipet[:] = np.nan
         xmt[:] = np.nan
         ymt[:] = np.nan
         zmt[:] = np.nan
@@ -1693,12 +1701,16 @@ cdef class Drillhole:
         xet[:] = np.nan
         yet[:] = np.nan
         zet[:] = np.nan
+        
+        
+        # first pass calculate angles and de,dn,dz
               
         indbt = 0
         indet = 0 
         inds = 0
         indt = 0   
         for jc in range(nc): # for each collar 
+                                    
             indbs = -1
             indes = -1
             # get first index of the collar jc in survey 
@@ -1718,60 +1730,158 @@ cdef class Drillhole:
                     inds = js
                     indes = js
             
-            # this is not working but check included in validation 
+            # if survey not found then skip this drillhole 
             if indbs==-1 or indes==-1:
                 # do not desurvey this drillhole
                 warnings.warn('! collar {} without survey, table not desurveyed'.format(idc[jc]))
                 continue
 
-            # this is not working but check included in validation 
+            
+            # angles over 1st desurvey point == collar
+            azm1  = azs[indbs]
+            dip1 = dips[indbs]
+            at = 0.
+
+
+            # TODO: remove this and allow desurvey with only one record
+
+            # if only one survey points then skip this dillhole 
             if indbs==indes:
                 # do not desurvey this drillhole
                 warnings.warn('! collar {} without survey at end collar, table not desurveyed'.format(idc[jc]))
                 continue
 
+            # initialize coordinates 
+            x =  xc[jc]
+            y =  yc[jc]
+            z =  zc[jc]
             
-            # with the index indbs and indes we desurvey each collar
+            # for each point in the table 
             for jt in range(indt, nt):
                 # the table id is similar to collar? Then desurvey
-                
+                  
+                                                
                 if idc[jc]==idt[jt]:
-                    #desurvey this point
+            
                     indt = jt # do not loop again before this index
                     
-                    # desurvey mid interv                    
-                    mid = fromt[jt] + (tot[jt]-fromt[jt])/2.
+                    # a) beginning interval
+                    azm2,dip2 = __angleson1dh(indbs,indes,ats,azs,dips,fromt[jt],warns) 
+                    azbt[jt] = azm2
+                    dipbt[jt] = dip2
+                    len12 = float(fromt[jt]) - at 
                     
-                    azmt[jt],dipmt[jt],xmt[jt],ymt[jt],zmt[jt] = \
-                    __desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],mid,warns)
+                    if method == 1 : 
+                        dz,dn,de = __dsmincurb(len12,azm1,dip1,azm2,dip2)
+                    elif method == 2 : 
+                        dz,dn,de = __dstangential(len12,azm1,dip1)
                     
-                    if endpoints==True:
-                        tmpaz,tmpdip,xbt[jt],ybt[jt],zbt[jt] = \
-                        __desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],fromt[jt],warns)
-                        
-                        tmpaz,tmpdip,xet[jt],yet[jt],zet[jt] = \
-                        __desurv1dh(indbs,indes,ats,azs,dips,xc[jc],yc[jc],zc[jc],tot[jt],warns)  
-                        
-        
-        self.table[table_name]['azm'] = azmt
+                    xbt[jt] = de
+                    ybt[jt] = dn
+                    zbt[jt] = dz              
+                                      
+                   
+                    # update for next interval
+                    azm1 = azm2
+                    dip1 = dip2
+                    at   = float(fromt[jt])
+                                     
+            
+                    # b) mid interv   
+                                     
+                    mid = float(fromt[jt]) + float(tot[jt]-fromt[jt])/2.
+                    
+                    azm2, dip2 = __angleson1dh(indbs,indes,ats,azs,dips,mid,warns)
+                    azmt[jt] = azm2
+                    dipmt[jt]= dip2 
+                    len12 = mid - at 
+                    
+                    if method == 1 : 
+                        dz,dn,de = __dsmincurb(len12,azm1,dip1,azm2,dip2)
+                    elif method == 2 : 
+                        dz,dn,de = __dstangential(len12,azm1,dip1)
+                    
+                    xmt[jt] = de + xbt[jt]
+                    ymt[jt] = dn + ybt[jt]
+                    zmt[jt] = dz + zbt[jt]             
+                    
+                    # update for next interval
+                    azm1 = azm2
+                    dip1 = dip2
+                    at   = mid
+                    
+                    # c) end interval
+                    
+                    azm2, dip2 = __angleson1dh(indbs,indes,ats,azs,dips,float(tot[jt]),warns)
+                    azet[jt] = azm2
+                    dipet[jt] = dip2
+                    len12 = float(tot[jt]) - at 
+                    
+                    if method == 1 : 
+                        dz,dn,de = __dsmincurb(len12,azm1,dip1,azm2,dip2)
+                    elif method == 2 : 
+                        dz,dn,de = __dstangential(len12,azm1,dip1)
+                    
+                    xet[jt] = de + xmt[jt]
+                    yet[jt] = dn + ymt[jt]
+                    zet[jt] = dz + zmt[jt]              
+                    
+                    # update for next interval
+                    azm1 = azm2
+                    dip1 = dip2
+                    at   = float(tot[jt])                                
+
+                    
+                    # now we calculate coordinates
+                    xbt[jt] = x+float(xbt[jt])
+                    ybt[jt] = y+float(ybt[jt])
+                    zbt[jt] = z-float(zbt[jt])
+                    xmt[jt] = x+float(xmt[jt])
+                    ymt[jt] = y+float(ymt[jt])
+                    zmt[jt] = z-float(zmt[jt])
+                    xet[jt] = x+float(xet[jt])
+                    yet[jt] = y+float(yet[jt])
+                    zet[jt] = z-float(zet[jt])                                                            
+                   
+                    #print jt, xbt[jt],ybt[jt],zbt[jt]
+                    #print jt, xmt[jt],ymt[jt],zmt[jt]
+                    #print jt, xet[jt],yet[jt],zet[jt]
+                   
+                    # update for next interval
+                    x = xet[jt]
+                    y = yet[jt]
+                    z = zet[jt]
+            
+
+        self.table[table_name]['azmm'] = azmt
         self.table[table_name]['dipm']= dipmt
         self.table[table_name]['xm']= xmt
         self.table[table_name]['ym']= ymt
         self.table[table_name]['zm']= zmt
         if endpoints==True:
+            self.table[table_name]['azmb'] = azbt
+            self.table[table_name]['dipb']= dipbt
             self.table[table_name]['xb']= xbt
             self.table[table_name]['yb']= ybt
             self.table[table_name]['zb']= zbt
+            self.table[table_name]['azme'] = azet
+            self.table[table_name]['dipe']= dipet
             self.table[table_name]['xe']= xet
             self.table[table_name]['ye']= yet
             self.table[table_name]['ze']= zet
+            
 
 
         # this is to produce a warning if some intervals where not desurvey
         try: 
-            assert  np.isfinite(self.table[table_name]['xm'].values).all(), "no finite coordinates at xb, please filter out non finite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['xm'].values).all(), "nofinite coordinates at xb, please filter out nonfinite coordinates and try again"
         except:
             warnings.warn('Some intervals where non-desurveyed and NAN coordinates where created, check errors in collar or survey')
+
+
+
+
+
 
 
 
@@ -2501,12 +2611,12 @@ cdef class Drillhole:
         
             # this will work if all coordinates defined
             
-            assert  np.isfinite(self.table[table_name]['xb'].values).all(), "no finite coordinates at xb, please filter out non finite coordinates and try again"
-            assert  np.isfinite(self.table[table_name]['yb'].values).all(), "no finite coordinates at yb, please filter out non finite coordinates and try again" 
-            assert  np.isfinite(self.table[table_name]['zb'].values).all(), "no finite coordinates at zb, please filter out non finite coordinates and try again"
-            assert  np.isfinite(self.table[table_name]['xe'].values).all(), "no finite coordinates at xe, please filter out non finite coordinates and try again"
-            assert  np.isfinite(self.table[table_name]['ye'].values).all(), "no finite coordinates at ye, please filter out non finite coordinates and try again"
-            assert  np.isfinite(self.table[table_name]['ze'].values).all(), "no finite coordinates at ze, please filter out non finite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['xb'].values).all(), "no finite coordinates at xb, please filter out nonfinite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['yb'].values).all(), "no finite coordinates at yb, please filter out nonfinite coordinates and try again" 
+            assert  np.isfinite(self.table[table_name]['zb'].values).all(), "no finite coordinates at zb, please filter out nonfinite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['xe'].values).all(), "no finite coordinates at xe, please filter out nonfinite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['ye'].values).all(), "no finite coordinates at ye, please filter out nonfinite coordinates and try again"
+            assert  np.isfinite(self.table[table_name]['ze'].values).all(), "no finite coordinates at ze, please filter out nonfinite coordinates and try again"
             
             #create array views 
             xb = self.table[table_name]['xb'].values
@@ -2543,7 +2653,7 @@ cdef class Drillhole:
             ye = self.table[table_name]['ye'].values
             ze = self.table[table_name]['ze'].values   
  
-            # if ther are undefined values at yb,zb, xe,ye,ze the output will be wrong, here whe check this
+            # if ther are undefined values at yb,zb, xe,ye,ze the output will be wrong, here we check this
             assert  np.isfinite(self.table[table_name]['xb'].values).all(), "no finite coordinates at xb after nan at xm,ym,zm removed"
             assert  np.isfinite(self.table[table_name]['yb'].values).all(), "no finite coordinates at yb after nan at xm,ym,zm removed" 
             assert  np.isfinite(self.table[table_name]['zb'].values).all(), "no finite coordinates at zb after nan at xm,ym,zm removed"

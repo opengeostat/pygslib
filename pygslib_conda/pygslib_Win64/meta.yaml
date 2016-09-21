@@ -4,32 +4,15 @@
 #c:\>conda install libpython
 package:
   name: pygslib
-  version: "0.0.0.3.8.3"
+  version: "0.0.0.3.8.4"
 
 source:
-  path: c:/OG_Python/pygslib/
+  path: ../../
   
-
-#  patches:
-   # List any patch files here
-   # - fix.patch
 
 build:
   script: python setup.py config --compiler=mingw32 build --compiler=mingw32 install
-  # noarch_python: True
-  # preserve_egg_dir: True
-  # entry_points:
-    # Put any entry points (scripts to be generated automatically) here. The
-    # syntax is module:function.  For example
-    #
-    # - pygslib = pygslib:main
-    #
-    # Would create an entry point called pygslib that calls pygslib.main()
 
-
-  # If this is a new build for the same version, increment the build
-  # number. If you do not include this key, it defaults to 0.
-  # number: 1
 
 requirements:
   build:
@@ -38,14 +21,14 @@ requirements:
     - python
     - setuptools
     - numpy 
-    - pandas
+    - pandas >=0.17
     - matplotlib
-    - scipy 0.16.0
+    - scipy
 
   run:
     - python
     - numpy
-    - pandas
+    - pandas >=0.17
     - matplotlib
     - scipy
     - vtk
@@ -54,31 +37,7 @@ requirements:
     - mingw
     - libpython
 
-# test:
-  # Python imports
-  #imports:
-  #  - pygslib
 
-  # commands:
-    # You can put test commands to be run here.  Use this to test that the
-    # entry points work.
-
-
-  # You can also put a file called run_test.py in the recipe that will be run
-  # at test time.
-
-  # requires:
-  #  - matplotlib
-  #  - mock
-  #  - nose
-  #  - numpy
-  #  - pandas
-  #  - scipy
-  #  - mingw
-  #  - libpython
-    
-    # Put any additional test requirements here.  For example
-    # - nose
 
 about:
   home: https://github.com/opengeostat/pygslib
