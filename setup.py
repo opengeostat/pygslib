@@ -57,7 +57,7 @@ class PyTest(TestCommand):
 version = '0.0.0.3.8.4'
 description = 'Python wrap of GSLIB modified code and general geostatistical package'
 name='pygslib'
-long_description=open("README.rst").read()
+long_description=open("README.md").read()
 classifiers=[ 
             'Development Status :: 3 - Alpha',
             'Programming Language :: Python',

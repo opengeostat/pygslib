@@ -980,6 +980,8 @@ def kt3d(parameters):
             'iktype'     : ,   # (optional) int
             'cut'        : ,   # (optional) rank-1 array('f') with bounds (ncut)
             'idbg'       : ,   # (optional) int
+            # Inverse of the power of the distance parameter
+            'id2power'   : ,   # (optional, default 2) float 
             # Variogram parameters 
             # ----------
             'c0'         : ,   # float
@@ -994,7 +996,7 @@ def kt3d(parameters):
             
 
     The optional input will be internally initialized to zero or to
-    array of zeros.
+    array of zeros unless specified.
     
     
     Returns
@@ -1008,10 +1010,14 @@ def kt3d(parameters):
     
     If iktype=0 returns variable estimate as::
     
-        {'outest'    : ,  #rank-1 array('f') with bounds (nout)
-        'outkvar'    : }  #rank-1 array('f') with bounds (nout)
+        {'outest'    : ,  # kriging estimate
+        'outkvar'    : ,  # kriging variance
+        'outidpower' : ,  # inverse of the power of the distance estimate
+        'outnn'      : }  # nearest neightbor estimate
+        
+        all these are rank-1 array('f') with bounds (nout)
     
-    If ktype=1 returns median kriging estimate as::
+    If ktype=1 returns median indicator kriging estimate as::
      
        {'outcdf'     : }  #rank-2 array('f') with bounds (nout,ncut)
     
@@ -1057,9 +1063,12 @@ def kt3d(parameters):
 
     Some important stats and run progress are only available in the  
     stdout (the terminal) and will not be available in Ipython Notebooks.
-        
 
     """
+
+
+    assert 'id2power' >= 0, 'id2power' 
+
 
     # add dummy cut if not in parameters
 
@@ -1068,11 +1077,22 @@ def kt3d(parameters):
 
     if 'cut' in parameters and parameters['cut']==None:
         parameters['cut'] =[0]
+        
+    if 'id2power' not in parameters:
+        parameters['id2power']=2.0
+
+    assert 'id2power' >= 0, 'Error: parameter id2power <0 ' 
+
     
     # check that bhid is provided if nbhid > 0
     if 'nbhid' in parameters:
         if parameters['nbhid']> 0 :
+            # make sure exists 
             assert parameters['bhid'] is not None, 'Error: BHID required if nbhid > 0'
+            
+            # make sure there is no drillhole number equal to zero
+            assert 0 not in parameters['bhid'], 'Error: BHID == 0 detected, BHIDs may be > 0 '
+        
 
         # check not using octants and min
         if (parameters['nbhid']> 0 and parameters['noct']> 0):
@@ -1102,7 +1122,11 @@ def kt3d(parameters):
     output['dbgytg'],     
     output['dbgztg'],     
     output['dbgkvector'], 
-    output['dbgkmatrix'], error, fwarnings) =__gslib__kt3d.pykt3d(**parameters)
+    output['dbgkmatrix'], 
+    error, 
+    fwarnings,
+    output['outidpower'],
+    output['outnn']) =__gslib__kt3d.pykt3d(**parameters)
 
 
 
@@ -1118,6 +1142,10 @@ def kt3d(parameters):
         estimate['y']=parameters['outy']
     if 'outz' in parameters: 
         estimate['z']=parameters['outz']
+    
+    estimate['outidpower']=output['outidpower']
+    estimate['outnn']=output['outnn']
+    
     # clean a bit the output 
     if 'iktype' in parameters: 
         if parameters['iktype']==1:
@@ -1128,6 +1156,7 @@ def kt3d(parameters):
     else:
             estimate['outest']=output['outest']
             estimate['outkvar']=output['outkvar']
+            
     
     debug ={}
     if 'idbg' in parameters:     

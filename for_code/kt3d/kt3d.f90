@@ -92,7 +92,9 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
            outcdf, &                                                    ! output in case of cdf
            idbg, cbb, neq, na, dbgxdat,dbgydat,dbgzdat, &                         ! debug level and data
            dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg, dbgkvector, dbgkmatrix, & 
-           errors, warns)                                               ! Error output for python
+           errors, warns, &                                             ! Error output for python
+           id2power, outid2, &                                          ! ID2power of the distance estimate and power
+           outnn)                                                       ! nearest neighbor 
 
 
 
@@ -133,7 +135,11 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
     real, intent(in), dimension(nst):: cc,aa,aa1,aa2
     real, intent(in), dimension(nst), optional:: ang1,ang2,ang3
     
-    integer, intent(in), optional :: idbg                                
+    integer, intent(in), optional :: idbg     
+    
+    
+    real, intent(in) :: id2power
+                               
     
     ! ==================
     ! output variables
@@ -141,7 +147,7 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
     integer, intent (in) :: nout
     real, intent(in), dimension(nout), optional :: outy, outz, outextve 
     real, intent(in), dimension(nout) :: outx    
-    real, intent(out), dimension(nout) :: outest, outkvar                ! output variable with the estimate, kvar and an indicator of success for a given block 
+    real, intent(out), dimension(nout) :: outest, outkvar, outid2, outnn ! output variable with the estimate, kvar and an indicator of success for a given block 
     real, intent(out), dimension(nout,ncut) :: outcdf
     
     ! debug
@@ -285,7 +291,9 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
                    outcdf, & 
                    cbb,neq, na, dbgxdat,dbgydat,dbgzdat, &
                    dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg,dbgkvector, dbgkmatrix, &                  ! debug
-                   errors, warns) 
+                   errors, warns, &                                           ! Error output for python
+                   id2power, outid2, &                                        ! ID2power of the distance estimate and power
+                   outnn)                                                     ! nearest neighbor 
 
 
 
@@ -314,8 +322,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                    outcdf, & 
                    cbb,neq, na, dbgxdat,dbgydat,dbgzdat, &
                    dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg,dbgkvector, dbgkmatrix, &                  ! debug
-                   errors, warns) 
-
+                   errors, warns, &                                           ! Error output for python
+                   id2power, outid2, &                                        ! ID2power of the distance estimate and power
+                   outnn)                                                     ! nearest neighbor 
     !-----------------------------------------------------------------------
 
     !                Krige a 3-D Grid of Rectangular Blocks
@@ -372,6 +381,8 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     
     integer, intent(in) :: idbg  ! TODO: >>>>> remove this    
 
+    real, intent(in) :: id2power
+    
     
     ! ==================
     ! output variables
@@ -387,7 +398,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                                                                      
     
     integer, intent (in) :: nout
-    real, intent(out), dimension(nout) :: outest, outkvar                                 ! output variable with the estimate, kvar and an indicator of success for a given block 
+    real, intent(out), dimension(nout) :: outest, outkvar, outid2, outnn    ! output variable with the estimate, kvar and an indicator of success for a given block 
     real, intent(out), dimension(nout,ncut) :: outcdf
     
     ! debug
@@ -409,7 +420,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     integer :: maxrot
     
     ! array to count the number of samples per dhole. We assume that number of drillholes <= number of samples  
-    integer, dimension(nd) :: nnbhid 
+    integer, dimension(nd) :: nnbhid
+    
+     
     
     ! array of varianles to read from file >>>>>> remove 
     real ::       var(20)
@@ -417,7 +430,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     data       fircon/ .TRUE. /
     
     ! set of array with the same size of data
-    real, dimension(:), allocatable :: tmp, close, xa,ya,za,vra,vea
+    real, dimension(:), allocatable :: tmp, close, xa,ya,za,vra,vea, vid2
     integer :: AllocateStatus
     
     ! unbias and drift means
@@ -444,10 +457,13 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     integer :: nloop
 
+    ! tmp estimates 
+    real nnest, id2est, est, estv, tmpsum
+
 
     ! alocate local arrays
     
-    allocate ( tmp(nd), close(nd),xa(nd),ya(nd),za(nd),vra(nd),vea(nd), STAT = AllocateStatus)
+    allocate ( tmp(nd), close(nd),xa(nd),ya(nd),za(nd),vra(nd),vea(nd), vid2(nd), STAT = AllocateStatus)
     if (AllocateStatus /= 0) then 
         errors = "Error Internal: There was a problem allocating arrays in memory"
         return 
@@ -687,7 +703,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             if (nbhid > 0) then
                 
                 ! get drillhole number (1 to ndholes) 
-                dhnum = bhid(ind)
+                dhnum = bhid(ind)                                       ! warning, make sure BHID are greater than zero, otherwise this BHID 0 will be ignored
                 ! add and count num of samples in this dholes
                 nnbhid(dhnum) = nnbhid(dhnum) + 1 
                 ! ignore sample if exedded maximum per drillohole 
@@ -714,6 +730,8 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
         if(na < ndmin) then
             est  = UNEST
             estv = UNEST
+            id2est = UNEST
+            nnest =  UNEST
             go to 1
         end if
     
@@ -732,6 +750,31 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     
         ! There are enough samples - proceed with estimation.
+    
+        ! Then do inverse of the power of the distance (this is point estimate without anisotropy)
+        ! a) calculate inverse power and its sum
+        tmpsum=0.
+        do i=1, na
+            vid2(i) = sqrt((xa(i)-0.5*xsiz)**2 + (ya(i)-0.5*ysiz)**2 + (za(i)-0.5*zsiz)**2)**id2power  ! all points are shift 0.5* blocksiz
+            if (vid2(i) < EPSLON)  vid2(i) = EPSLON                      ! handle zero distance
+            vid2(i) = 1./vid2(i)
+            tmpsum = tmpsum + vid2(i)
+        end do 
+        
+        ! b) correct the power and calculate Id power output
+        
+        if (tmpsum > 0.) then 
+            id2est = 0.        
+            do i=1, na
+                id2est = id2est + vra(i) * vid2(i)/tmpsum               ! compute ID power estimate 
+            end do
+        else
+            id2est = UNEST              
+        end if
+    
+        ! This is the nearest neighbor estimate
+        nnest = vra(1)
+        
     
         if(na <= 1) then
         
@@ -1043,6 +1086,8 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
                 outest(index)=est
                 outkvar(index)=estv
+                outid2(index) = id2est
+                outnn(index) = nnest
 
         else
         
@@ -1101,7 +1146,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     ! All finished the kriging:
 
     ! deallocate internal arrays 
-    deallocate ( tmp, close,xa,ya,za,vra,vea, STAT = AllocateStatus)
+    deallocate ( tmp, close,xa,ya,za,vra,vea,vid2, STAT = AllocateStatus)
     if (AllocateStatus /= 0) Then
         errors = "Error Internal: There was a problem deallocating arrays from memory"
         return 
