@@ -82,7 +82,7 @@ end subroutine set_unest
 ! Note:  link these functions manually in setup.py
 !
 ! ====================================================================== 
-subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! input data 
+subroutine pykprop( nd, x,y,z,vr,ve, bhid, &                                   ! input data 
            nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,&    ! block model definition (including  discretization)
            radius,radius1,radius2, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3, & ! search parameters
            idrif,&                                                      ! drift terms
@@ -280,7 +280,7 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
 
     ! call kriging
 
-    call   kt3d(   nd, x,y,z,vr,ve, tmpbhid, &                                        ! input data 
+    call   kprop(   nd, x,y,z,vr,ve, tmpbhid, &                                        ! input data 
                    nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,& ! block model definition (including  discretization)
                    radius, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
                    idrif,&                                                   ! drift terms
@@ -300,7 +300,7 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
     return
 
 
-end subroutine pykt3d
+end subroutine pykprop
 
 
 
@@ -308,10 +308,10 @@ end subroutine pykt3d
 !
 ! Modified GSLIB Kriging functions   
 !
-! Note:  Do not link these to python, use wraper (pykt3d) instead
+! Note:  Do not link these to python, use wraper (pykprop) instead
 !
 ! ======================================================================
-subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                        ! input data 
+subroutine kprop(   nd, x,y,z,vr,ve, bhid,&                                        ! input data 
                    nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,& ! block model definition (including  discretization)
                    radius, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
                    idrif,&                                                   ! drift terms
@@ -327,18 +327,17 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                    outnn)                                                     ! nearest neighbor 
     !-----------------------------------------------------------------------
 
-    !                Krige a 3-D Grid of Rectangular Blocks
+    !                     Kriging with proportions
     !                **************************************
 
     ! This subroutine estimates point or block values of one variable by
-    ! simple, ordinary, or kriging with a trend model.  It is also possible
-    ! to estimate the trend directly.
+    ! simple or ordinary kriging with proportions.
+	
+	! This function was developed on top of the GSLIB program Kt3D
 
-    ! This is a modified version, adapted to be linked to python
-    ! all the output is trough variables (file output removed)
-    
+     
     !
-    ! Modified by : Adrian Martinez Vargas                             2016
+    ! Modified by : Adrian Martinez Vargas                              2016
     !
     
 
@@ -787,7 +786,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
         
             if(ndb <= 1) then
                 call cova3(xa(1),ya(1),za(1),xdb(1),ydb(1),zdb(1),1, &
-                nst,MAXNST,c0,it,cc,aa,1,maxrot,rotmat,cmax,cb)                  ! TODO fix this: MAXNST not ok use nst_
+                nst,MAXNST,c0,it,cc,aa,1,maxrot,rotmat,cmax,cb)
             else
                 cb  = 0.0
                 do i=1,ndb
@@ -1154,7 +1153,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     return
 
-end subroutine kt3d
+end subroutine kprop
 
 
 
