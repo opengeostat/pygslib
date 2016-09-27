@@ -1,0 +1,49 @@
+#install dependencies: 
+#Microsoft Visual C++ Compiler for Python 2.7 at https://www.microsoft.com/en-ca/download/details.aspx?id=44266
+#c:\>conda install MinGW
+#c:\>conda install libpython
+package:
+  name: pygslib
+  version: "0.0.0.3.8.4"
+
+source:
+  path: ../../
+  
+
+build:
+  script: python setup.py config --compiler=mingw32 build --compiler=mingw32 install
+
+
+requirements:
+  build:
+    - mingw
+    - libpython
+    - python
+    - setuptools
+    - numpy 
+    - pandas >=0.17
+    - matplotlib
+    - scipy
+
+  run:
+    - python
+    - numpy
+    - pandas >=0.17
+    - matplotlib
+    - scipy
+    - vtk
+    - ipython
+    - pyevtk
+    - mingw
+    - libpython
+
+
+
+about:
+  home: https://github.com/opengeostat/pygslib
+  license: MIT License
+  summary: 'Python wrap of GSLIB modified code and general geostatistical package'
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
