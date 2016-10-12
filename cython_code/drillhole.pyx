@@ -2683,6 +2683,8 @@ cdef class Drillhole:
             vtkfields[i].SetNumberOfComponents(1)
             vtkfields[i].SetNumberOfTuples(dlen)
 
+			# TODO: Optimize this for... replace vtkfields[i].SetValue with C array. 
+
             # deep copy data
             if  dtype==np.int8 or dtype==np.int16 or dtype==np.int32 or dtype==np.int64 or dtype==np.float16 or dtype==np.float32 or dtype==np.float64:
                 for l in range(dlen): 
@@ -2703,6 +2705,10 @@ cdef class Drillhole:
         # a line container (a cell array)
         line = vtk.vtkLine()
         lines = vtk.vtkCellArray()
+
+
+		# TODO: Optimize this for... replace points.InsertNextPoint with C array. 
+
 
         # populate this data
         n=-1

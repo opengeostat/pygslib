@@ -26,10 +26,10 @@ from numpy.distutils.core import Extension
 
 # check some dependencies
 
-try:
- import vtk
-except ImportError, e:
- warnings.warn('\nWarning:\n pygslib uses vtk but vtk is not installed!')
+#try:
+ #import vtk
+#except ImportError, e:
+ #warnings.warn('\nWarning:\n pygslib uses vtk but vtk is not installed!')
 
 
 # This is a plug-in for setuptools that will invoke py.test
@@ -169,9 +169,9 @@ if __name__ == '__main__':
           packages=find_packages(exclude=['examples', 'tests']),
           include_package_data=True,
           zip_safe=False,
-          tests_require=['numpy', 'pandas', 'matplotlib', 'nose', 'mock'],
+          tests_require=['nose', 'mock'],
           cmdclass={'test': PyTest},   
-          install_requires=['numpy', 'pandas', 'matplotlib'],
+          install_requires=['numpy', 'pandas', 'matplotlib', 'vtk', 'pyevtk', 'scipy', 'ipython'],
           ext_modules = [gslib_variograms,
                          gslib_bigaus,
                          gslib_bicalib,
