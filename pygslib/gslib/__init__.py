@@ -1126,7 +1126,9 @@ def kt3d(parameters):
     error, 
     fwarnings,
     output['outidpower'],
-    output['outnn']) =__gslib__kt3d.pykt3d(**parameters)
+    output['outnn'],
+    output['outlagr'],
+    output['outwmean']) =__gslib__kt3d.pykt3d(**parameters)
 
 
 
@@ -1156,7 +1158,13 @@ def kt3d(parameters):
     else:
             estimate['outest']=output['outest']
             estimate['outkvar']=output['outkvar']
-            
+    
+    
+    if parameters['ktype']==1:
+        estimate['outlagrange'] = output['outlagr']
+
+    if parameters['ktype']==0 or parameters['ktype']==2:
+        estimate['outweightofmean'] = output['outwmean']
     
     debug ={}
     if 'idbg' in parameters:     

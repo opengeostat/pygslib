@@ -94,8 +94,8 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
            dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg, dbgkvector, dbgkmatrix, & 
            errors, warns, &                                             ! Error output for python
            id2power, outid2, &                                          ! ID2power of the distance estimate and power
-           outnn)                                                       ! nearest neighbor 
-
+           outnn, &                                                     ! nearest neighbor 
+           outlagr,outwmean)                                            ! lagrange multiplier  (mean drift only) and weight of the mean
 
 
 
@@ -147,7 +147,7 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
     integer, intent (in) :: nout
     real, intent(in), dimension(nout), optional :: outy, outz, outextve 
     real, intent(in), dimension(nout) :: outx    
-    real, intent(out), dimension(nout) :: outest, outkvar, outid2, outnn ! output variable with the estimate, kvar and an indicator of success for a given block 
+    real, intent(out), dimension(nout) :: outest, outkvar,outlagr,outwmean, outid2, outnn ! output variables
     real, intent(out), dimension(nout,ncut) :: outcdf
     
     ! debug
@@ -287,13 +287,14 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
                    itrend,ktype,skmean,koption, iktype,ncut,cut, &           ! kriging options
                    nst,it,c0,cc,aa,ang1,ang2,ang3, anis1,anis2, &            ! variogram parameters
                    idbg, &
-                   nout, outx, outy, outz, outextve, outest, outkvar, &      ! output variable with the estimate, kvar and an indicator of success for a given block  
+                   nout, outx, outy, outz, outextve, outest, outkvar, &      ! output variable with the estimate, kvar and an indicator of success for a given block             
                    outcdf, & 
                    cbb,neq, na, dbgxdat,dbgydat,dbgzdat, &
                    dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg,dbgkvector, dbgkmatrix, &                  ! debug
                    errors, warns, &                                           ! Error output for python
                    id2power, outid2, &                                        ! ID2power of the distance estimate and power
-                   outnn)                                                     ! nearest neighbor 
+                   outnn, &                                                     ! nearest neighbor 
+                   outlagr,outwmean)                                            ! lagrange multiplier  (mean drift only) and weight of the mean 
 
 
 
@@ -316,15 +317,16 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                    radius, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
                    idrif,&                                                   ! drift terms
                    itrend,ktype,skmean,koption, iktype,ncut,cut, &           ! kriging options
-                   nst_,it,c0_,cc,aa,ang1,ang2,ang3, anis1,anis2, &            ! variogram parameters
+                   nst_,it,c0_,cc,aa,ang1,ang2,ang3, anis1,anis2, &          ! variogram parameters
                    idbg, &
-                   nout, outx, outy, outz, outextve, outest, outkvar, &                                  ! output variable with the estimate, kvar and an indicator of success for a given block  
+                   nout, outx, outy, outz, outextve, outest, outkvar,&       ! output variable with the estimate, kvar and an indicator of success for a given block  
                    outcdf, & 
                    cbb,neq, na, dbgxdat,dbgydat,dbgzdat, &
                    dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg,dbgkvector, dbgkmatrix, &                  ! debug
                    errors, warns, &                                           ! Error output for python
                    id2power, outid2, &                                        ! ID2power of the distance estimate and power
-                   outnn)                                                     ! nearest neighbor 
+                   outnn, &                                                     ! nearest neighbor 
+                   outlagr,outwmean)                                            ! lagrange multiplier  (mean drift only) and weight of the mean 
     !-----------------------------------------------------------------------
 
     !                Krige a 3-D Grid of Rectangular Blocks
@@ -398,7 +400,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                                                                      
     
     integer, intent (in) :: nout
-    real, intent(out), dimension(nout) :: outest, outkvar, outid2, outnn    ! output variable with the estimate, kvar and an indicator of success for a given block 
+    real, intent(out), dimension(nout) :: outest, outkvar,outlagr,outwmean, outid2, outnn    ! output variable with the estimate, kvar and an indicator of success for a given block 
     real, intent(out), dimension(nout,ncut) :: outcdf
     
     ! debug
@@ -458,7 +460,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     integer :: nloop
 
     ! tmp estimates 
-    real nnest, id2est, est, estv, tmpsum
+    real nnest, id2est, est, estv, tmpsum, tmplagrg, tmpwgtmean
 
 
     ! alocate local arrays
@@ -732,6 +734,8 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             estv = UNEST
             id2est = UNEST
             nnest =  UNEST
+            tmplagrg = UNEST
+            tmpwgtmean = UNEST
             go to 1
         end if
     
@@ -744,6 +748,8 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end if
             est  = UNEST
             estv = UNEST
+            tmplagrg = UNEST
+            tmpwgtmean = UNEST
             if (idbg>0)  write (*,*) ' The block ', index, 'not estimated due to lack of data, na:', na
             go to 1
         end if
@@ -1026,15 +1032,19 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             if(idbg >0) write(*,*) ' Singular Matrix ', index
             est  = UNEST
             estv = UNEST
+            tmplagrg = UNEST
+            tmpwgtmean = UNEST
         else
             est  = 0.0
             estv = real(cbb)
             if(ktype == 2) skmean = extest
+            tmpwgtmean = 0
             do j=1,neq
                 estv = estv - real(s(j))*rr(j)
                 if(j <= na) then
                     if(ktype == 0 .OR. ktype == 2) then
                         est = est + real(s(j))*(vra(j)-skmean)
+                        tmpwgtmean = tmpwgtmean + real(s(j))
                     else
                         est = est + real(s(j))*vra(j)
                     endif
@@ -1044,6 +1054,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             nk   = nk + 1
             xk   = xk + est
             vk   = vk + est*est
+            
+            tmplagrg = UNEST
+            if(ktype == 1) tmplagrg = real(s(na+1)*unbias)
         
             ! Write the kriging weights and data if debugging level is above 2:
         
@@ -1072,20 +1085,24 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                     
                     write(*,'(5f12.3)') xa(i),ya(i),za(i), vra(i),s(i)
                 end do
+                
                 do i=na+1,neq
                     dbgwt(i)=s(i)*unbias                                ! (note that here we report all lagranges, rescaled back to covariace scale)
                 end do
                 write(*,*) '  estimate, variance  ',est,estv
             endif
         endif
+
     
         ! END OF MAIN KRIGING LOOP:
     
         1 continue
         if(iktype == 0) then
 
-                outest(index)=est
-                outkvar(index)=estv
+                outest(index)= est
+                outkvar(index)= estv
+                outlagr(index)=  tmplagrg
+                outwmean(index)=  1-tmpwgtmean
                 outid2(index) = id2est
                 outnn(index) = nnest
 
