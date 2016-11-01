@@ -26,6 +26,8 @@ cimport numpy as np
 import numpy as np
 import pyevtk.hl
 import vtk.util.numpy_support as vtknumpy
+from scipy.interpolate import Rbf
+
 
 
 cpdef vtk_show(object renderer, double width=400, double height=300, 
@@ -1012,4 +1014,138 @@ cpdef partialgrid2vtkfile(str path,
     writer.SetInputData(extractGrid.GetOutput())
     writer.Write()
 
+
+# ----------------------------------------------------------------------
+#   Functions to interpolate smoth data
+# ----------------------------------------------------------------------
+def interpolator_RBF(xt,yt,zt,x,y,z,v, function= 'multiquadric', smooth = .0):
+    """
+    Interpolates v from input points (x,y,z) into target 
+    locations (xt,yt,zt) using Radial Basis Functions (RBF)
+    
+    
+    Parameters
+    ----------
+    xt,yt,zt : arrays
+        target location
+    x,y,z,v: arrays
+        input coordinates and variable values
+    function: str or callable, default('multiquadric')
+        'multiquadric': sqrt((r/self.epsilon)**2 + 1)
+        'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
+        'gaussian': exp(-(r/self.epsilon)**2)
+        'linear': r
+        'cubic': r**3
+        'quintic': r**5
+        'thin_plate': r**2 * log(r)
+    smooth: float, default(.0)
+        Values greater than zero increase the smoothness of the 
+        approximation. 0 is for interpolation (default), the function 
+        will always go through the nodal points in this case.
+    
+    
+    Returns 
+    -------
+    vt : array floats
+        values interpolated at locations xt,yt,zt
+        
+    Notes
+    -------
+    Using RBF from scipy. We recommend to see RBF documentation
+    at https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html
+    
+    
+    TODO
+    ------
+    Move this data to a new file / module
+    
+    """
+    
+    rbfi = Rbf(x, y, z, v, function = function, smooth =smooth)  # radial basis function interpolator instance
+    
+    vt = rbfi(xt, yt, zt)   # interpolated values vt
+    
+    return  vt
+
+
+
+# ----------------------------------------------------------------------
+#   Functions to warp/unfold data
+# ----------------------------------------------------------------------
+def Unfold(x1,y1,z1,x0,y0,z0,xd0,yd0,zd0,function= 'multiquadric', smooth = .0):
+    """
+    
+    This function unfolds data at coordinates Xd using a set of control 
+    points/lines with folded coordinates X0 and unfolded coordinates X1.  
+    
+    To unfold a warp vector is calculated at control point as 
+    ``W = X1-X0``, then the ``W`` vectors are interpolated to each 
+    location ``Xd0`` using the function ``interpolator_RDB()`` to obtain
+    ``Wd``. The unfolded coordinates are calculated as ``Xd1 = Xd0 + Wd``
+        
+    
+    Parameters
+    ----------
+    x0,y0,z0 : arrays
+        control points at folded space
+    x1,y1,z1 : arrays
+        control points at unfolded space
+    xd,yd,zd : arrays
+        target location to be unfolded
+    function: str or callable, default('multiquadric')
+        'multiquadric': sqrt((r/self.epsilon)**2 + 1)
+        'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
+        'gaussian': exp(-(r/self.epsilon)**2)
+        'linear': r
+        'cubic': r**3
+        'quintic': r**5
+        'thin_plate': r**2 * log(r)
+    smooth: float, default(.0)
+        Values greater than zero increase the smoothness of the 
+        approximation. 0 is for interpolation (default), the function 
+        will always go through the nodal points in this case.
+    
+    
+    Returns 
+    -------
+    xd1,yd1,zd1 : arrays
+        coordinates of data points in unfolded space
+        
+    Notes
+    -------
+    This functions uses RBF from scipy. We recommend to see RBF documentation
+    at https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html
+    
+    TODO
+    ------
+    Move this data to a new file / module
+    
+    """
+
+    # calculate warp vector at control points
+    wx=x1-x0
+    wy=y1-y0
+    wz=z1-z0
+    
+    
+    # interpolate warp vectors at data points
+
+    wdx = interpolator_RBF(xd0, yd0, zd0, x0, y0, z0, wx,
+                        function= function,
+                        smooth = smooth)
+    wdy = interpolator_RBF(xd0, yd0, zd0, x0, y0, z0, wy,
+                        function= function,
+                        smooth = smooth)
+    wdz = interpolator_RBF(xd0, yd0, zd0, x0, y0, z0, wz,
+                        function= function,
+                        smooth = smooth)
+
+    # unfold
+    xd1 = xd0 + wdx
+    yd1 = yd0 + wdy
+    zd1 = zd0 + wdz
+    
+    return xd1, yd1, zd1
+    
+    
 
