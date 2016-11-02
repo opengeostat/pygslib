@@ -996,6 +996,53 @@ cdef __fillgap1Dhole(double[:] in_f,
 
 
 
+def groupcat(codes, table, ccol, cgroup, tablegrup= '_GROUP', tablegrupid = '_GROUPID'): 
+    """
+    
+    Regroup categories using groping codes defined in a table.
+    
+    
+    Parameters
+    ----------
+    codes: Pandas DataFrame 
+        DataFrame with categories and corresponding grouped categories
+    table: Pandas DataFrame  
+        DataFrame with categories to be grouped
+    ccol: str
+        column with categories in DataFrame ``codes``
+    cgroup: str
+        column with grouped categories in DataFrame ``codes``
+    tablegrup: str, defaul('GROUP')
+        column with categories DataFrame ``table`` 
+    tablegrupid: str, defaul('GROUPID')
+        column with numeric categories DataFrame ``table`` 
+        
+    Returns
+    -------
+    Dataframe with grouped categories
+    Dict with grouping table
+    
+    """
+    
+    # make deep copy
+    tmp = table.copy(deep=True)
+    
+    # get dictionary mapping types
+    type_map = codes[[ccol, cgroup]].drop_duplicates().set_index(ccol)[cgroup].to_dict()
+    
+    # group categories
+    tmp[tablegrup] = "" 
+    tmp[tablegrupid] = 0 
+    l=0
+    for i in type_map.keys():
+        l=l+1
+        tmp.loc[tmp[ccol]== i, tablegrup] = type_map[i]
+        tmp.loc[tmp[ccol]== i, tablegrupid] = l
+        
+    return tmp, type_map
+
+
+
 #-------------------------------------------------------------------
 #  Drillhole class
 #-------------------------------------------------------------------
