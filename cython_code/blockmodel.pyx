@@ -317,6 +317,8 @@ cdef class Blockmodel:
 
     bmtable : Pandas DataFrame
         Table with blocks
+        
+    gridtable : Pandas Dataframe
     
         
     """ 
@@ -327,6 +329,9 @@ cdef class Blockmodel:
     #cdef readonly bint percent     # has percent?  Can be both percent+subcell 
     cdef readonly double xorg,yorg,zorg,dx,dy,dz # origin of coordinate + block size
     cdef readonly object bmtable    # the actual block model 
+    cdef readonly object grid2DXY  # the grid table
+    cdef readonly object grid2DXZ  # the grid table
+    cdef readonly object grid2DYZ  # the grid table
     
     def __cinit__(self,nx,ny,nz,xorg,yorg,zorg,dx,dy,dz):
         assert nx>0 and ny>0 and nz>0 
@@ -746,6 +751,39 @@ cdef class Blockmodel:
         
         self.bmtable=pd.DataFrame({'IJK': np.arange(self.nx*self.ny*self.nz, dtype=int)})
 
+
+    cpdef create_3Dgrid(self, bint overwrite=False):
+        """create_3Dgrid(bint overwrite=False)
+                
+        Creates a full block 3D grid/block model 
+        
+                  
+        Parameters
+        ----------
+        overwrite : boolean
+               overwrite flag, if true the entire grid will be 
+               overwritten
+        
+        Example
+        -------
+        >>>
+        >>> mymodel.create_3Dgrid(overwrite=False)
+        >>>     
+        
+        
+        """
+         
+        #check the model do not exist 
+        if overwrite==False:
+             assert self.bmtable is None, 'Error: bmtable already exist, set overwrite=True to overwrite'
+
+        
+        # reusing existing functions
+        self.create_IJK()
+        self.calc_ixyz_fromijk()
+        self.calc_xyz_fromixyz()
+        
+        
         
     cpdef blockinsurface(self, 
                     object surface,
@@ -1186,3 +1224,126 @@ cdef class Blockmodel:
         # this return the actual model in VTK format, in case you what to use it
         return p2c.GetOutput()
         
+
+
+    # -----------------------------------------
+    #      GRID functions
+    # -----------------------------------------
+
+    cpdef create_gridxy(self, bint overwrite=False):
+        """create_gridxy(bint overwrite=False)
+                
+        Creates a full block 2D grid in defined in the XY direction.
+        
+        The grid definition is taken from the block model definition in 
+        the X, and Y directions. 
+        
+                  
+        Parameters
+        ----------
+        overwrite : boolean
+               overwrite flag, if true the entire grid will be 
+               overwritten
+        
+        Example
+        -------
+        >>>
+        >>> mymodel.create_gridxy(overwrite=False)
+        >>>     
+        
+        
+        """
+         
+        #check the model do not exist 
+        if overwrite==False: 
+            assert self.grid2DXY is None, 'Error: grid2DXY already exist, set overwrite=True to overwrite'
+
+		
+		# create one layer model
+        self.grid2DXY=pd.DataFrame({'IJK': np.arange(self.nx*self.ny, dtype=int)})
+        self.grid2DXY['IX'],self.grid2DXY['IY'],self.grid2DXY['IZ'] =  ijk2ind(self.grid2DXY['IJK'].values,self.nx,self.ny,1)
+        
+        self.grid2DXY['XC']= ix2x (self.grid2DXY['IX'].values.astype('int'), self.xorg, self.dx)
+        self.grid2DXY['YC']= ix2x (self.grid2DXY['IY'].values.astype('int'), self.yorg, self.dy)
+        self.grid2DXY['ZC']= self.zorg
+        
+        
+
+        
+
+    cpdef create_gridxz(self, bint overwrite=False):
+        """create_gridxz(bint overwrite=False)
+                
+        Creates a full block 2D grid in defined in the XZ direction.
+        
+        The grid definition is taken from the block model definition in 
+        the X, and Z directions. 
+        
+                  
+        Parameters
+        ----------
+        overwrite : boolean
+               overwrite flag, if true the entire grid will be 
+               overwritten
+        
+        Example
+        -------
+        >>>
+        >>> mymodel.create_gridxz(overwrite=False)
+        >>>     
+        
+        
+        """
+        
+         
+        #check the model do not exist 
+        if overwrite==False: 
+            assert self.grid2DXZ is None, 'Error: grid2DXZ already exist, set overwrite=True to overwrite'
+
+		# create one layer model
+        self.grid2DXZ=pd.DataFrame({'IJK': np.arange(self.nx*self.nz, dtype=int)})
+        self.grid2DXZ['IX'],self.grid2DXY['IY'],self.grid2DXY['IZ'] =  ijk2ind(self.grid2DXY['IJK'].values,self.nx,1,self.nz)
+        
+        self.grid2DXZ['XC']= ix2x (self.grid2DXY['IX'].values.astype('int'), self.xorg, self.dx)
+        self.grid2DXZ['YC']= self.yorg
+        self.grid2DXZ['ZC']= ix2x (self.grid2DXY['IZ'].values.astype('int'), self.zorg, self.dz)
+        
+
+    cpdef create_gridyz(self, bint overwrite=False):
+        """create_gridyz(bint overwrite=False)
+                
+        Creates a full block 2D grid in defined in the YZ direction.
+        
+        The grid definition is taken from the block model definition in 
+        the Y, and Z directions. 
+        
+                  
+        Parameters
+        ----------
+        overwrite : boolean
+               overwrite flag, if true the entire grid will be 
+               overwritten
+        
+        Example
+        -------
+        >>>
+        >>> mymodel.create_gridyz(overwrite=False)
+        >>>     
+        
+        
+        """
+
+        #check the model do not exist 
+        if overwrite==False: 
+            assert self.grid2DYZ is None, 'Error: grid2DYZ already exist, set overwrite=True to overwrite'
+
+		# create one layer model
+        self.grid2DYZ=pd.DataFrame({'IJK': np.arange(self.ny*self.nz, dtype=int)})
+        self.grid2DYZ['IX'],self.grid2DXY['IY'],self.grid2DXY['IZ'] =  ijk2ind(self.grid2DXY['IJK'].values,1, self.ny,self.nz)
+        
+        self.grid2DYZ['XC']= self.xorg 
+        self.grid2DYZ['YC']= ix2x (self.grid2DXY['IY'].values.astype('int'), self.yorg, self.dy)
+        self.grid2DYZ['ZC']= ix2x (self.grid2DXY['IZ'].values.astype('int'), self.zorg, self.dz)
+                                        
+
+

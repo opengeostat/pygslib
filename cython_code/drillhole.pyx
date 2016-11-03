@@ -996,7 +996,7 @@ cdef __fillgap1Dhole(double[:] in_f,
 
 
 
-def groupcat(codes, table, ccol, cgroup, tablegrup= '_GROUP', tablegrupid = '_GROUPID'): 
+def groupcat(codes, table, ccol, cgroup, tablegrup= 'GROUP'): 
     """
     
     Regroup categories using groping codes defined in a table.
@@ -1014,8 +1014,7 @@ def groupcat(codes, table, ccol, cgroup, tablegrup= '_GROUP', tablegrupid = '_GR
         column with grouped categories in DataFrame ``codes``
     tablegrup: str, defaul('GROUP')
         column with categories DataFrame ``table`` 
-    tablegrupid: str, defaul('GROUPID')
-        column with numeric categories DataFrame ``table`` 
+
         
     Returns
     -------
@@ -1031,13 +1030,9 @@ def groupcat(codes, table, ccol, cgroup, tablegrup= '_GROUP', tablegrupid = '_GR
     type_map = codes[[ccol, cgroup]].drop_duplicates().set_index(ccol)[cgroup].to_dict()
     
     # group categories
-    tmp[tablegrup] = "" 
-    tmp[tablegrupid] = 0 
-    l=0
+    tmp[tablegrup] = ""  
     for i in type_map.keys():
-        l=l+1
         tmp.loc[tmp[ccol]== i, tablegrup] = type_map[i]
-        tmp.loc[tmp[ccol]== i, tablegrupid] = l
         
     return tmp, type_map
 
