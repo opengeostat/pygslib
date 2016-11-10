@@ -1038,6 +1038,31 @@ def groupcat(codes, table, ccol, cgroup, tablegrup= 'GROUP'):
 
 
 
+def txt2int(text):
+    """txt2int(array text)
+    
+    Create an integer ID for cathegories in a text array
+    
+    Parameters
+    ----------
+    text : array of type str
+    
+    Returns
+    ------
+    array of integers
+
+    
+    """
+
+    # create array of unique vales
+    a= pd.Series.unique(text) # this is a numpy array
+    b= np.arange(len(a))
+    c= pd.Series(b, index=a)
+    
+    return pd.Series(text).map(c), c
+
+    
+
 #-------------------------------------------------------------------
 #  Drillhole class
 #-------------------------------------------------------------------
@@ -1536,6 +1561,7 @@ cdef class Drillhole:
         
         # TODO: check overlaps and table relationship
         # TODO: check TO.last > endofhole
+
 
     
     cpdef txt2intID(self, str table_name):
@@ -2725,7 +2751,7 @@ cdef class Drillhole:
             vtkfields[i].SetNumberOfComponents(1)
             vtkfields[i].SetNumberOfTuples(dlen)
 
-			# TODO: Optimize this for... replace vtkfields[i].SetValue with C array. 
+            # TODO: Optimize this for... replace vtkfields[i].SetValue with C array. 
 
             # deep copy data
             if  dtype==np.int8 or dtype==np.int16 or dtype==np.int32 or dtype==np.int64 or dtype==np.float16 or dtype==np.float32 or dtype==np.float64:
@@ -2749,7 +2775,7 @@ cdef class Drillhole:
         lines = vtk.vtkCellArray()
 
 
-		# TODO: Optimize this for... replace points.InsertNextPoint with C array. 
+        # TODO: Optimize this for... replace points.InsertNextPoint with C array. 
 
 
         # populate this data

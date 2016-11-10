@@ -22,6 +22,7 @@ import blockmodel
 #import interpolators
 import vtktools
 import nonlinear
+import sandbox
 import platform
 import warnings
 import numpy as np

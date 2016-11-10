@@ -212,6 +212,12 @@ if __name__ == '__main__':
     nonlinear = CYExtension( 'pygslib.nonlinear', 
                             ['cython_code/nonlinear.pyx'],
                             include_dirs=[numpy.get_include()]) 
+							
+    sandbox = CYExtension( 'pygslib.sandbox', 
+                            ['cython_code/sandbox.pyx'],
+                            include_dirs=[numpy.get_include()])							
+							
+							
     #deprecated
     #neighborhood = CYExtension( 'pygslib.neighborhood', 
                             #['cython_code/neighborhood.pyx'],
@@ -241,6 +247,7 @@ if __name__ == '__main__':
           ext_modules = [drillhole,
                         blockmodel,
                         vtktools,
-                        nonlinear])
+                        nonlinear,
+						sandbox])
 
     print " OPENGEOSTAT SAYS CYTHON CODE COMPILED"

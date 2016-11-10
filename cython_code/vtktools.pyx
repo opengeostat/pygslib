@@ -28,7 +28,7 @@ import pyevtk.hl
 import vtk.util.numpy_support as vtknumpy
 from scipy.interpolate import Rbf
 import scipy.spatial.distance as scipy_dist
-
+from scipy.interpolate import griddata
 
 
 cpdef vtk_show(object renderer, double width=400, double height=300, 
@@ -1015,293 +1015,70 @@ cpdef partialgrid2vtkfile(str path,
     writer.SetInputData(extractGrid.GetOutput())
     writer.Write()
 
-
 # ----------------------------------------------------------------------
-#   Functions to interpolate smoth data
+#   triangilations
 # ----------------------------------------------------------------------
-def interpolator_RBF3D(xt,yt,zt,x,y,z,v, function= 'linear', smooth = .0, mindis = 0.01):
+def delaunay2D (   np.ndarray [double, ndim=1] x, 
+                   np.ndarray [double, ndim=1] y,
+                   np.ndarray [double, ndim=1] z,
+                   Alpha = 0.0,
+                   Tolerance = 0.001,
+                   constraints = None):
     """
-    Interpolates v from input points (x,y,z) into target 
-    locations (xt,yt,zt) using Radial Basis Functions (RBF)
+    Creates a triangulated Surface
     
     
     Parameters
     ----------
-    xt,yt,zt : arrays
-        target location
-    x,y,z,v: arrays
-        input coordinates and variable values
-    function: str or callable, default('multiquadric')
-        'multiquadric': sqrt((r/self.epsilon)**2 + 1)
-        'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
-        'gaussian': exp(-(r/self.epsilon)**2)
-        'linear': r
-        'cubic': r**3
-        'quintic': r**5
-        'thin_plate': r**2 * log(r)
-    smooth: float, default(.0)
-        Values greater than zero increase the smoothness of the 
-        approximation. 0 is for interpolation (default), the function 
-        will always go through the nodal points in this case.
-    
-    
-    Returns 
-    -------
-    vt : array floats
-        values interpolated at locations xt,yt,zt
-        
-    Notes
-    -------
-    Using RBF from scipy. We recommend to see RBF documentation
-    at https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html
-    
-    
-    TODO
-    ------
-    Move this data to a new file / module
-    
-    Example
-    -------
-    
-    >>> vt = pygslib.vtktools.interpolator_RBF(xt,yt,zt,x,y,z,v, function= 'linear', smooth = .0)
-    
-    
-    """
-    
-    # check if there are duplicates
-    assert scipy_dist.pdist(np.array([x,y,z]).T).min()  > mindis, 'Error: minimum distance in x,y,y <= {}'.format(mindis)
-    
-    
-    rbfi = Rbf(x, y, z, v, function = function, smooth =smooth)  # radial basis function interpolator instance
-    
-    vt = rbfi(xt, yt, zt)   # interpolated values vt
-    
-    return  vt
-
-def interpolator_RBF2D(xt,yt,x,y,v, function= 'linear', smooth = .0, mindis = 0.01):
-    """
-    Interpolates v from input points (x,y) into target 
-    locations (xt,yt) using Radial Basis Functions (RBF)
-    
-    
-    Parameters
-    ----------
-    xt,yt : arrays
-        target location
-    x,y,v: arrays
-        input coordinates and variable values
-    function: str or callable, default('multiquadric')
-        'multiquadric': sqrt((r/self.epsilon)**2 + 1)
-        'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
-        'gaussian': exp(-(r/self.epsilon)**2)
-        'linear': r
-        'cubic': r**3
-        'quintic': r**5
-        'thin_plate': r**2 * log(r)
-    smooth: float, default(.0)
-        Values greater than zero increase the smoothness of the 
-        approximation. 0 is for interpolation (default), the function 
-        will always go through the nodal points in this case.
-    
-    
-    Returns 
-    -------
-    vt : array floats
-        values interpolated at locations xt,yt
-        
-    Notes
-    -------
-    Using RBF from scipy. We recommend to see RBF documentation
-    at https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html
-    
-    
-    TODO
-    ------
-    Move this data to a new file / module
-    
-    Example
-    -------
-    
-    >>> vt = pygslib.vtktools.interpolator_RBF(xt,yt,x,y,v, function= 'linear', smooth = .0)
-    
-    
-    """
-    
-    # check if there are duplicates
-    assert scipy_dist.pdist(np.array([x,y]).T).min()  > mindis, 'Error: minimum distance in x,y <= {}'.format(mindis)
-    
-    
-    
-    rbfi = Rbf(x, y, v, function = function, smooth =smooth)  # radial basis function interpolator instance
-    
-    vt = rbfi(xt, yt)   # interpolated values vt
-    
-    return  vt
-
-# ----------------------------------------------------------------------
-#   Functions to warp/unfold data
-# ----------------------------------------------------------------------
-def Unfold3D(x1,y1,z1,x0,y0,z0,xd0,yd0,zd0,function= 'linear', smooth = .0):
-    """
-    
-    This function unfolds data at coordinates Xd using a set of control 
-    points/lines with folded coordinates X0 and unfolded coordinates X1.  
-    
-    To unfold a warp vector is calculated at control point as 
-    ``W = X1-X0``, then the ``W`` vectors are interpolated to each 
-    location ``Xd0`` using the function ``interpolator_RDB()`` to obtain
-    ``Wd``. The unfolded coordinates are calculated as ``Xd1 = Xd0 + Wd``
-        
-    
-    Parameters
-    ----------
-    x0,y0,z0 : arrays
-        control points at folded space
-    x1,y1,z1 : arrays
-        control points at unfolded space
-    xd,yd,zd : arrays
-        target location to be unfolded
-    function: str or callable, default('multiquadric')
-        'multiquadric': sqrt((r/self.epsilon)**2 + 1)
-        'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
-        'gaussian': exp(-(r/self.epsilon)**2)
-        'linear': r
-        'cubic': r**3
-        'quintic': r**5
-        'thin_plate': r**2 * log(r)
-    smooth: float, default(.0)
-        Values greater than zero increase the smoothness of the 
-        approximation. 0 is for interpolation (default), the function 
-        will always go through the nodal points in this case.
-    
-    
-    Returns 
-    -------
-    xd1,yd1,zd1 : arrays of floats
-        coordinates of data points in unfolded space
-        
-    wx, wy, wz : arrays of floats
-        desplacement vectors
-        
-    Notes
-    -------
-    This functions uses RBF from scipy. We recommend to see RBF documentation
-    at https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html
-    
-    Unfold3D interpolates with 3D RBF
-    
-    TODO
-    ------
-    Move this data to a new file / module
-    
+	x,y,z : np.ndarray [double, ndim=1]
+	    Coordinates of the input points
+    Alpha: double, default(0.0)
+        For a non-zero alpha value, only edges or triangles contained 
+        within a sphere centered at mesh vertices will be output. 
+        Otherwise, only triangles will be output.
+    Tolerance : double, default(0.001)
+        Specify a tolerance to control discarding of closely spaced points.
+        This tolerance is specified as a fraction of the diagonal length of 
+        the bounding box of the points.
+    constraints: vtkPolydata or None
+		constraint polygons, lines or polylines
+		
+	Returns
+	-------
+	vtkPolyData with wireframe
+	
     """
 
-    # calculate warp vector at control points
-    wx=x1-x0
-    wy=y1-y0
-    wz=z1-z0
+    # number of cells/blocks
+    np = x.shape[0]
     
-    
-    # interpolate warp vectors at data points
-
-    wdx = interpolator_RBF3D(xd0, yd0, zd0, x0, y0, z0, wx,
-                        function= function,
-                        smooth = smooth)
-    wdy = interpolator_RBF3D(xd0, yd0, zd0, x0, y0, z0, wy,
-                        function= function,
-                        smooth = smooth)
-    wdz = interpolator_RBF3D(xd0, yd0, zd0, x0, y0, z0, wz,
-                        function= function,
-                        smooth = smooth)
-
-    # unfold
-    xd1 = xd0 + wdx
-    yd1 = yd0 + wdy
-    zd1 = zd0 + wdz
-    
-    return xd1, yd1, zd1, wx, wy, wz
-    
-    
-# ----------------------------------------------------------------------
-#   Functions to warp/unfold data
-# ----------------------------------------------------------------------
-def Unfold2D(x1,y1,z1,x0,y0,z0,xd0,yd0,zd0,function= 'linear', smooth = .0):
-    """
-    
-    This function unfolds data at coordinates Xd using a set of control 
-    points/lines with folded coordinates X0 and unfolded coordinates X1.  
-    
-    To unfold a warp vector is calculated at control point as 
-    ``W = X1-X0``, then the ``W`` vectors are interpolated to each 
-    location ``Xd0`` using the function ``interpolator_RDB()`` to obtain
-    ``Wd``. The unfolded coordinates are calculated as ``Xd1 = Xd0 + Wd``
+         
+    # Create array of points
+    pcoords = vtk.vtkFloatArray()
+    pcoords.SetNumberOfComponents(3)
+    pcoords.SetNumberOfTuples(np) 
+            
+    for i in range (np):  
+        pcoords.SetTuple3(i, x[i], y[i], z[i])
         
-    
-    Parameters
-    ----------
-    x0,y0,z0 : arrays
-        control points at folded space
-    x1,y1,z1 : arrays
-        control points at unfolded space
-    xd,yd,zd : arrays
-        target location to be unfolded
-    function: str or callable, default('multiquadric')
-        'multiquadric': sqrt((r/self.epsilon)**2 + 1)
-        'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
-        'gaussian': exp(-(r/self.epsilon)**2)
-        'linear': r
-        'cubic': r**3
-        'quintic': r**5
-        'thin_plate': r**2 * log(r)
-    smooth: float, default(.0)
-        Values greater than zero increase the smoothness of the 
-        approximation. 0 is for interpolation (default), the function 
-        will always go through the nodal points in this case.
-    
-    
-    Returns 
-    -------
-    xd1,yd1,zd1 : arrays
-        coordinates of data points in unfolded space
-
-    wx, wy, wz : arrays of floats
-        desplacement vectors
+    points = vtk.vtkPoints()
+    points.SetData(pcoords)
 
         
-    Notes
-    -------
-    This functions uses RBF from scipy. We recommend to see RBF documentation
-    at https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html
+    # create input polydata
+    myPolyData = vtk.vtkPolyData()
+    myPolyData.SetPoints(points)
     
-    Unfold2D interpolates with 2D RBF in plane XY
+        
+    # Triangulate 
+    delaunay = vtk.vtkDelaunay2D()
+    delaunay.SetInputData(myPolyData)
     
-    TODO
-    ------
-    Move this data to a new file / module
+    if constraints != None: 
+        delaunay.SetSourceData(constraints)
+        
+    delaunay.Update()
     
-    """
-
-    # calculate warp vector at control points
-    wx=x1-x0
-    wy=y1-y0
-    wz=z1-z0
+    return delaunay.GetOutput()
     
     
-    # interpolate warp vectors at data points
-
-    wdx = interpolator_RBF2D(xd0, yd0,  x0, y0, wx,
-                        function= function,
-                        smooth = smooth)
-    wdy = interpolator_RBF2D(xd0, yd0, x0, y0, wy,
-                        function= function,
-                        smooth = smooth)
-    wdz = interpolator_RBF2D(xd0, yd0, x0, y0, wz,
-                        function= function,
-                        smooth = smooth)
-
-    # unfold
-    xd1 = xd0 + wdx
-    yd1 = yd0 + wdy
-    zd1 = zd0 + wdz
-    
-    return xd1, yd1, zd1, wx, wy, wz
