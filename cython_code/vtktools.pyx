@@ -627,15 +627,15 @@ cpdef pointinsolid(object surface,
 #   Inport triangles into wireframe
 # ----------------------------------------------------------------------
 cpdef dmtable2wireframe( 
-                   np.ndarray [double, ndim=1] x, 
-                   np.ndarray [double, ndim=1] y,
-                   np.ndarray [double, ndim=1] z,
-                   np.ndarray [long, ndim=1] pid,
-                   np.ndarray [long, ndim=1] pid1,
-                   np.ndarray [long, ndim=1] pid2,
-                   np.ndarray [long, ndim=1] pid3,
+                   x, 
+                   y,
+                   z,
+                   pid1,
+                   pid2,
+                   pid3,
+                   bint indexone = False,
                    str filename = None):
-    """dmtable2wireframe(np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, np.ndarray [long, ndim=1] pid, np.ndarray [long, ndim=1] pid1, np.ndarray [long, ndim=1] pid2, np.ndarray [long, ndim=1] pid3, str filename = None)
+    """dmtable2wireframe(np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, np.ndarray [long, ndim=1] pid1, np.ndarray [long, ndim=1] pid2, np.ndarray [long, ndim=1] pid3, bint indexone = False, str filename = None)
     
     Takes a wireframe defined by two tables and creates a VTK polydata wireframe object. 
     
@@ -651,7 +651,10 @@ cpdef dmtable2wireframe(
         coordinates of the points to be tested        
     pid1,pid2,pid3 : 1D array of integers
         triangles defined by three existing point IDs
-    str filename   : Str (Default None)
+    indexone:  boolean (Default False)
+        If false pid index start at zero, otherwise pid index 
+        start at one
+    filename   : Str (Default None)
         file name and path. If provided the file wireframe is saved to 
         this file.   
     
@@ -660,12 +663,18 @@ cpdef dmtable2wireframe(
     surface : VTK polydata
            wireframe imported
     
+    TODO
+    ----
+    Add variables to triangles (vtk cell) and to points (vtk points)
+    
     
     Note
     ----
-    ``pid`` is the row number in the point table.
+    ``pid1,pid2,pid3`` are the row number in the point table of the 
+    three points that form a triangle.
     
-    ``pid`` indices start at zero
+    ``pid`` indices start at zero of indexone == False, 
+    otherwise ``pid`` indices start at one
     
     For example: 
     
@@ -697,7 +706,11 @@ cpdef dmtable2wireframe(
     assert x.shape[0]==y.shape[0]==z.shape[0],          'Error: x, y, z or pid with different dimension'
     assert pid1.shape[0]==pid1.shape[0]==pid1.shape[0], 'Error: pid1,pid2 or pid3 with different dimension'
 
-
+    # reset index to start from zero if they start at one
+    if indexone == True:
+        pid1 = pid1 - 1
+        pid2 = pid2 - 1
+        pid3 = pid3 - 1
 
     points = vtk.vtkPoints();
     
@@ -711,9 +724,9 @@ cpdef dmtable2wireframe(
     triangles = vtk.vtkCellArray()
 
     for i in range(pid1.shape[0]):
-        triangle.GetPointIds().InsertId ( 0, pid1[i]);
-        triangle.GetPointIds().InsertId ( 1, pid2[i] );
-        triangle.GetPointIds().InsertId ( 2, pid3[i] );
+        triangle.GetPointIds().InsertId ( 0, int(pid1[i]));
+        triangle.GetPointIds().InsertId ( 1, int(pid2[i]));
+        triangle.GetPointIds().InsertId ( 2, int(pid3[i]));
         
         triangles.InsertNextCell ( triangle )
 
@@ -1030,8 +1043,8 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
     
     Parameters
     ----------
-	x,y,z : np.ndarray [double, ndim=1]
-	    Coordinates of the input points
+    x,y,z : np.ndarray [double, ndim=1]
+        Coordinates of the input points
     Alpha: double, default(0.0)
         For a non-zero alpha value, only edges or triangles contained 
         within a sphere centered at mesh vertices will be output. 
@@ -1041,12 +1054,12 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
         This tolerance is specified as a fraction of the diagonal length of 
         the bounding box of the points.
     constraints: vtkPolydata or None
-		constraint polygons, lines or polylines
-		
-	Returns
-	-------
-	vtkPolyData with wireframe
-	
+        constraint polygons, lines or polylines
+        
+    Returns
+    -------
+    vtkPolyData with wireframe
+    
     """
 
     # number of cells/blocks
