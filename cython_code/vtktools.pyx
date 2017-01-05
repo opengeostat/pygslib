@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 '''
 
 import os
+import sys
 import vtk
 from IPython.display import Image
 from libc.math cimport sin
@@ -83,7 +84,8 @@ cpdef vtk_show(object renderer, double width=400, double height=300,
     writer.SetWriteToMemory(1)
     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
     writer.Write()
-    data = str(buffer(writer.GetResult()))
+
+    data = str(buffer(writer.GetResult()))  # use memoryview in python 2.7 version
     
     return Image(data)
 
