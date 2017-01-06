@@ -13,24 +13,22 @@ of the MIT license.  See the LICENSE.txt file for details.
          
 """                                                                      
 
+# import 3d party modules
 import sys
 import os.path
 import pandas as pd
-import drillhole
-import blockmodel
-#import neighborhood
-#import interpolators
-import vtktools
-import nonlinear
-import sandbox
 import platform
 import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-# gslib programs
-import gslib 
+# import pygslib modules (compatible with python 3x)
+import pygslib.drillhole
+import pygslib.blockmodel
+import pygslib.vtktools
+import pygslib.nonlinear
+import pygslib.sandbox
+import pygslib.gslib 
 
 
 #-----------------------------------------------------------------------------------------------------------------

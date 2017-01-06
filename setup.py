@@ -188,7 +188,7 @@ if __name__ == '__main__':
                          gslib_postik,
                          gslib_general])
     
-    print " OPENGEOSTAT SAYS FORTRAN CODE COMPILED"
+    print (" OPENGEOSTAT SAYS FORTRAN CODE COMPILED")
 	
     #Cython code extension
     #-------------------------------------------------------------------
@@ -250,4 +250,4 @@ if __name__ == '__main__':
                         nonlinear,
 						sandbox])
 
-    print " OPENGEOSTAT SAYS CYTHON CODE COMPILED"
+    print (" OPENGEOSTAT SAYS CYTHON CODE COMPILED")

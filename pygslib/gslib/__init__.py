@@ -39,22 +39,23 @@ import vtk
 
 
 #gslib fortran code
-import __gslib__kt3d
-import __gslib__postik
-import __read_gslib
-import __addcoord
-import __rotscale
-import __block_covariance
-import __general
-import __plot
-import __declus
-import __variograms
-import __dist_transf
-import __bigaus
-import __bicalib
-import __trans
-import __draw
+import pygslib.gslib.__gslib__kt3d
+import pygslib.gslib.__gslib__postik
+import pygslib.gslib.__read_gslib
+import pygslib.gslib.__addcoord
+import pygslib.gslib.__rotscale
+import pygslib.gslib.__block_covariance
+import pygslib.gslib.__general
+import pygslib.gslib.__plot
+import pygslib.gslib.__declus
+import pygslib.gslib.__variograms
+import pygslib.gslib.__dist_transf
+import pygslib.gslib.__bigaus
+import pygslib.gslib.__bicalib
+import pygslib.gslib.__trans
+import pygslib.gslib.__draw
 
+#pygslib modules
 import pygslib.vtktools as vtktools
 import pygslib
 
@@ -131,7 +132,7 @@ def read_gslib_file(fname, maxnvar=500):
     --------
     >>> import pygslib as gslib     
     >>> mydata= gslib.gslib.read_gslib_file('dataset/cluster.dat') 
-    >>> print mydata.head(n=5)
+    >>> print (mydata.head(n=5))
               Xlocation  Ylocation  Primary  Secondary  Declustering Weight
         0       39.5       18.5     0.06       0.22                1.619
         1        5.5        1.5     0.06       0.27                1.619
@@ -692,7 +693,7 @@ def cova3(parameters):
     -------- 
     >>> # this is the covariance between the points x1, x2
     >>> cmax,cova=pygslib.gslib.cova3(parameters_mod)
-    >>> print cmax, cova
+    >>> print (cmax, cova)
     >>> 2.40999984741 2.24302244186
 
     """
@@ -756,7 +757,7 @@ def block_covariance(parameters):
        
     Example
     -------
-    >>> print pygslib.gslib.block_covariance(parameters_blk)
+    >>> print (pygslib.gslib.block_covariance(parameters_blk))
     0.803182760643
     
     """
@@ -836,7 +837,7 @@ def declus(parameters):
     wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr = __declus.declus(**parameters)
     
     if (error>0):
-        print 'There was an Error = {}, check your parameters and see __doc__'.format(error)  
+        print ('There was an Error = {}, check your parameters and see __doc__'.format(error))  
         warnings.warn('Error > 0, check your parameters')
 
     return wtopt,vrop,wtmin,wtmax,error,xinc,yinc,zinc,rxcs,rycs,rzcs,rvrcr
@@ -1066,10 +1067,6 @@ def kt3d(parameters):
 
     """
 
-
-    assert 'id2power' >= 0, 'id2power' 
-
-
     # add dummy cut if not in parameters
 
     if 'cut' not in parameters:
@@ -1081,7 +1078,7 @@ def kt3d(parameters):
     if 'id2power' not in parameters:
         parameters['id2power']=2.0
 
-    assert 'id2power' >= 0, 'Error: parameter id2power <0 ' 
+    assert parameters['id2power'] >= 0, 'Error: parameter id2power <0 ' 
 
     
     # check that bhid is provided if nbhid > 0

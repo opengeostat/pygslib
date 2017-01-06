@@ -4,7 +4,7 @@ package:
 
 source:
   fn: PyEVTK-1.0.0.tar.gz
-  url: https://pypi.python.org/packages/source/P/PyEVTK/PyEVTK-1.0.0.tar.gz
+  url: https://pypi.python.org/packages/6b/92/d2ce84a10c6a4ac31620d50c0accd88a2f467ca08f4bcb5f665d2f92bb10/PyEVTK-1.0.0.tar.gz
   md5: f19b0ef543a271c56f4ade3987d514e7
 #  patches:
    # List any patch files here
@@ -56,6 +56,7 @@ about:
   home: https://pypi.python.org/pypi/PyEVTK
   license: UNKNOWN
   summary: 'Export data as binary VTK files'
+  license_family: OTHER
 
 # See
 # http://docs.continuum.io/conda/build.html for
