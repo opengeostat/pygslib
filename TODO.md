@@ -34,7 +34,7 @@ TODO at drillhole module
 - [ ] Add HTMLbar tables.
 - [ ] Update Ipython templates.
 - [x] Optimize code for desurvey
-- [ ] Optimize code for compositing
+- [x] Optimize code for compositing
 - [x] Do more testing on desurvey drillhole
 - [x] Make numeric but non float float before importing
 - [x] Validate and test composite.
@@ -42,7 +42,7 @@ TODO at drillhole module
 - [x] Create warning in desurvey if there are intervals undefined (not created)
 - [ ] Add a dictionary with drillholes names, traces and properties for faster programming in class members and to create user's reports. Add summary of drillholes in Drillhole class.
 - [ ] Generate reposts with reportlab??? for example for log files. 
-- [ ] VTK export is too slow, optimize. Consider to use directly VTK code in C+ or Python. VTK write XML polydata format, in other words: PolyData (.vtp) - Serial vtkPolyData (unstructured).
+- [x] VTK export is too slow, optimize. Consider to use directly VTK code in C+ or Python. VTK write XML polydata format, in other words: PolyData (.vtp) - Serial vtkPolyData (unstructured).
 - [ ] Create export in other formats, example inventor (see vtkIVWriter).
 - [ ] Create a dictionary with warning and errors in validations and do only one warning. 
 - [ ] Remove the need for one interval error ?
