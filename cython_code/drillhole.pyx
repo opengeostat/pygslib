@@ -2612,8 +2612,8 @@ cdef class Drillhole:
     #-------------------------------------------------------------------
     #       VTK export 
     #-------------------------------------------------------------------
-    cpdef export_core_vtk_line(self, str table_name, str filename,  double nanval=0, str title = '', bint binary=True):
-        """ export_core_vtk_line(str table_name, str filename,  double nanval=0, str title = '', bint binary=True)
+    cpdef export_core_vtk_line(self, str table_name, str filename, str title = ''):
+        """ export_core_vtk_line(str table_name, str filename,  str title = '')
         
         Export desurveyed drillhole table to vtk lines. Endpoints 
         are required.
@@ -2626,11 +2626,6 @@ cdef class Drillhole:
             This is the absolute or relative file path and name. 
         title : str 
             The file header (or title, or comment)
-        nanval: float
-            Numeric fields with nan values will be replaced with nanval
-        binary: boolean  (default True)
-            If true export data in binary format, otherwise the output 
-            will be in ascii format 
         
         
         See Also
@@ -2646,14 +2641,12 @@ cdef class Drillhole:
         --------
         >>>
         >>> mydrillhole.export_core_vtk_line(table_name = 'assay', 
-                                            filename = 'assay_line.vtk'
-                                            nanval=-999, 
-                                            binary=True)
+                                            filename = 'assay_line.vtk')
         >>>
         
         """ 
         
-        #check that table exists      
+        #check that table exists
         assert table_name in self.table, '%s not exist in this drillhole database' % table_name
         
         #check columns 
@@ -2730,8 +2723,6 @@ cdef class Drillhole:
             assert  np.isfinite(self.table[table_name]['ze'].values).all(), "no finite coordinates at ze after nan at xm,ym,zm removed"          
             
         
-            
-        
         #first we store the data in a set of vtk arrays (that will be cell data)
         dlen = xb.shape[0]
                 
@@ -2739,35 +2730,25 @@ cdef class Drillhole:
         for i in self.table[table_name].columns:
             # assign the right vtk type 
             dtype = self.table[table_name][i].dtype
-            if dtype==np.int8 or dtype==np.int16 or dtype==np.int32 or dtype==np.int64: 
-                vtkfields[i]= vtk.vtkIntArray()
-            elif dtype==np.float16 or dtype==np.float32 or dtype==np.float64: 
-                vtkfields[i]= vtk.vtkDoubleArray()
-            else:
-                vtkfields[i]= vtk.vtkStringArray()
-            
-            # set some properties
-            vtkfields[i].SetName(i)
-            vtkfields[i].SetNumberOfComponents(1)
-            vtkfields[i].SetNumberOfTuples(dlen)
 
-            # TODO: Optimize this for... replace vtkfields[i].SetValue with C array. 
-
-            # deep copy data
+            # copy data
             if  dtype==np.int8 or dtype==np.int16 or dtype==np.int32 or dtype==np.int64 or dtype==np.float16 or dtype==np.float32 or dtype==np.float64:
-                for l in range(dlen): 
-                    if np.isnan(self.table[table_name][i][l]):
-                        vtkfields[i].SetValue(l,nanval)
-                    else:
-                        vtkfields[i].SetValue(l,self.table[table_name][i][l]) 
-                        
+                vtkfields[i]= vtk.util.numpy_support.numpy_to_vtk(self.table[table_name][i].values) 
+                vtkfields[i].SetName(i)
+                vtkfields[i].SetNumberOfComponents(1)
             else:
+				# this is fos string array. Not optimized...
+                vtkfields[i]= vtk.vtkStringArray()
+                vtkfields[i].SetName(i)
+                vtkfields[i].SetNumberOfComponents(1)
+                vtkfields[i].SetNumberOfTuples(dlen)    
                 for l in range(dlen): 
-                   vtkfields[i].SetValue(l,str(self.table[table_name][i][l]))
+                    vtkfields[i].SetValue(l,str(self.table[table_name][i][l]))
         
         # now we create a set of vtk points 
         points= vtk.vtkPoints()
         npoints = dlen*2
+        points.SetNumberOfPoints(npoints)
 
         # now we create a set of lines representing the cores and 
         # a line container (a cell array)
@@ -2782,11 +2763,11 @@ cdef class Drillhole:
         n=-1
         for l in range(dlen):
             
-            points.InsertNextPoint(xb[l], yb[l], zb[l])
-            points.InsertNextPoint(xe[l], ye[l], ze[l])
             n=n+1
+            points.SetPoint(n,xb[l], yb[l], zb[l])
             line.GetPointIds().SetId(0,n)
             n=n+1
+            points.SetPoint(n,xe[l], ye[l], ze[l])
             line.GetPointIds().SetId(1,n)
             lines.InsertNextCell(line)
             
@@ -2807,10 +2788,7 @@ cdef class Drillhole:
         # save data to VTK file
         writer = vtk.vtkPolyDataWriter()
         writer.SetInputData(linesPolyData)
-        if binary == False: 
-            writer.SetFileTypeToASCII()
-        else: 
-            writer.SetFileTypeToBinary()
+        writer.SetFileTypeToBinary()
         if title != '':
             writer.SetHeader (title)
         else: 
