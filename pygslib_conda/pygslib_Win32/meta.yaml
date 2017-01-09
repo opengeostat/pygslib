@@ -31,7 +31,7 @@ requirements:
     - pandas >=0.17
     - matplotlib
     - scipy
-    - vtk
+    - vtk  >= 6
     - ipython
     - pyevtk
     - mingw
