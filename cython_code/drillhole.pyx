@@ -2096,6 +2096,176 @@ cdef class Drillhole:
         return nngap,nnoverlap
 
 
+    cpdef split_long_intervals(self,
+                     str table,
+                     str new_table,
+                     double maxlength,
+                     double splitlength=0,
+                     double minlength=0.,
+                     bint overwrite =False, 
+                     bint clean=True,
+                     long buff=10):
+        """split_long_intervals(str table, str new_table, double maxlength, double splitlength, double minlength=0, bint overwrite =False, bint clean=True, long buff=10)
+        
+        Split long sample intervals in a table. 
+        
+        This function split sample intervals longer than ``maxlength`` into  
+        intervals approximatelly ``splitlength``, to be precise, equal to 
+        
+          ``newlength = interval_lenght / splitlength``
+        
+        The interval will be not splitted if ``newlength < minlength``
+        
+       
+               
+        Parameters
+        ----------
+        table: name of the first table
+            it must be an existing table at drillhole.table.keys()
+        new_table: name of the new table
+            it may not exists at drillhole.table.keys() if overwrite == False
+        maxlength:
+            all intervals longer than this length will be splitted if 
+            the resulting splits are longuer than minlength
+        splitlength: default 0. 
+            reference split length. If <= 0 or not specified it will be
+            set equal to maxlength
+        minlength: default 0. 
+            intervals will not be splitted if the resulting split is 
+            less than this value. If <= 0 or not specified it will be
+            set equal to splitlength/2 
+        overwrite: default True. 
+            If new_table_name exists and overwrite == True the existing 
+            table will be overwritten. 
+        clean: default True.
+            Delete temporary columns created with suffix __tmp__. 
+        buff: defaul 10
+            an internal and temporary table with 10*total_length/splitlength
+            interval will be created in memory. If you have an error 
+            in memory use a larger number. 
+        
+                     
+        Example
+        -------
+        
+        >>> mydrillhole.split_long_intervals(
+                     table= "litho",
+                     new_table = "litho_split",
+                     maxlength = 5,
+                     splitlength=4.5,
+                     minlength=2.,
+                     overwrite =False, 
+                     clean=True)
+        >>>
+        >>>
+        
+        """
+        
+
+        
+        # check that the table is not in the database
+        if overwrite==False:
+            assert new_table not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table)
+
+        # check splitlength
+        if splitlength < 0.000001:
+            splitlength = maxlength
+
+        # check minlength
+        if minlength < 0.000001:
+            minlength = splitlength / 2.
+        
+        # check 
+        assert splitlength <= maxlength, 'Error in input parameters splitlength > maxlength'
+        assert minlength <= splitlength, 'Error in input parameters minlength > splitlength'
+        
+        
+        
+        # add ID to table and sort
+        self.table[table].loc[:,'_id0']= np.arange(self.table[table].shape[0], dtype=long)[:]
+        self.table[table].loc[:,'_LENGTH']= self.table[table]['TO']-self.table[table]['FROM']
+        self.table[table].sort_values(by=['BHID', 'FROM'], inplace=True)                
+                
+        
+        # define arrays
+        cdef np.ndarray[long, ndim=1] idt =self.table[table]['_id0'].values
+        cdef np.ndarray[double, ndim=1] fromt = self.table[table]['FROM'].values
+        cdef np.ndarray[double, ndim=1] tot = self.table[table]['TO'].values 
+        cdef np.ndarray[double, ndim=1] length = self.table[table]['_LENGTH'].values 
+        
+        
+        cdef:
+             double splitl
+             long ll
+             long n 
+             int nsplit 
+        
+        ll = length.sum()/ splitlength * buff
+        
+                
+        new_id0 = np.empty(ll, dtype=np.int64, order='C')
+        new_from = np.empty(ll, dtype=np.float64, order='C')
+        new_to = np.empty(ll, dtype=np.float64, order='C')
+        
+        
+        n = -1
+        for i in range(self.table[table].shape[0]):
+            # split if >= maxleng
+            if length[i] >= maxlength:
+                # the new split is ok
+                nsplit = <int> (length[i] / splitlength + 0.5)    # this may be round properly
+                splitl = length[i]  / nsplit
+                
+                
+                if splitl >= minlength:
+                    for j in range(nsplit):
+                        # split here
+                        n+=1
+                        new_id0[n]= idt[i]
+                        new_from[n]= fromt[i] + j*splitl
+                        new_to[n]= new_from[n] + splitl    
+                    
+                else:                     
+                     n+=1
+                     if n<ll:
+                         new_id0[n]= idt[i]
+                         new_from[n]= fromt[i]
+                         new_to[n]= tot[i]
+                    
+            else:
+                n+=1
+                if n<ll:
+                    new_id0[n]= idt[i]
+                    new_from[n]= fromt[i]
+                    new_to[n]= tot[i]
+                else: 
+                    # classsic python error
+                    assert n<ll, 'Error allocating internal table in memory. Use a larger buff value'
+                     
+                     
+        n+=1
+
+            
+        #create new table with intervals and ID
+        newtable=pd.DataFrame({'FROM':new_from[:n],'TO':new_to[:n],'_id0':new_id0[:n]})
+               
+        
+        # merge with existing data and sort
+        newtable=newtable.join(self.table[table], on='_id0', rsuffix='__tmp__')
+        newtable.sort_values(by=['BHID', 'FROM'], inplace=True)
+        
+        #clean if necessary
+        if clean:
+            newtable.drop(
+               ['FROM__tmp__','TO__tmp__','_id0__tmp__'],
+               axis=1,inplace=True, errors='ignore')
+        
+        #add table to the class
+        self.addtable(newtable,new_table,overwrite)
+
+
+
+
     cpdef merge(self,str table_A,
                      str table_B,
                      str new_table_name,
@@ -2143,7 +2313,7 @@ cdef class Drillhole:
         
         """
         
-        
+                
         # check that the table is not in the database
         if overwrite==False:
             assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
@@ -2164,14 +2334,15 @@ cdef class Drillhole:
         
         # prepare fixed long array to send data    
         #    input     
-        np_la=np.empty(self.table[table_A].shape[0], dtype = float)
-        np_lb=np.empty(self.table[table_B].shape[0], dtype = float)
-        np_ida=np.empty(self.table[table_A].shape[0], dtype = int)
-        np_idb=np.empty(self.table[table_B].shape[0], dtype = int)
+        np_la=np.empty(self.table[table_A].shape[0]+1, dtype = float)
+        np_lb=np.empty(self.table[table_B].shape[0]+1, dtype = float)
+        np_ida=np.empty(self.table[table_A].shape[0]+1, dtype = int)
+        np_idb=np.empty(self.table[table_B].shape[0]+1, dtype = int)
         
         ll = self.table[table_A].shape[0] +  self.table[table_B].shape[0] +10
         
         nBHID = np.empty(ll, dtype=object, order='C')
+        
         
         cdef:
             double[::1] la = np_la
@@ -2206,12 +2377,14 @@ cdef class Drillhole:
         keysA= groupA.groups.keys()
         keysB= groupB.groups.keys()
         
+        
+        
         for i in BHID:
             
-            
+                        
             # if we really have to merge
             if (i in keysA) and (i in keysB): 
-            
+                
                 # prepare input data
                 # table A drillhole i
                 nk=groupA.get_group(i).shape[0]
@@ -2221,6 +2394,7 @@ cdef class Drillhole:
                 
                 la[nk]=groupA.get_group(i)['TO'].values[nk-1]
                 ida[nk]=groupA.get_group(i)['_id0'].values[nk-1]
+                
                 
                 # table B drillhole i
                 nj=groupB.get_group(i).shape[0]
@@ -2260,9 +2434,10 @@ cdef class Drillhole:
                 # IDs
                 nnIDA+=np_newida[:-1].tolist()
                 nnIDB+=np_newidb[:-1].tolist()
-            
+                                               
                 continue
             
+                        
             # it is only on table A?
             if (i in keysA): 
                 
@@ -2284,6 +2459,8 @@ cdef class Drillhole:
                 nnIDA+=groupA.get_group(i)['_id0'].values.tolist()
                 nnIDB+= tmp.tolist() 
                 continue
+            
+            
             
             # it is only on table B?
             if (i in keysB): 
@@ -2307,8 +2484,6 @@ cdef class Drillhole:
                 nnIDB+= groupB.get_group(i)['_id1'].values.tolist() 
                 continue
                 
-
-        
     
         #create new table with intervals and ID
         newtable=pd.DataFrame({'BHID':nnBHID, 'FROM':nnf,'TO':nnt,'_id0':nnIDA,'_id1':nnIDB})
@@ -2549,7 +2724,7 @@ cdef class Drillhole:
         if overwrite==False:
             assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
             
-        #check that the variable is the table and the variable type
+        #check that the variable is in the table and the variable type
         assert variable_name in self.table[table_name].columns, 'Error: The variable {} do not exists in the input table'.format(variable_name)
         assert np.dtype(self.table[table_name][variable_name])==np.float64, 'Error: The variable {} is not type float64'.format(variable_name)
         
@@ -2592,15 +2767,149 @@ cdef class Drillhole:
         #add table to the class
         self.addtable(newtable,new_table_name,overwrite)
                 
+    cpdef key_composite(self,  str table_name, 
+                          str key_name,
+                          str variable_name, 
+                          str new_table_name, 
+                          double tol=0.1,                          
+                          bint overwrite =False):
+
+        """downh_composite(str table_name, str key_name, str variable_name, str new_table_name, double tol=0.001, bint overwrite =False)
+        
+        Downhole composites one variable at the time
+        
+            
+        Parameters
+        ----------
+        table_name: name of the table with drillhole intervals
+            it must be an existing table at drillhole.table.keys()
+        key_name: name of the key in "table_name" table
+            it must be an existing field at drillhole.table[table_name].columns
+        variable_name: name of the variable in "table_name" table
+            it must be an existing field at drillhole.table[table_name].columns
+        new_table_name: name of the new table with composites
+            it can be a new name, no in drillhole.table.keys()
+            or a table name on drillhole.table.keys() if overwrite =True
+        tol: default 0.1, tolerance to ignore gaps 
+        overwrite: default True. 
+            If the table exist and overwrite = True the existing table 
+            will be overwritten. 
+        
+        Example
+        -------
+
+        Todo
+        ----
+        Add accumulator and count variable
+
+        """
+        
+              
+        
+        cdef double l, vl, f, t
+        cdef int i, n
+        
+        # check that the table is not in the database
+        if overwrite==False:
+            assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
+            
+        #check that the variable is in the table and the variable type
+        assert variable_name in self.table[table_name].columns, 'Error: The variable {} do not exists in the input table'.format(variable_name)
+        assert np.dtype(self.table[table_name][variable_name])==np.float64, 'Error: The variable {} is not type float64'.format(variable_name)
+        assert key_name in self.table[table_name].columns, 'Error: The key variable {} do not exists in the input table'.format(key_name)
+        
+        # may not work with nrows < 2
+        assert self.table[table_name].shape[0]>2, 'Error: This function requires tables with more than one row'
+                
+        # sort table
+        self.table[table_name].sort_values(by=['BHID', 'FROM'], inplace=True)
 
 
-
+        #create input arrays
+        ibhid =  self.table[table_name]['BHID'].values
+        ifrom = self.table[table_name]['FROM'].values
+        ito =   self.table[table_name]['TO'].values
+        ikey =  self.table[table_name][key_name].values
+        ivar =  self.table[table_name][variable_name].values
+        
+        #create output arrays
+        nrows = self.table[table_name].shape[0]
+        obhid = np.empty(nrows, dtype = self.table[table_name]['BHID'].dtype )
+        ofrom = np.empty(nrows, dtype = self.table[table_name]['FROM'].dtype)
+        oto = np.empty(nrows, dtype = self.table[table_name]['TO'].dtype)
+        okey = np.empty(nrows, dtype = self.table[table_name][key_name].dtype)
+        ovar = np.empty(nrows, dtype = self.table[table_name][variable_name].dtype)
+        
+                
+        #composite by key
+        vl = ivar[0]*(ito[0]-ifrom[0])
+        l = ito[0]-ifrom[0]
+        f = ifrom[0]
+        t = ito[0]
+        key = ikey[0]
+        bhid = ibhid[0]
+        n = 0
+        
+        for i in range(1,nrows):
+            
+            if ibhid[i]==ibhid[i-1] and ikey[i]==ikey[i-1] and ifrom[i]-ito[i-1]<=tol:
+                vl += ivar[i]*(ito[i]-ifrom[i])
+                l  +=  ito[i]-ifrom[i]
+                t   =  ito[i]
+                
+            else:
+                
+                obhid[n] = bhid
+                ofrom[n] = f
+                oto[n] = t
+                okey[n] = key
+                ovar[n] = vl/l
+                                                
+                # Update next iteration
+                n+=1
+                vl = ivar[i]*(ito[i]-ifrom[i])
+                l = ito[i]-ifrom[i]
+                f = ifrom[i]
+                t = ito[i]
+                key = ikey[i]
+                bhid = ibhid[i]
+                                        
+        #take right action with las interval in the array 
+        
+        # The nth interval ==  nth-1 interval, add interval to composit and close
+        if ibhid[nrows-1]==ibhid[nrows-2] and ikey[nrows-1]==ikey[nrows-2] and ifrom[nrows-1]-ito[nrows-2]<=tol:
+            
+            obhid[n] = bhid
+            ofrom[n] = f
+            oto[n] = t
+            okey[n] = key
+            ovar[n] = vl/l
+            n += 1
+            
+            
+        # The nth interval !=  nth-1 interval so, add this single interval and close
+        else:                            
+            # Update next iteration
+            obhid[n] = bhid
+            ofrom[n] = f
+            oto[n] = t
+            okey[n] = key
+            ovar[n] = vl/l
+            n += 1
+                                                                  
+        #create new table with gaps (only with fields )
+        newtable=pd.DataFrame({'BHID':obhid[:n], 'FROM':ofrom[:n],'TO':oto[:n], key_name:okey[:n], variable_name:ovar[:n]})
+        
+        #add table to the class
+        self.addtable(newtable,new_table_name,overwrite)
+        
+        
 
     cpdef bench_composite(self, str table_name, 
                          double zmax,
                          double bench,
-                         double tolerance=0.01):
-        """bench_composite(str table_name, double zmax, double bench, double tolerance=0.01)
+                         double tol=0.01):
+        """bench_composite(str table_name, double zmax, double bench, double tol=0.01)
         
         This function is not implemented yet.
         """                  
@@ -2737,7 +3046,7 @@ cdef class Drillhole:
                 vtkfields[i].SetName(i)
                 vtkfields[i].SetNumberOfComponents(1)
             else:
-				# this is fos string array. Not optimized...
+                # this is fos string array. Not optimized...
                 vtkfields[i]= vtk.vtkStringArray()
                 vtkfields[i].SetName(i)
                 vtkfields[i].SetNumberOfComponents(1)
