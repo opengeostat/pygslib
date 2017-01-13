@@ -1,6 +1,8 @@
 #!/bin/bash
 
-conda config --add channels https://conda.anaconda.org/opengeostat
+conda config --add channels opengeostat
+
+conda config --add channels menpo
 
 $PYTHON setup.py install
 

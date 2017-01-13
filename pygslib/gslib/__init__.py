@@ -54,6 +54,7 @@ import pygslib.gslib.__bigaus
 import pygslib.gslib.__bicalib
 import pygslib.gslib.__trans
 import pygslib.gslib.__draw
+import pygslib.gslib.__dm2csv
 
 #pygslib modules
 import pygslib.vtktools as vtktools
@@ -159,6 +160,86 @@ def read_gslib_file(fname, maxnvar=500):
     return pd.DataFrame(table, columns=vnames)
 
 
+#read datamine table to csv
+def dm2csv_ep(fname, outfile, format='F10.2'):
+    """ Convert extended precision datamine file to *.CSV
+    
+    This is an experimental function an may work only if 
+    the datamine file is in extended precision format. 
+    
+    
+    Parameters
+    ----------    
+    fname : str 
+        datamine file name/path (absolute or relative)
+
+    outfile : str 
+        csv file name/path (absolute or relative)
+
+    format : str dafault ('F10.2')
+        string format for numeric values
+        
+        
+    Notes
+    -----
+    All numeric outputs are formatted with the string format. 
+    This is a limitation and may create non-readable ascii 
+    outputs. Non-readable outputs are automatically replaced 
+    with the string '********'. 
+
+    Examples
+    --------
+    >>> import pygslib as gslib     
+    >>> mydata= gslib.gslib.dm2csv_ep('points.dm', 'points.csv', format='F10.2') 
+    >>> 
+    """
+
+    # make sure the file exists 
+    assert os.path.isfile(fname), "invalid file name"
+        
+    __dm2csv.dm2csv_ep(fname, outfile, format)
+    
+def dm2csv_sp(fname, outfile, format='F10.2'):
+    """ Convert a single precision datamine file to *.CSV
+    
+    This is an experimental function an may work only if 
+    the datamine file is in single precision format. 
+    
+    
+    Parameters
+    ----------    
+    fname : str 
+        datamine file name/path (absolute or relative)
+
+    outfile : str 
+        csv file name/path (absolute or relative)
+
+    format : str dafault ('F10.2')
+        string format for numeric values
+        
+        
+    Notes
+    -----
+    All numeric outputs are formatted with the string format. 
+    This is a limitation and may create non-readable ascii 
+    outputs. Non-readable outputs are automatically replaced 
+    with the string '********'. 
+
+    Examples
+    --------
+    >>> import pygslib as gslib     
+    >>> mydata= gslib.gslib.dm2csv_sp('points.dm', 'points.csv', format='F10.2') 
+    >>> 
+    """
+    print "Not implemented"
+    
+    return
+    
+    # make sure the file exists 
+    assert os.path.isfile(fname), "invalid file name"
+        
+    __dm2csv.dm2csv_sp(fname, outfile, format)
+    
 #generate coordinates for gridded files
 def addcoord(nx,ny,nz,xmn,ymn,zmn,xsiz,ysiz,zsiz, grid):
     """ Insert X, Y, Z coordinates into a grid file 

@@ -154,7 +154,11 @@ if __name__ == '__main__':
                      
     gslib_draw = Extension(name = 'pygslib.gslib.__draw',
                      sources = ['for_code/draw.f90'] ) 
-    
+
+    gslib_draw = Extension(name = 'pygslib.gslib.__dm2csv',
+                     sources = ['for_code/dm2csv.f90'] ) 
+
+					 
     # define fortran code setup in here 
     setup(name=name,
           version=version,
