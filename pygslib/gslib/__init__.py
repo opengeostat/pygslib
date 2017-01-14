@@ -161,7 +161,7 @@ def read_gslib_file(fname, maxnvar=500):
 
 
 #read datamine table to csv
-def dm2csv_ep(fname, outfile, format='F10.2'):
+def dm2csv_ep(fname, outfile, format='F15.4'):
     """ Convert extended precision datamine file to *.CSV
     
     This is an experimental function an may work only if 
@@ -176,7 +176,7 @@ def dm2csv_ep(fname, outfile, format='F10.2'):
     outfile : str 
         csv file name/path (absolute or relative)
 
-    format : str dafault ('F10.2')
+    format : str dafault ('F15.4')
         string format for numeric values
         
         
@@ -199,7 +199,7 @@ def dm2csv_ep(fname, outfile, format='F10.2'):
         
     __dm2csv.dm2csv_ep(fname, outfile, format)
     
-def dm2csv_sp(fname, outfile, format='F10.2'):
+def dm2csv_sp(fname, outfile, format='F15.4'):
     """ Convert a single precision datamine file to *.CSV
     
     This is an experimental function an may work only if 
@@ -214,7 +214,7 @@ def dm2csv_sp(fname, outfile, format='F10.2'):
     outfile : str 
         csv file name/path (absolute or relative)
 
-    format : str dafault ('F10.2')
+    format : str dafault ('F15.4')
         string format for numeric values
         
         
@@ -231,9 +231,7 @@ def dm2csv_sp(fname, outfile, format='F10.2'):
     >>> mydata= gslib.gslib.dm2csv_sp('points.dm', 'points.csv', format='F10.2') 
     >>> 
     """
-    print "Not implemented"
     
-    return
     
     # make sure the file exists 
     assert os.path.isfile(fname), "invalid file name"
