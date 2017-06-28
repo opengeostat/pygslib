@@ -29,7 +29,8 @@ import pygslib.vtktools
 import pygslib.nonlinear
 import pygslib.sandbox
 import pygslib.gslib 
-
+import pygslib.plothtml
+import pygslib.charttable
 
 #-----------------------------------------------------------------------------------------------------------------
 #

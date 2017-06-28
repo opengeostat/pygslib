@@ -61,6 +61,8 @@ import pygslib.vtktools as vtktools
 import pygslib
 
 
+
+
 #-----------------------------------------------------------------------------------------------------------------
 #
 #    Initialization
@@ -1476,3 +1478,151 @@ def postik(parameters):
     return out1,out2,out3
 
 
+#-----------------------------------------------------------------------------------------------------------------
+#
+#    Plot fuctions (declustering supported) 
+#
+#-----------------------------------------------------------------------------------------------------------------
+def histgplt(parameters, fig = None, ax = None, title = 'Bin probability', label = 'Data', alpha= 0.7, grid=True, loc = 2, color='b'):
+    """Plot histogram. It uses declustering weight. 
+         
+    
+    Parameters
+    ----------
+        parameters  :  dict
+            dictionary with calculation parameters
+
+    The dictionary with parameters may be as follows::
+
+        histgplt_parameters = {
+            # histogram limits and definition. 
+            'hmin' : , # input float (Optional: set as minimum value in dataset). Minimun value in the histogram.   
+            'hmax' : , # input float (Optional: set as maximum value in dataset). Maximum value in the histogram.   
+            'ncl'  : , # input int (Optional: set as 10). Number of bins/clases.
+            'iwt'  : , # input boolean (Optional: set True). Use weight variable?
+            'ilog' : , # input boolean (Optional: set False). If true uses log scale, otherwise uses arithmetic
+            'icum' : , # input boolean (Optional: set False). If true uses cumulative histogram, otherwise plots frequency histograms 
+            'va'   : , # input rank-1 array('d') with bounds (nd). Variable
+            'wt'   : } # input rank-1 array('d') with bounds (nd) (Optional, set to array of ones). Declustering weight. 
+            
+    
+            
+    Returns
+    -------
+    dict: a dictionary with some data parameters
+    
+    {'binval' : , # rank-1 array('d') with bounds (ncl). Class frequency. 
+     'nincls' : , # rank-1 array('d') with bounds (ncl). Count of values in the class (not using declustering weight).
+     'cl'     : , # rank-1 array('d') with bounds (ncl). Class. 
+     'clwidth': , # rank-1 array('d') with bounds (ncl). Class width
+     'xpt025' : , # float. Percentile 0.025
+     'xlqt'   : , # float. Percentile 0.25
+     'xmed'   : , # float. Mediam (Percentile 0.50)
+     'xuqt'   : , # float. Percentile 0.75
+     'xpt975' : , # float. Percentile 0.975
+     'xmin'   : , # float. Minimum value.
+     'xmax'   : , # float. Maximum value.
+     'xcvr'   : , # float. Coeficient of variation. 
+     'xmen'   : , # float. Mean
+     'xvar'   : , # float. Variance 
+     'xfrmx'  : , # float. Maximum Class Frequency
+     'dcl'    : } # float. Class width (thmax-thmin)/real(ncl), only usefull if using arithmetic scale.  
+    
+    fig: a matplotlib figure 
+
+    Example
+    -------
+    
+    >>>     
+
+    """
+  
+
+    # set weight if not included in the input
+    if 'wt' not in parameters: 
+        parameters['wt']= np.ones(parameters['va'].shape[0], dtype = parameters['va'].dtype)
+
+    # set undefine parameters        
+    
+    if 'ilog' not in parameters:
+        parameters['ilog']= 1
+    if parameters['ilog'] is None:
+        parameters['ilog']= 1
+    if parameters['ilog'] < 0:
+        parameters['ilog']= 1
+
+        
+    if 'hmin' not in parameters:
+        parameters['hmin']= parameters['va'].min()
+    if parameters['hmin'] is None:
+        parameters['hmin']= parameters['va'].min()
+    if parameters['hmin']<=0 and parameters['ilog']==1:
+        parameters['hmin']= 0.001
+    
+    if 'hmax' not in parameters:
+        parameters['hmax']= parameters['va'].max()
+    if parameters['hmax'] is None:
+        parameters['hmax']= parameters['va'].max()
+    if parameters['hmax']<=0 and parameters['ilog']==1:
+        raise NameError('All data in parameters["va"]<=0 but you are using logarithmic sale. Make your data positive and try again')
+
+    if 'ncl' not in parameters:
+        parameters['ncl']= 10
+    if parameters['ncl'] is None:
+        parameters['ncl']= 10
+    if parameters['ncl'] <= 0:
+        parameters['ncl']= 10
+
+    if 'iwt' not in parameters:
+        parameters['iwt']= 0
+    if parameters['iwt'] is None:
+        parameters['iwt']= 0
+      
+    if 'icum' not in parameters:
+        parameters['icum']= 0
+    if parameters['icum'] is None:
+        parameters['icum']= 0  
+        
+        
+    
+    # prepare the output
+
+    binval,nincls,cl, clwidth,xpt025,xlqt,xmed,xuqt,xpt975, \
+    xmin,xmax,xcvr,xmen,xvar,xfrmx,dcl,error = pygslib.gslib.__plot.histplt(**parameters)
+
+    out1 = {'binval' : binval, # rank-1 array('d') with bounds (ncl). Class frequency. 
+     'nincls' : nincls , # rank-1 array('d') with bounds (ncl). Count of values in the class (not using declustering weight).
+     'cl'     : cl , # rank-1 array('d') with bounds (ncl). Class. 
+     'clwidth': clwidth, # rank-1 array('d') with bounds (ncl). Class width
+     'xpt025' : xpt025, # float. Percentile 0.025
+     'xlqt'   : xlqt, # float. Percentile 0.25
+     'xmed'   : xmed, # float. Mediam (Percentile 0.50)
+     'xuqt'   : xuqt, # float. Percentile 0.75
+     'xpt975' : xpt975, # float. Percentile 0.975
+     'xmin'   : xmin, # float. Minimum value.
+     'xmax'   : xmax, # float. Maximum value.
+     'xcvr'   : xcvr, # float. Coeficient of variation. 
+     'xmen'   : xmen, # float. Mean
+     'xvar'   : xvar, # float. Variance 
+     'xfrmx'  : xfrmx, # float. Maximum Class Frequency
+     'dcl'    : dcl} # float. Class width (thmax-thmin)/real(ncl), only usefull if using arithmetic scale.  
+    
+    # create a figure or update one
+    
+    if ax is None and fig is None:
+        fig, ax = plt.subplots(1,1)
+        ax.set_title(title)
+        if parameters['ilog']>0:
+            ax.set_xscale('log')
+    else:
+        if ax is not None and fig is not None:
+            pass
+        else:
+            raise NameError('Parameter error on ax or fig, both may be None or not None')
+        
+    
+    ax.bar (cl, binval, width=-clwidth, alpha=alpha, color=color, label = label)
+    ax.grid(grid)
+    ax.legend(loc=loc)
+    
+    return out1, ax, fig
