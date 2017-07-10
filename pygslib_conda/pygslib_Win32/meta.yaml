@@ -17,7 +17,7 @@ build:
 requirements:
   build:
     - mingw
-    - libpython
+    - libpython ==1.0 
     - python
     - setuptools
     - numpy 
@@ -31,11 +31,11 @@ requirements:
     - pandas >=0.17
     - matplotlib
     - scipy
-    - vtk  >= 6
+    - vtk  >=6
     - ipython
     - pyevtk
     - mingw
-    - libpython
+    - libpython ==1.0 
 
 
 

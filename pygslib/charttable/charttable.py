@@ -69,7 +69,7 @@ class Leyend_num(object):
     c= None
     v= None
     
-    def __init__(self, vmin=0, vmax=10, cmax = "red", cmin = "blue", undef = "grey", nval= 5, convert=None): 
+    def __init__(self, vmin=0, vmax=10, cmax = "red", cmin = "blue", undef = "grey", nval= 5, convert=None, log=True): 
 
         #check parameters
         #assert isinstance(cmax, Color), " Error : cmax is not an instance of Color "
@@ -94,8 +94,12 @@ class Leyend_num(object):
         
         # asign values to color and value interval
         self.c[1:]= np.array(list(self.cmin.range_to(self.cmax, self.nval)))
-        self.v[1:]= np.linspace(self.vmin, self.vmax, self.nval)
-    
+        
+        if log is True:
+            self.v[1:]= np.logspace(np.log(self.vmin), np.log(self.vmax), self.nval, base = np.e)
+        else:    
+            self.v[1:]= np.linspace(self.vmin, self.vmax, self.nval)
+            
         if convert=='HEX':
             for i in range(self.c.shape[0]):
                 self.c[i]=self.c[i].hex_l
