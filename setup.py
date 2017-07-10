@@ -155,10 +155,10 @@ if __name__ == '__main__':
     gslib_draw = Extension(name = 'pygslib.gslib.__draw',
                      sources = ['for_code/draw.f90'] ) 
 
-    gslib_draw = Extension(name = 'pygslib.gslib.__dm2csv',
+    gslib_dm2csv = Extension(name = 'pygslib.gslib.__dm2csv',
                      sources = ['for_code/dm2csv.f90'] ) 
 
-					 
+                     
     # define fortran code setup in here 
     setup(name=name,
           version=version,
@@ -181,6 +181,7 @@ if __name__ == '__main__':
                          gslib_bicalib,
                          gslib_trans,
                          gslib_draw,
+                         gslib_dm2csv,
                          gslib_addcoord,
                          gslib_rotscale,
                          gslib_read_gslib, 
@@ -193,7 +194,7 @@ if __name__ == '__main__':
                          gslib_general])
     
     print (" OPENGEOSTAT SAYS FORTRAN CODE COMPILED")
-	
+    
     #Cython code extension
     #-------------------------------------------------------------------
     from distutils.core import setup    # this is the standard setup
@@ -216,12 +217,12 @@ if __name__ == '__main__':
     nonlinear = CYExtension( 'pygslib.nonlinear', 
                             ['cython_code/nonlinear.pyx'],
                             include_dirs=[numpy.get_include()]) 
-							
+                            
     sandbox = CYExtension( 'pygslib.sandbox', 
                             ['cython_code/sandbox.pyx'],
-                            include_dirs=[numpy.get_include()])							
-							
-							
+                            include_dirs=[numpy.get_include()])                            
+                            
+                            
     #deprecated
     #neighborhood = CYExtension( 'pygslib.neighborhood', 
                             #['cython_code/neighborhood.pyx'],
@@ -252,6 +253,6 @@ if __name__ == '__main__':
                         blockmodel,
                         vtktools,
                         nonlinear,
-						sandbox])
+                        sandbox])
 
     print (" OPENGEOSTAT SAYS CYTHON CODE COMPILED")
