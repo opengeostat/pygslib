@@ -24,6 +24,8 @@ requirements:
     - pandas >=0.17
     - matplotlib
     - scipy
+    - vc ==9
+    - vs2008_runtime
 
   run:
     - python
