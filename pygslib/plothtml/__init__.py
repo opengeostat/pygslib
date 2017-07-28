@@ -39,7 +39,6 @@ import pygslib.gslib.__bigaus
 import pygslib.gslib.__bicalib
 
 #pygslib modules
-import pygslib.vtktools as vtktools
 import pygslib
 
 #ipython?
@@ -50,8 +49,6 @@ from IPython.display import display, HTML
 #    Initialization
 #
 #-----------------------------------------------------------------------------------------------------------------
-
-# Set default parameters in the Fortran common module
 
 # set output for bokeh (Ipython/html file)
 if 'ipykernel' in sys.modules:

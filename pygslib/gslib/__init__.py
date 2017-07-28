@@ -652,8 +652,59 @@ def gam(parameters):
     
     return pdis,pgam, phm,ptm,phv,ptv,pnump 
 
+#-----------------------------------------------------------------------------------------------------------------
+#
+#    Variograms in all 3D directions
+#
+#-----------------------------------------------------------------------------------------------------------------
+def gamv3D(parameters):
+    """Calculates experimental variograms in all 3D directions
+       
+                
+    Parameters
+        ----------
+        parameters = { 
+            'x' : input rank-1 array('d') with bounds (nd)
+            'y' : input rank-1 array('d') with bounds (nd)
+            'z' : input rank-1 array('d') with bounds (nd)
+            'bhid' : input rank-1 array('i') with bounds (nd)
+            'vr' : input rank-2 array('d') with bounds (nd,nv)
+            'tminv : input float
+            'tmax' : input float
+            'nlag' : input int
+            'xlag' : input float
+            'ndir' : input int
+            'ndip' : input int
+            'isill' : input int
+            'sills' : input rank-1 array('d') with bounds (nv)
+            'ivtail' : input rank-1 array('i') with bounds (nvarg)
+            'ivhead' : input rank-1 array('i') with bounds (nvarg)
+            'ivtype' : input rank-1 array('i') with bounds (nvarg)
+        }
+        
 
+        Returns
+        -------
+        np : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        dis : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        gam : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        hm : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        tm : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        hv : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        tv : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
 
+      
+    Note
+    -----
+
+    
+    """
+    
+    np,dis,gam,hm,tm,hv,tv = __variograms.gamv3d(**parameters)
+    
+    
+    return np,dis,gam,hm,tm,hv,tv  
+    
 # ----------------------------------------------------------------------------------------------------------------
 #
 #    Rotations

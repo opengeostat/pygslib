@@ -664,7 +664,7 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
             do 7 il=1,nlag+2
                 i = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
                 if(np(i) <= 0.) go to 7
-                rnum   = np(i)
+                rnum   = int(np(i))
                 dis(i) = dis(i) / dble(rnum)
                 gam(i) = gam(i) / dble(rnum)
                 hm(i)  = hm(i)  / dble(rnum)
@@ -1138,18 +1138,7 @@ subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
 
  end subroutine writeout_gam
 
- 
- real*8 function azimdg(dx,dy)
-    
-    real*8, intent(in) :: dx, dy  
-    
-    azimdg=180./pi*atan2(dy,dx)
-    
-    !if (azimdg<0) azimdg=azimdg+360
-    
-    if (azimdg<0) azimdg=-azimdg ! only 180
-    
-end function
+
 
 !---------------------------------------------------------------------------
 !     Subroutine gamv
@@ -1286,7 +1275,8 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
              vrh, vrhpr, vrt,  vrtpr, xltoll
     integer :: i, id, ii, iii, il, ilag, it, iv, j, lagbeg, lagend, nsiz, rnum
     
-    real*8 :: azm, dip, dazm
+    real*8 :: azm, dip, dazm, ddip, dp, az, azimdg
+    integer :: idp, jdp, k, kdip, jdir, l 
     
     azm = 0
     dip = 0
@@ -1310,25 +1300,25 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
 
     nsiz = ndir*nvarg*(nlag+2)
     
-    nlag,ndir,ndip,nvarg
     
     do i=1,nlag
         do j=1,ndir
             do k=1,ndip
                 do l=1,nvarg
-                    np(i,j,k,l)  = 0.0
+                    np(i,j,k,l)  = 0
                     dis(i,j,k,l) = 0.0
                     gam(i,j,k,l) = 0.0
                     hm(i,j,k,l)  = 0.0
                     tm(i,j,k,l)  = 0.0
                     hv(i,j,k,l)  = 0.0
                     tv(i,j,k,l)  = 0.0
-                    calculated(i,j,k,l) = 0
                 end do
             end do
         end do
     end do
     dismxs = ((dble(nlag) + 0.5 - EPSLON) * xlag) ** 2  
+    
+
     
 ! MAIN LOOP OVER ALL PAIRS:
 
@@ -1350,8 +1340,8 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
             if(hs > dismxs) go to 4
             if(hs < 0.0) hs = 0.0
             h   = sqrt(hs)
-        
-        
+            
+                   
             ! now we determine the cell of the 3D variogram
             
             ! a) the ilag position = nint (h/xlag + 1)
@@ -1375,8 +1365,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
             
             kdip = nint(dp/ddip + 1) ! DODO: Error: fix this, for example for direction every 45 degrees de firts direction is 22.5, not zero
             
-            
-            
+                        
             do 6 iv=1,nvarg
             
                 ! For this variogram, sort out which is the tail and the head value:
@@ -1410,7 +1399,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
             
                 if(it == 1 .OR. it == 5 .OR. it >= 9) then
                 
-                    np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1.
+                    np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                     dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                     tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(vrt)
                     hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(vrh)
@@ -1421,7 +1410,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 
                 else if(it == 2) then
                 
-                    np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1.
+                    np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                     dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                     tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(0.5*(vrt+vrtpr))
                     hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(0.5*(vrh+vrhpr))
@@ -1432,7 +1421,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 
                 else if(it == 3) then
 
-                    np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1.
+                    np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                     dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                     tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(vrt)
                     hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(vrh)
@@ -1444,7 +1433,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 
                 else if(it == 4) then
 
-                    np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1.
+                    np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                     dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                     tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(vrt)
                     hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(vrh)
@@ -1458,7 +1447,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 else if(it == 6) then
 
                     if(abs(vrt+vrh) > EPSLON) then
-                        np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1.
+                        np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                         dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                         tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(vrt)
                         hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(vrh)
@@ -1471,7 +1460,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 
                 else if(it == 7) then
                     if(vrt > EPSLON .AND. vrh > EPSLON) then
-                        np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1.
+                        np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                         dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                         tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(vrt)
                         hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(vrh)
@@ -1484,7 +1473,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 
                 else if(it == 8) then
 
-                        np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1.
+                        np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                         dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                         tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(vrt)
                         hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(vrh)
@@ -1502,7 +1491,9 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
    ! Get average values for gam, hm, tm, hv, and tv, then compute
    ! the correct "variogram" measure:
 
-
+    print *, np
+    
+    
     do 7 id=1,ndir
         do 7 idp=1,ndip
             do 7 iv=1,nvarg
@@ -1510,21 +1501,22 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                     
                     if(np(il,id,idp,iv) <= 0.) go to 7
                     rnum   = np(il,id,idp,iv)
-                    dis(i) = dis(il,id,idp,iv) / dble(rnum)
-                    gam(i) = gam(il,id,idp,iv) / dble(rnum)
-                    hm(i)  = hm(il,id,idp,iv)  / dble(rnum)
-                    tm(i)  = tm(il,id,idp,iv)  / dble(rnum)
-                    hv(i)  = hv(il,id,idp,iv)  / dble(rnum)
-                    tv(i)  = tv(il,id,idp,iv)  / dble(rnum)
+                    dis(il,id,idp,iv) = dis(il,id,idp,iv) / dble(rnum)
+                    gam(il,id,idp,iv) = gam(il,id,idp,iv) / dble(rnum)
+                    hm(il,id,idp,iv)  = hm(il,id,idp,iv)  / dble(rnum)
+                    tm(il,id,idp,iv)  = tm(il,id,idp,iv)  / dble(rnum)
+                    hv(il,id,idp,iv)  = hv(il,id,idp,iv)  / dble(rnum)
+                    tv(il,id,idp,iv)  = tv(il,id,idp,iv)  / dble(rnum)
                     it = ivtype(iv)
-                
+                   
+                    
                 ! Attempt to standardize:
                 
                     if(isill == 1) then
                         if(ivtail(iv) == ivhead(iv)) then
                             iii = ivtail(iv)
                             if((it == 1 .OR. it >= 9) .AND. sills(iii) > 0.0) &
-                            gam(i) = gam(il,id,idp,iv) / sills(iii)
+                            gam(il,id,idp,iv) = gam(il,id,idp,iv) / sills(iii)
                         end if
                     end if
                 
@@ -1551,7 +1543,8 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                         if((hv(il,id,idp,iv)*tv(il,id,idp,iv)) < EPSLON) then
                             gam(il,id,idp,iv) = 0.0
                         else
-                            gam(il,id,idp,iv) =(gam(il,id,idp,iv)-hm(il,id,idp,iv)*tm(il,id,idp,iv))/(hv(il,id,idp,iv)*tv(il,id,idp,iv))
+                            gam(il,id,idp,iv) =(gam(il,id,idp,iv)-hm(il,id,idp,iv)*tm(il,id,idp,iv))/ &
+                                               (hv(il,id,idp,iv)*tv(il,id,idp,iv))
                         endif
                     
                     ! Square "hv" and "tv" so that we return the variance:
@@ -1574,3 +1567,21 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
 
 
  end subroutine gamv3D 
+ 
+ 
+ real*8 function azimdg(dx,dy)
+    
+    real*8, intent(in) :: dx, dy  
+    real*8 :: PI
+    parameter(PI=3.14159265)
+    
+    
+    azimdg=180./PI*atan2(dy,dx)
+    
+    !if (azimdg<0) azimdg=azimdg+360
+    
+    if (azimdg<0) azimdg=-azimdg ! only 180
+    
+    return
+    
+end function azimdg

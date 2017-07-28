@@ -140,7 +140,7 @@ if __name__ == '__main__':
     """
 
     gslib_variograms = Extension(name = 'pygslib.gslib.__variograms',
-                     sources = ['for_code/variograms.f90'] ) 
+                     sources = ['for_code/variograms.f90'] ) # extra_link_args=['-fbacktrace', '-fcheck=all'] 
                      
     gslib_bigaus = Extension(name = 'pygslib.gslib.__bigaus',
                      sources = ['for_code/bigaus.f90'] ) 
