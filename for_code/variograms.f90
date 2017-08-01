@@ -24,16 +24,16 @@
 !
 ! The functions and subroutines below were modified from the
 ! version 2.0 of the gslib code written in fortran 77
-! 
-! The objective is to add functionality to GSLIB and to link 
-! this code with python using f2py. It uses f90 code convention. 
+!
+! The objective is to add functionality to GSLIB and to link
+! this code with python using f2py. It uses f90 code convention.
 ! The arrays are dynamic and externally declared (from python)
 !
 ! the code was converted from Fortran 77 to Fortran 90 using F2F.pl
-! 
+!
 ! for more information please refer to:
 ! - gslib77 source code: http://www.statios.com/software/gslib77_ls.tar.gz
-! - GSLIB: Geostatistical Software Library and User's Guide. Second edition 
+! - GSLIB: Geostatistical Software Library and User's Guide. Second edition
 !   by Clayton V. Deutsch, Andre G. Journel, 1997.
 ! - F2PY Users Guide: http://docs.scipy.org/doc/numpy-dev/f2py/
 ! - F2F https://bitbucket.org/lemonlab/f2f
@@ -56,18 +56,18 @@
 
 
 !*********************************************************************************
-! 
-! 
+!
+!
 !     Subroutines for GSLIB gam/gamv (variograms)
-! 
-! 
+!
+!
 !*********************************************************************************
 
 !---------------------------------------------------------------------------
 !     Subroutine writeout for gamv
 !---------------------------------------------------------------------------
 subroutine writeout(nvarg, ndir, nlag, np, dis, gam, hm, tm, hv, tv, &
-                    pdis, pgam, phm, ptm, phv, ptv, pnump)  
+                    pdis, pgam, phm, ptm, phv, ptv, pnump)
 
     ! This function is required to transform the output of gam and gamv (1D array)
     ! into a readable 3D array with variogram results
@@ -76,8 +76,8 @@ subroutine writeout(nvarg, ndir, nlag, np, dis, gam, hm, tm, hv, tv, &
     !                  ******************************
     !
     ! An output will be prepared in variables which contains each directional
-    ! variogram. 
-    ! the output is: 
+    ! variogram.
+    ! the output is:
     !   pnump()             Number of pairs
     !   pdis()            Distance of pairs falling into this lag
     !   pgam()            Semivariogram, covariance, correlogram,... value
@@ -85,15 +85,15 @@ subroutine writeout(nvarg, ndir, nlag, np, dis, gam, hm, tm, hv, tv, &
     !   ptm()             Mean of the head data
     !   phv()             Variance of the tail data
     !   ptv()             Variance of the head data
-    !  
+    !
     !  the output is in a 3D matrix with dimensions (nvarg, ndir, nlag+2)
     !-----------------------------------------------------------------------
-    
+
     real*8, intent(in), dimension(ndir*(nlag+2)*nvarg)  :: np, dis, gam, hm, tm, hv, tv
     integer, intent(in) :: nvarg, ndir, nlag
     real*8,    intent(out), dimension(nvarg, ndir, nlag+2) :: pdis,pgam, phm,ptm,phv,ptv
     integer, intent(out), dimension(nvarg, ndir, nlag+2) :: pnump
-    
+
     integer :: iv, id, il
 
 
@@ -102,9 +102,9 @@ subroutine writeout(nvarg, ndir, nlag, np, dis, gam, hm, tm, hv, tv, &
     do iv=1,nvarg
         do id=1,ndir
             do il=1,nlag+2
-            
+
                 i = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
-                
+
                 pdis(iv,id,il)=dis(i)
                 pgam(iv,id,il)=gam(i)
                 phm(iv,id,il)=hm(i)
@@ -112,7 +112,7 @@ subroutine writeout(nvarg, ndir, nlag, np, dis, gam, hm, tm, hv, tv, &
                 phv(iv,id,il)=hv(i)
                 ptv(iv,id,il)=tv(i)
                 pnump(iv,id,il)=int(np(i))
-                
+
             end do
         end do
     end do
@@ -143,16 +143,16 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
     !   MAXLAG => nlag*2 :  number of lags at one time
     !   MXVARG => nvarg  :  number of variograms possible at one time
 
-    !   MXDLV  =>  ndir*(nlag*2)*nvarg 
-    
+    !   MXDLV  =>  ndir*(nlag*2)*nvarg
+
     ! c) Support for downhole variogram was added (see bhid(nd)). To
     !    ignore downhole option use bhid(:)= constant
     !
     !     Comment: you can use this to avoid mix of data (example variograms)
-    !              at both sides of a fault. 
+    !              at both sides of a fault.
     !
-    ! d) Variogram cloud was added for the first direction and first variogram. 
-    !    The number of variogram cloud required may be calculated externally 
+    ! d) Variogram cloud was added for the first direction and first variogram.
+    !    The number of variogram cloud required may be calculated externally
     !    and may be equal to sum(np) in first direction of the first variogram.
     !    For this function the following variables were added
     !       maxclp : max number of points (this is sum(np(varg1,dir1, :)))
@@ -161,17 +161,17 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
     !       cldg : pair var/covar value, array('f') with bounds (maxclp)
     !       cldd : distance i-j, array('f') with bounds (maxclp)
     !       l    : number of variogram cloud points calculated,  int
-    !  
+    !
     ! Warning: The automatic implementation of indicator is not implemented here
-    !          you may calculate the indicators variables externally  
+    !          you may calculate the indicators variables externally
     !
     ! TODO: -Add extra output parameters to plot box and whiskers per lag.
-    !        Eventually this can be calculated with the varigram cloud output. 
+    !        Eventually this can be calculated with the varigram cloud output.
     !----------------------------------------------------------------------
-    
+
 
     !----------------------------------------------------------------------
-    
+
     !              Variogram of 3-D Irregularly Spaced Data
     !              ****************************************
     ! This subroutine computes a variety of spatial continuity measures of a
@@ -245,15 +245,15 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
     !-----------------------------------------------------------------------
 
     !for safety reason we don't want undeclared variables
-    IMPLICIT NONE    
+    IMPLICIT NONE
 
     integer, intent(in)                   ::nd, nv, ndir, nvarg, nlag, isill
     integer, intent(in), dimension(nvarg) :: ivtail, ivhead,ivtype
     real*8, intent(in), dimension(nd)       :: x, y, z
-    
+
     real*8, intent(in), dimension(nd,nv)    :: vr
     real*8, intent(in), dimension(nv)       :: sills
-    real*8, intent(in)                      :: tmin, tmax, xlag 
+    real*8, intent(in)                      :: tmin, tmax, xlag
     real*8, intent(in)                      :: xltol
     real*8, intent(in), dimension(ndir)     :: azm, atol, bandwh, dip, dtol, bandwd
     real*8, intent(out), dimension(ndir*(nlag+2)*nvarg)  :: np, dis, gam, hm, tm, hv, tv
@@ -264,27 +264,27 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
     integer, intent(out), dimension(maxclp)    :: cldi,cldj
     real*8, intent(out), dimension(maxclp)     :: cldg, cldh
     integer, intent(out)                       :: l
-               
+
     ! some general declarations
     real*8 :: PI, EPSLON
     parameter(PI=3.14159265, EPSLON=1.0e-20)
-    
+
     real*8, dimension(ndir) :: uvxazm, uvyazm, uvzdec, uvhdec, csatol, csdtol
     logical               :: omni
 
 
     !Extra Variables not declared in the original library
     real*8  :: azmuth, declin, band, dcazm, dismxs, dx, dxs, dxy, dy, &
-             dys, dz, dzs, dcdec, gamma, h, hs, htave, variance, & 
+             dys, dz, dzs, dcdec, gamma, h, hs, htave, variance, &
              vrh, vrhpr, vrt,  vrtpr, xltoll
     integer :: i, id, ii, iii, il, ilag, it, iv, j, lagbeg, lagend, nsiz, rnum
-    
-    
+
+
     !initialize counter for variogram cloud
     l=0
-    
 
-    
+
+
     !here we rename the variable xltol to xtoll to avoid reference conflict in (real, intent(in) :: xltol)
     xltoll=xltol
 
@@ -295,10 +295,10 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
     ! Define the angles and tolerance for each direction:
 
     do id=1,ndir
-    
+
     ! The mathematical azimuth is measured counterclockwise from EW and
     ! not clockwise from NS as the conventional azimuth is:
-    
+
         azmuth     = (90.0-azm(id))*PI/180.0
         uvxazm(id) = cos(azmuth)
         uvyazm(id) = sin(azmuth)
@@ -307,10 +307,10 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
         else
             csatol(id) = cos(atol(id)*PI/180.0)
         endif
-    
+
     ! The declination is measured positive down from vertical (up) rather
     ! than negative down from horizontal:
-    
+
         declin     = (90.0-dip(id))*PI/180.0
         uvzdec(id) = cos(declin)
         uvhdec(id) = sin(declin)
@@ -333,18 +333,18 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
         hv(i)  = 0.0
         tv(i)  = 0.0
     end do
-    dismxs = ((dble(nlag) + 0.5 - EPSLON) * xlag) ** 2  
-    
+    dismxs = ((dble(nlag) + 0.5 - EPSLON) * xlag) ** 2
+
 ! MAIN LOOP OVER ALL PAIRS:
 
     do 3 i=1,nd
         do 4 j=i,nd
-        
+
         !implement the downhole variogram  (change added on may 2015)
             if(bhid(j).NE.bhid(i)) go to 4
-        
+
         ! Definition of the lag corresponding to the current pair:
-        
+
             dx  = x(j) - x(i)
             dy  = y(j) - y(i)
             dz  = z(j) - z(i)
@@ -355,10 +355,10 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
             if(hs > dismxs) go to 4
             if(hs < 0.0) hs = 0.0
             h   = sqrt(hs)
-        
+
         ! Determine which lag this is and skip if outside the defined distance
         ! tolerance:
-        
+
             if(h <= EPSLON) then
                 lagbeg = 1
                 lagend = 1
@@ -374,15 +374,15 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                 end do
                 if(lagend < 0) go to 4
             endif
-        
+
         ! Definition of the direction corresponding to the current pair. All
         ! directions are considered (overlapping of direction tolerance cones
         ! is allowed):
-        
+
             do 5 id=1,ndir
-            
+
             ! Check for an acceptable azimuth angle:
-            
+
                 dxy = sqrt(max((dxs+dys),0.0))
                 if(dxy < EPSLON) then
                     dcazm = 1.0
@@ -390,15 +390,15 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                     dcazm = (dx*uvxazm(id)+dy*uvyazm(id))/dxy
                 endif
                 if(abs(dcazm) < csatol(id)) go to 5
-            
+
             ! Check the horizontal bandwidth criteria (maximum deviation
             ! perpendicular to the specified direction azimuth):
-            
+
                 band = uvxazm(id)*dy - uvyazm(id)*dx
                 if(abs(band) > bandwh(id)) go to 5
-            
+
             ! Check for an acceptable dip angle:
-            
+
                 if(dcazm < 0.0) dxy = -dxy
                 if(lagbeg == 1) then
                     dcdec = 0.0
@@ -406,24 +406,24 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                     dcdec = (dxy*uvhdec(id)+dz*uvzdec(id))/h
                     if(abs(dcdec) < csdtol(id)) go to 5
                 endif
-            
+
             ! Check the vertical bandwidth criteria (maximum deviation perpendicular
             ! to the specified dip direction):
-            
+
                 band = uvhdec(id)*dz - uvzdec(id)*dxy
                 if(abs(band) > bandwd(id)) go to 5
-            
+
             ! Check whether or not an omni-directional variogram is being computed:
-            
-                omni = .FALSE. 
-                if(atol(id) >= 90.0) omni = .TRUE. 
-            
+
+                omni = .FALSE.
+                if(atol(id) >= 90.0) omni = .TRUE.
+
             ! This direction is acceptable - go ahead and compute all variograms:
-            
+
                 do 6 iv=1,nvarg
-                
+
                 ! For this variogram, sort out which is the tail and the head value:
-                
+
                     it = ivtype(iv)
                     if(dcazm >= 0.0 .AND. dcdec >= 0.0) then
                         ii = ivtail(iv)
@@ -448,20 +448,20 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                             vrhpr = vr(i,ii)
                         endif
                     endif
-                
+
                 ! Reject this pair on the basis of missing values:
-                
+
                     if(vrt < tmin .OR. vrh < tmin .OR. &
                     vrt > tmax .OR. vrh > tmax) go to 6
                     if(it == 2 .AND. (vrtpr < tmin .OR. vrhpr < tmin .OR. &
                     vrtpr > tmax .OR. vrhpr > tmax)) &
                     go to 6
-                
+
                 !             COMPUTE THE APPROPRIATE "VARIOGRAM" MEASURE
-                
-                
+
+
                 ! The Semivariogram:
-                
+
                     if(it == 1 .OR. it == 5 .OR. it >= 9) then
                         do il=lagbeg,lagend
                             ii = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
@@ -482,9 +482,9 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                                 endif
                             endif
                         end do
-                    
+
                     ! The Traditional Cross Semivariogram:
-                    
+
                     else if(it == 2) then
                         do il=lagbeg,lagend
                             ii = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
@@ -494,9 +494,9 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                             hm(ii)  = hm(ii)  + dble(0.5*(vrh+vrhpr))
                             gam(ii) = gam(ii) + dble((vrhpr-vrh)*(vrt-vrtpr))
                         end do
-                    
+
                     ! The Covariance:
-                    
+
                     else if(abs(it) == 3) then
                         do il=lagbeg,lagend
                             ii = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
@@ -516,9 +516,9 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                                 endif
                             endif
                         end do
-                    
+
                     ! The Correlogram:
-                    
+
                     else if(it == 4) then
                         do il=lagbeg,lagend
                             ii = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
@@ -542,9 +542,9 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                                 endif
                             endif
                         end do
-                    
+
                     ! The Pairwise Relative:
-                    
+
                     else if(it == 6) then
                         do il=lagbeg,lagend
                             ii = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
@@ -570,9 +570,9 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                                 endif
                             endif
                         enddo
-                    
+
                     ! Variogram of Logarithms:
-                    
+
                     else if(it == 7) then
                         do il=lagbeg,lagend
                             ii = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
@@ -598,9 +598,9 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                                 endif
                             endif
                         end do
-                    
+
                     ! Madogram:
-                    
+
                     else if(it == 8) then
                         do il=lagbeg,lagend
                             ii = (id-1)*nvarg*(nlag+2)+(iv-1)*(nlag+2)+il
@@ -621,12 +621,12 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                             endif
                         end do
                     endif
-                
+
                 ! Finish loops over variograms, directions, and the double data loops:
-                    
+
                 ! Calculate variogram cloud for the first maxclp points   (change added on may 2015)
 
-                    ! this is calculated only in the first variogram/first direction 
+                    ! this is calculated only in the first variogram/first direction
                     if (iv==1 .AND. id==1) then
                         if (l<=maxclp) then
                             !  report the semivariogram rather than variogram
@@ -638,7 +638,7 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                                 cldg(l) = 0.5 * gam(ii)
 
                             !these are pairwise relative, semivariogram of logarithms
-                            !semimadogram and indicators. 
+                            !semimadogram and indicators.
                             else if(it >= 6) then
                                 l=l+1
                                 cldi(l)=i
@@ -649,8 +649,8 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                             !TODO implement it for other variogram types (3,4,5)?
                         endif
                     endif
-                    
-                    
+
+
                 6 END DO
             5 END DO
         4 END DO
@@ -672,9 +672,9 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                 hv(i)  = hv(i)  / dble(rnum)
                 tv(i)  = tv(i)  / dble(rnum)
                 it = ivtype(iv)
-            
+
             ! Attempt to standardize:
-            
+
                 if(isill == 1) then
                     if(ivtail(iv) == ivhead(iv)) then
                         iii = ivtail(iv)
@@ -682,7 +682,7 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                         gam(i) = gam(i) / sills(iii)
                     end if
                 end if
-            
+
             !  1. report the semivariogram rather than variogram
             !  2. report the cross-semivariogram rather than variogram
             !  3. the covariance requires "centering"
@@ -691,7 +691,7 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
             !  6. report the semi(pairwise relative variogram)
             !  7. report the semi(log variogram)
             !  8. report the semi(madogram)
-            
+
                 if(it == 1 .OR. it == 2) then
                     gam(i) = 0.5 * gam(i)
                 else if(abs(it) == 3) then
@@ -718,9 +718,9 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
                     else
                         gam(i) =(gam(i)-hm(i)*tm(i))/(hv(i)*tv(i))
                     endif
-                
+
                 ! Square "hv" and "tv" so that we return the variance:
-                
+
                     hv(i)  = hv(i)*hv(i)
                     tv(i)  = tv(i)*tv(i)
                 else if(it == 5) then
@@ -738,7 +738,7 @@ subroutine gamv(nd, x, y, z, bhid, nv, vr, &                           ! data ar
     return
 
 
- end subroutine gamv    
+ end subroutine gamv
 
 !---------------------------------------------------------------------------
 !     Subroutine gamma (this is gam program, variogram for data in grid)
@@ -748,7 +748,7 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
                 tmin, tmax, nlag,   &                            ! lag definition
                 ndir, ixd, iyd, izd,&                              ! directions and parameters
                 isill, sills, nvarg, ivtail, ivhead,ivtype,  &   ! variograms types and parameters
-                xsiz,ysiz,zsiz, &                                ! WARNING TODO dummy variable not used here, remove? 
+                xsiz,ysiz,zsiz, &                                ! WARNING TODO dummy variable not used here, remove?
                 np, gam, hm, tm, hv, tv)                           ! output
 
 
@@ -819,15 +819,15 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
 
 
     !for safety reason we don't want undeclared variables
-    IMPLICIT NONE    
+    IMPLICIT NONE
 
     integer, intent(in)                   :: nx, ny, nz,  nv, ndir, nvarg, nlag, isill
     integer, intent(in), dimension(nvarg) :: ivtail, ivhead,ivtype
     integer, intent(in), dimension(ndir)  :: ixd, iyd, izd
-    
+
     real*8, intent(in), dimension(nx*ny*nz*nv) :: vr
     real*8, intent(in), dimension(nv)       :: sills
-    real*8, intent(in)                      :: tmin, tmax, xsiz,ysiz,zsiz    
+    real*8, intent(in)                      :: tmin, tmax, xsiz,ysiz,zsiz
     real*8, intent(out), dimension(ndir*(nlag+2)*nvarg)  :: np, gam, hm, tm, hv, tv
 
     ! TODO: np is real here, see if we may declare this as integer
@@ -835,11 +835,11 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
     !new variables
     integer, intent(in), dimension(nx*ny*nz)         :: bhid             ! not implemented (use similar to gamv)
 
-               
+
     ! some general declarations
     real*8 :: PI, EPSLON
     parameter(PI=3.14159265, EPSLON=1.0e-20)
-    
+
 
     !Extra Variables not declared in the original library
     real*8  ::  htave, variance, vrh, vrhpr, vrt,  vrtpr, tempvar
@@ -848,11 +848,11 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
     integer :: ix1, iy1, iz1, ix, iy, iz, index, nxy,nxyz
 
 
-!moved from line 154, original file gam.f 
+!moved from line 154, original file gam.f
     nxy  = nx * ny
     nxyz = nx * ny * nz
 
-               
+
 ! Initialize the summation arrays for each direction, variogram, and lag
 
     nsiz = ndir*nvarg*nlag
@@ -870,9 +870,9 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
     do ix=1,nx
         do iy=1,ny
             do iz=1,nz
-            
+
             ! For the fixed seed point, loop through all directions:
-            
+
                 do id=1,ndir
                     ixinc = ixd(id)
                     iyinc = iyd(id)
@@ -880,42 +880,42 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
                     ix1   = ix
                     iy1   = iy
                     iz1   = iz
-                
+
                 ! For this direction, loop over all the lags:
-                
+
                     do il=1,nlag
-                    
+
                     ! Check to be sure that the point being considered is still in the
                     ! grid - if not, then finished with this direction:
-                    
+
                         ix1 = ix1 + ixinc
                         if(ix1 < 1 .OR. ix1 > nx) go to 3
                         iy1 = iy1 + iyinc
                         if(iy1 < 1 .OR. iy1 > ny) go to 3
                         iz1 = iz1 + izinc
                         if(iz1 < 1 .OR. iz1 > nz) go to 3
-                    
+
                     ! For this direction and lag, loop over all variograms:
-                    
+
                         do iv=1,nvarg
                             it = ivtype(iv)
-                        
+
                         ! Get the head value, skip this value if missing:
-                        
+
                             i     = ivhead(iv)
                             index = ix+(iy-1)*nx+(iz-1)*nxy+(i-1)*nxyz
                             vrt   = vr(index)
                             if(vrt < tmin .OR. vrt >= tmax) go to 5
-                        
+
                         ! Get the tail value, skip this value if missing:
-                        
+
                             i     = ivtail(iv)
                             index = ix1+(iy1-1)*nx+(iz1-1)*nxy+(i-1)*nxyz
                             vrh   = vr(index)
                             if(vrh < tmin .OR. vrh >= tmax) go to 5
-                        
+
                         ! Need increment for the cross semivariogram only:
-                        
+
                             if(it == 2) then
                                 i     = ivtail(iv)
                                 index = ix+(iy-1)*nx+(iz-1)*nxy+(i-1)*nxyz
@@ -926,17 +926,17 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
                                 vrtpr = vr(index)
                                 if(vrtpr < tmin .OR. vrtpr >= tmax) go to 5
                             endif
-                        
+
                         ! We have an acceptable pair, therefore accumulate all the statistics
                         ! that are required for the variogram:
-                        
+
                             i      = (id-1)*nvarg*nlag+(iv-1)*nlag+il
                             np(i)  = np(i) + 1.
                             tm(i)  = tm(i) + dble(vrt)
                             hm(i)  = hm(i) + dble(vrh)
-                        
+
                         ! Choose the correct variogram type and keep relevant sums:
-                        
+
                             if(it == 1 .OR. it >= 9) then
                                 gam(i) = gam(i) + dble((vrh-vrt)*(vrh-vrt))
                             else if(it == 2) then
@@ -995,9 +995,9 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
                 hv(i)  = hv(i)  / dble(rnum)
                 tv(i)  = tv(i)  / dble(rnum)
                 it     = ivtype(iv)
-            
+
             ! Attempt to standardize:
-            
+
                 if(isill == 1) then
                     if(ivtail(iv) == ivhead(iv)) then
                         iii = ivtail(iv)
@@ -1005,7 +1005,7 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
                         gam(i) = gam(i) / sills(iii)
                     end if
                 end if
-            
+
             ! 1. report the semivariogram rather than variogram
             ! 2. report the cross-semivariogram rather than variogram
             ! 3. the covariance requires "centering"
@@ -1014,7 +1014,7 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
             ! 6. report the semi(pairwise relative variogram)
             ! 7. report the semi(log variogram)
             ! 8. report the semi(madogram)
-            
+
                 if(it == 1 .OR. it == 2) then
                     gam(i) = 0.5 * gam(i)
                 else if(abs(it) == 3) then
@@ -1041,9 +1041,9 @@ subroutine gamma(nx, ny, nz, bhid, nv, vr, &                   ! data array and 
                     else
                         gam(i) =(gam(i)-hm(i)*tm(i))/(hv(i)*tv(i))
                     endif
-                
+
                 ! Square "hv" and "tv" so that we return the variance:
-                
+
                     hv(i)  = hv(i)*hv(i)
                     tv(i)  = tv(i)*tv(i)
                 else if(it == 5) then
@@ -1069,7 +1069,7 @@ end subroutine gamma
 !     Subroutine write out for gam
 !-----------------------------------------------------------------------
 subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
-                         izd, zsiz, np, gam, hm, tm, hv, tv, & 
+                         izd, zsiz, np, gam, hm, tm, hv, tv, &
                          pdis, pgam, phm, ptm, phv, ptv, pnump)
 
     !-------------------------------------------------------------------
@@ -1096,11 +1096,11 @@ subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
 
     real*8, intent(in), dimension(ndir*(nlag+2)*nvarg)  :: np,  gam, hm, tm, hv, tv
     real*8, intent(in)  :: xsiz, ysiz, zsiz
-    integer, intent(in) :: nvarg, ndir, nlag 
+    integer, intent(in) :: nvarg, ndir, nlag
     integer, intent(in), dimension(ndir) :: ixd, iyd, izd
     real*8,    intent(out), dimension(nvarg, ndir, nlag+2) :: pdis,pgam, phm,ptm,phv,ptv
     integer, intent(out), dimension(nvarg, ndir, nlag+2) :: pnump
-    
+
 
     integer :: iv, id, il, i
     real*8 :: dis
@@ -1108,18 +1108,18 @@ subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
     ! Loop over all the variograms that have been computed:
 
     do iv=1,nvarg
-       
+
         ! Loop over all the directions (note the direction in the title):
-    
+
         do id=1,ndir
-        
+
             ! Compute the unit lag distance along the directional vector:
-        
+
             dis = sqrt( max(((ixd(id)*xsiz)**2 + (iyd(id)*ysiz)**2 + &
             (izd(id)*zsiz)**2),0.0) )
-        
+
             ! Write out all the lags:
-        
+
             do il=1,nlag
                 i = (id-1)*nvarg*nlag+(iv-1)*nlag+il
                 pdis(iv,id,il) = dble(il)*dis
@@ -1150,11 +1150,11 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 np, dis, gam, hm, tm, hv, tv)                    ! output
 
     !----------------------------------------------------------------------
-    ! 
-    ! Calculate variograms in all posible direction and place it in a 
-    ! 3D spheric regular grid. The result can be ploted later in a 
+    !
+    ! Calculate variograms in all posible direction and place it in a
+    ! 3D spheric regular grid. The result can be ploted later in a
     ! VTK structured grid
-    ! 
+    !
     !----------------------------------------------------------------------
     !----------------------------------------------------------------------
     ! This code was modified from original f77 GSLIB code (v.2) gamv function
@@ -1167,19 +1167,19 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
     !   MAXLAG => nlag*2 :  number of lags at one time
     !   MXVARG => nvarg  :  number of variograms possible at one time
 
-    !   MXDLV  =>  ndir*(nlag*2)*nvarg 
-    
+    !   MXDLV  =>  ndir*(nlag*2)*nvarg
+
     ! c) Support for downhole variogram was added (see bhid(nd)). To
     !    ignore downhole option use bhid(:)= constant
     !
     !     Comment: you can use this to avoid mix of data (example variograms)
-    !              at both sides of a fault. 
+    !              at both sides of a fault.
     !
     !----------------------------------------------------------------------
-    
+
 
     !----------------------------------------------------------------------
-    
+
     !              Variogram of 3-D Irregularly Spaced Data
     !              ****************************************
     ! This subroutine computes a variety of spatial continuity measures of a
@@ -1222,7 +1222,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
     !
     !
     ! OUTPUT VARIABLES:  The following arrays are stored in (nlag,ndir,ndip,nvarg) arrays
-    
+
     !
     !   np()             Number of pairs
     !   dis()            Distance of pairs falling into this lag
@@ -1241,66 +1241,66 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
     ! Original:  A.G. Journel                                           1978
     ! Revisions: K. Guertin                                             1980
     !-----------------------------------------------------------------------
-    
-    
+
+
     !for safety reason we don't want undeclared variables
-    IMPLICIT NONE    
+    IMPLICIT NONE
 
     integer, intent(in)                     :: nlag, ndir, ndip, nvarg
     integer, intent(in)                     :: nd, nv, isill
     integer, intent(in), dimension(nvarg)   :: ivtail, ivhead,ivtype
     real*8, intent(in), dimension(nd)       :: x, y, z
-    
+
     real*8, intent(in), dimension(nd,nv)    :: vr
     real*8, intent(in), dimension(nv)       :: sills
     real*8, intent(in)                      :: tmin, tmax, xlag
-    
+
     real*8, intent(out), dimension(nlag,ndir,ndip,nvarg)  :: np, dis, gam, hm, tm, hv, tv
 
     !new variables
     integer, intent(in), dimension(nd)         :: bhid
- 
-               
+
+
     ! some general declarations
     real*8 :: PI, EPSLON
     parameter(PI=3.14159265, EPSLON=1.0e-20)
-    
+
     real*8                :: uvxazm, uvyazm, uvzdec, uvhdec, csatol, csdtol
     logical               :: omni
 
 
     !Extra Variables not declared in the original library
     real*8  :: azmuth, declin, band, dcazm, dismxs, dx, dxs, dxy, dy, &
-             dys, dz, dzs, dcdec, gamma, h, hs, htave, variance, & 
+             dys, dz, dzs, dcdec, gamma, h, hs, htave, variance, &
              vrh, vrhpr, vrt,  vrtpr, xltoll
     integer :: i, id, ii, iii, il, ilag, it, iv, j, lagbeg, lagend, nsiz, rnum
-    
+
     real*8 :: azm, dip, dazm, ddip, dp, az, azimdg
-    integer :: idp, jdp, k, kdip, jdir, l 
-    
+    integer :: idp, jdp, k, kdip, jdir, l
+
     azm = 0
     dip = 0
-    
+
     ! the azimuth separation
     if (ndir<1) then
         dazm = 180
-    else     
+    else
         dazm = 180./ndir
     end if
-  
+
   ! the dip separation
     if (ndip<1) then
         ddip = 180
-    else     
+    else
         ddip = 180./ndip
     end if
 
- 
+
     ! Initialize the arrays for each direction, variogram, and lag:
 
     nsiz = ndir*nvarg*(nlag+2)
-    
-    
+
+
     do i=1,nlag
         do j=1,ndir
             do k=1,ndip
@@ -1316,20 +1316,20 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
             end do
         end do
     end do
-    dismxs = ((dble(nlag) + 0.5 - EPSLON) * xlag) ** 2  
-    
+    dismxs = ((dble(nlag) + 0.5 - EPSLON) * xlag) ** 2
 
-    
+
+
 ! MAIN LOOP OVER ALL PAIRS:
 
     do 3 i=1,nd
         do 4 j=i,nd
-        
+
             !implement the downhole variogram  (change added on may 2015)
             if(bhid(j).NE.bhid(i)) go to 4
-        
+
             ! Definition of the lag corresponding to the current pair:
-        
+
             dx  = x(j) - x(i)
             dy  = y(j) - y(i)
             dz  = z(j) - z(i)
@@ -1340,36 +1340,37 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
             if(hs > dismxs) go to 4
             if(hs < 0.0) hs = 0.0
             h   = sqrt(hs)
-            
-                   
+
+
             ! now we determine the cell of the 3D variogram
-            
+
             ! a) the ilag position = nint (h/xlag + 1)
-            
+
             if(h <= EPSLON) then
                 ilag = 1
             else
-                ilag = nint(h/xlag + 1)                
+                ilag = int(h/xlag + 1)
             endif
-        
-            ! b) the jdir direction 
-            
+
+            ! b) the jdir direction
+
             az = azimdg(dx,dy)  ! DODO: Error: fix this, for example for direction every 45 degrees de firts direction is 22.5, not zero
-            
-            jdir = nint(az/dazm + 1)
-            
-            ! c) get kdip direction  
-            
+
+            jdir = int(az/dazm + 1)
+
+            ! c) get kdip direction
+
             dxy = sqrt(max((dxs+dys),0.0))
             dp = azimdg(dxy,dy) + 90
-            
-            kdip = nint(dp/ddip + 1) ! DODO: Error: fix this, for example for direction every 45 degrees de firts direction is 22.5, not zero
-            
-                        
+
+            kdip = int(dp/ddip+1) ! DODO: Error: fix this, for example for direction every 45 degrees de firts direction is 22.5, not zero
+
+
+
             do 6 iv=1,nvarg
-            
+
                 ! For this variogram, sort out which is the tail and the head value:
-            
+
                 it = ivtype(iv)
 
                 ii = ivtail(iv)
@@ -1383,42 +1384,42 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                     vrhpr = vr(j,ii)
                 endif
 
-            
+
                 ! Reject this pair on the basis of missing values:
-            
+
                 if(vrt < tmin .OR. vrh < tmin .OR. &
                 vrt > tmax .OR. vrh > tmax) go to 6
                 if(it == 2 .AND. (vrtpr < tmin .OR. vrhpr < tmin .OR. &
                 vrtpr > tmax .OR. vrhpr > tmax)) &
                 go to 6
-            
+
                 !             COMPUTE THE APPROPRIATE "VARIOGRAM" MEASURE
-            
-            
+
+
                 ! The Semivariogram:
-            
+
                 if(it == 1 .OR. it == 5 .OR. it >= 9) then
-                
+
                     np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                     dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                     tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(vrt)
                     hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(vrh)
                     gam(ilag,jdir,kdip,iv) = gam(ilag,jdir,kdip,iv) + dble((vrh-vrt)*(vrh-vrt))
 
-                
+
                 ! The Traditional Cross Semivariogram:
-                
+
                 else if(it == 2) then
-                
+
                     np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
                     dis(ilag,jdir,kdip,iv) = dis(ilag,jdir,kdip,iv) + dble(h)
                     tm(ilag,jdir,kdip,iv)  = tm(ilag,jdir,kdip,iv)  + dble(0.5*(vrt+vrtpr))
                     hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(0.5*(vrh+vrhpr))
                     gam(ilag,jdir,kdip,iv) = gam(ilag,jdir,kdip,iv) + dble((vrhpr-vrh)*(vrt-vrtpr))
-                
-                
+
+
                 ! The Covariance:
-                
+
                 else if(it == 3) then
 
                     np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
@@ -1427,10 +1428,10 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                     hm(ilag,jdir,kdip,iv)  = hm(ilag,jdir,kdip,iv)  + dble(vrh)
                     gam(ilag,jdir,kdip,iv) = gam(ilag,jdir,kdip,iv) + dble(vrh*vrt)
 
-                    
-                
+
+
                 ! The Correlogram:
-                
+
                 else if(it == 4) then
 
                     np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
@@ -1440,10 +1441,10 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                     hv(ilag,jdir,kdip,iv)  = hv(ilag,jdir,kdip,iv)  + dble(vrh*vrh)
                     tv(ilag,jdir,kdip,iv)  = tv(ilag,jdir,kdip,iv)  + dble(vrt*vrt)
                     gam(ilag,jdir,kdip,iv) = gam(ilag,jdir,kdip,iv) + dble(vrh*vrt)
-                        
-                
+
+
                 ! The Pairwise Relative:
-                
+
                 else if(it == 6) then
 
                     if(abs(vrt+vrh) > EPSLON) then
@@ -1455,9 +1456,9 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                         gam(ilag,jdir,kdip,iv) = gam(ilag,jdir,kdip,iv) + dble(gamma*gamma)
                     endif
 
-                
+
                 ! Variogram of Logarithms:
-                
+
                 else if(it == 7) then
                     if(vrt > EPSLON .AND. vrh > EPSLON) then
                         np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
@@ -1467,10 +1468,10 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                         gamma   = dlog(vrt)-dlog(vrh)
                         gam(ilag,jdir,kdip,iv) = gam(ilag,jdir,kdip,iv) + dble(gamma*gamma)
                     endif
-                        
-                
+
+
                 ! Madogram:
-                
+
                 else if(it == 8) then
 
                         np(ilag,jdir,kdip,iv)  = np(ilag,jdir,kdip,iv)  + 1
@@ -1480,9 +1481,9 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                         gam(ilag,jdir,kdip,iv) = gam(ilag,jdir,kdip,iv) + dble(abs(vrh-vrt))
 
                 endif
-            
+
             ! Finish loops over variograms, directions, and the double data loops:
-                
+
             6 END DO
             ! 5 END DO
         4 END DO
@@ -1491,14 +1492,12 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
    ! Get average values for gam, hm, tm, hv, and tv, then compute
    ! the correct "variogram" measure:
 
-    print *, np
-    
-    
+
     do 7 id=1,ndir
         do 7 idp=1,ndip
             do 7 iv=1,nvarg
                 do 7 il=1,nlag
-                    
+
                     if(np(il,id,idp,iv) <= 0.) go to 7
                     rnum   = np(il,id,idp,iv)
                     dis(il,id,idp,iv) = dis(il,id,idp,iv) / dble(rnum)
@@ -1508,10 +1507,10 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                     hv(il,id,idp,iv)  = hv(il,id,idp,iv)  / dble(rnum)
                     tv(il,id,idp,iv)  = tv(il,id,idp,iv)  / dble(rnum)
                     it = ivtype(iv)
-                   
-                    
+
+
                 ! Attempt to standardize:
-                
+
                     if(isill == 1) then
                         if(ivtail(iv) == ivhead(iv)) then
                             iii = ivtail(iv)
@@ -1519,7 +1518,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                             gam(il,id,idp,iv) = gam(il,id,idp,iv) / sills(iii)
                         end if
                     end if
-                
+
                 !  1. report the semivariogram rather than variogram
                 !  2. report the cross-semivariogram rather than variogram
                 !  3. the covariance requires "centering"
@@ -1528,7 +1527,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 !  6. report the semi(pairwise relative variogram)
                 !  7. report the semi(log variogram)
                 !  8. report the semi(madogram)
-                
+
                     if(it == 1 .OR. it == 2) then
                         gam(il,id,idp,iv) = 0.5 * gam(il,id,idp,iv)
                     else if(it == 3) then
@@ -1546,9 +1545,9 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                             gam(il,id,idp,iv) =(gam(il,id,idp,iv)-hm(il,id,idp,iv)*tm(il,id,idp,iv))/ &
                                                (hv(il,id,idp,iv)*tv(il,id,idp,iv))
                         endif
-                    
+
                     ! Square "hv" and "tv" so that we return the variance:
-                    
+
                         hv(il,id,idp,iv)  = hv(il,id,idp,iv)*hv(il,id,idp,iv)
                         tv(il,id,idp,iv)  = tv(il,id,idp,iv)*tv(il,id,idp,iv)
                     else if(it == 5) then
@@ -1566,22 +1565,22 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
     return
 
 
- end subroutine gamv3D 
- 
- 
+ end subroutine gamv3D
+
+
  real*8 function azimdg(dx,dy)
-    
-    real*8, intent(in) :: dx, dy  
+
+    real*8, intent(in) :: dx, dy
     real*8 :: PI
     parameter(PI=3.14159265)
-    
-    
+
+
     azimdg=180./PI*atan2(dy,dx)
-    
+
     !if (azimdg<0) azimdg=azimdg+360
-    
+
     if (azimdg<0) azimdg=-azimdg ! only 180
-    
+
     return
-    
+
 end function azimdg
