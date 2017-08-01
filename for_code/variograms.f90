@@ -1144,8 +1144,8 @@ subroutine writeout_gam (nvarg, ndir, nlag, ixd, xsiz, iyd, ysiz, &
 !     Subroutine gamv
 !---------------------------------------------------------------------------
 subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array and coordinares
-                tmin, tmax, nlag, xlag, &                             ! lag definition
-                ndir, ndip,  &                                   ! directions and parameters
+                tmin, tmax, nlag, xlag, &                        ! lag definition
+                ndir, ndip, orgdir, orgdip, &                     ! directions and parameters
                 isill, sills, nvarg, ivtail, ivhead,ivtype,  &   ! variograms types and parameters
                 np, dis, gam, hm, tm, hv, tv)                    ! output
 
@@ -1202,6 +1202,9 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
     !   xltol            Distance tolerance (if <0 then set to xlag/2)
     !   ndir, ndip       Number of directions, inclinations to consider
     !                    angles of direction  are measured positive degrees clockwise from NS.
+    !   orgdir, orgdip   clockwise rotation added to dir and
+    !                    down dip positive angle added to dip
+    !                    dir rotation is applied and the dip rotation
     !   isill            1=attempt to standardize, 0=do not
     !   sills            the sills (variances) to standardize with
     !   nvarg            Number of variograms to compute
@@ -1253,9 +1256,11 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
 
     real*8, intent(in), dimension(nd,nv)    :: vr
     real*8, intent(in), dimension(nv)       :: sills
-    real*8, intent(in)                      :: tmin, tmax, xlag
+    real*8, intent(in)                      :: tmin, tmax, xlag, orgdir, orgdip
 
     real*8, intent(out), dimension(nlag,ndir,ndip,nvarg)  :: np, dis, gam, hm, tm, hv, tv
+
+
 
     !new variables
     integer, intent(in), dimension(nd)         :: bhid
@@ -1275,11 +1280,8 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
              vrh, vrhpr, vrt,  vrtpr, xltoll
     integer :: i, id, ii, iii, il, ilag, it, iv, j, lagbeg, lagend, nsiz, rnum
 
-    real*8 :: azm, dip, dazm, ddip, dp, az, azimdg
+    real*8 ::  dazm, ddip, dp, az, azimdg
     integer :: idp, jdp, k, kdip, jdir, l
-
-    azm = 0
-    dip = 0
 
     ! the azimuth separation
     if (ndir<1) then
@@ -1297,9 +1299,6 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
 
 
     ! Initialize the arrays for each direction, variogram, and lag:
-
-    nsiz = ndir*nvarg*(nlag+2)
-
 
     do i=1,nlag
         do j=1,ndir
@@ -1341,10 +1340,9 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
             if(hs < 0.0) hs = 0.0
             h   = sqrt(hs)
 
-
             ! now we determine the cell of the 3D variogram
 
-            ! a) the ilag position = nint (h/xlag + 1)
+            ! a) the ilag position = int (h/xlag + 1)
 
             if(h <= EPSLON) then
                 ilag = 1
@@ -1352,18 +1350,19 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 ilag = int(h/xlag + 1)
             endif
 
-            ! b) the jdir direction
+            ! b) the jdir direction (math angle)
 
-            az = azimdg(dx,dy)  ! DODO: Error: fix this, for example for direction every 45 degrees de firts direction is 22.5, not zero
+            az = azimdg(dx,dy)+dazm/2.+orgdir     ! we add tolerance angle and rotation of direction origing to compare as firs lag from zero to alpha+beta
+            az = modulo(az,180.)                  ! fix angle to interval [0,180[
 
-            jdir = int(az/dazm + 1)
+            jdir = int(az/dazm + 1)               ! get cell array location properly corrected to first cell starting at [0,dazm[
 
             ! c) get kdip direction
 
             dxy = sqrt(max((dxs+dys),0.0))
-            dp = azimdg(dxy,dy) + 90
+            dp = modulo(azimdg(dxy,dz) + ddip/2. + orgdip, 180.)
 
-            kdip = int(dp/ddip+1) ! DODO: Error: fix this, for example for direction every 45 degrees de firts direction is 22.5, not zero
+            kdip = int(dp/ddip+1)                ! get cell array location properly corrected to first cell starting at [0,ddip[
 
 
 
@@ -1499,6 +1498,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                 do 7 il=1,nlag
 
                     if(np(il,id,idp,iv) <= 0.) go to 7
+
                     rnum   = np(il,id,idp,iv)
                     dis(il,id,idp,iv) = dis(il,id,idp,iv) / dble(rnum)
                     gam(il,id,idp,iv) = gam(il,id,idp,iv) / dble(rnum)
@@ -1509,7 +1509,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                     it = ivtype(iv)
 
 
-                ! Attempt to standardize:
+                    ! Attempt to standardize:
 
                     if(isill == 1) then
                         if(ivtail(iv) == ivhead(iv)) then
@@ -1519,14 +1519,14 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                         end if
                     end if
 
-                !  1. report the semivariogram rather than variogram
-                !  2. report the cross-semivariogram rather than variogram
-                !  3. the covariance requires "centering"
-                !  4. the correlogram requires centering and normalizing
-                !  5. general relative requires division by lag mean
-                !  6. report the semi(pairwise relative variogram)
-                !  7. report the semi(log variogram)
-                !  8. report the semi(madogram)
+                    !  1. report the semivariogram rather than variogram
+                    !  2. report the cross-semivariogram rather than variogram
+                    !  3. the covariance requires "centering"
+                    !  4. the correlogram requires centering and normalizing
+                    !  5. general relative requires division by lag mean
+                    !  6. report the semi(pairwise relative variogram)
+                    !  7. report the semi(log variogram)
+                    !  8. report the semi(madogram)
 
                     if(it == 1 .OR. it == 2) then
                         gam(il,id,idp,iv) = 0.5 * gam(il,id,idp,iv)
@@ -1546,7 +1546,7 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
                                                (hv(il,id,idp,iv)*tv(il,id,idp,iv))
                         endif
 
-                    ! Square "hv" and "tv" so that we return the variance:
+                        ! Square "hv" and "tv" so that we return the variance:
 
                         hv(il,id,idp,iv)  = hv(il,id,idp,iv)*hv(il,id,idp,iv)
                         tv(il,id,idp,iv)  = tv(il,id,idp,iv)*tv(il,id,idp,iv)
@@ -1577,9 +1577,8 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
 
     azimdg=180./PI*atan2(dy,dx)
 
-    !if (azimdg<0) azimdg=azimdg+360
-
-    if (azimdg<0) azimdg=-azimdg ! only 180
+    ! here we fix the angle to be 0<=alpha<360
+    azimdg=modulo(azimdg,360.)
 
     return
 
