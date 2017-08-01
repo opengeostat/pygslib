@@ -97,3 +97,4 @@ TODO at vtk tools module
     writer.Write()
 
     ```
+- [ ] Add export 3D grid (centroids points / no blocks)
