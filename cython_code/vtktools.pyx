@@ -733,7 +733,7 @@ cpdef partialgrid2vtkfile(str path,
                    object varname):
     """partialgrid2vtkfile(str path, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double DX, double DY, double DZ, object var, object varname)
         
-    Saves data in a VTK Unstructured Grid file
+    Saves data in the cells of a VTK Unstructured Grid file
     
     
     Parameters
@@ -833,6 +833,87 @@ cpdef partialgrid2vtkfile(str path,
     writer.SetInputData(extractGrid.GetOutput())
     writer.Write()
 
+    
+cpdef partialgrid2vtkfile_p(str path,                    
+                   np.ndarray [double, ndim=1] x, 
+                   np.ndarray [double, ndim=1] y,
+                   np.ndarray [double, ndim=1] z,
+                   double DX, 
+                   double DY,
+                   double DZ,
+                   object var,
+                   object varname):
+    """partialgrid2vtkfile_p(str path, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double DX, double DY, double DZ, object var, object varname)
+        
+    Saves data in the points of a VTK Unstructured Grid file
+    
+    
+    Parameters
+    ----------
+    path : str
+        file path (relative or absolute) and name 
+    x,y,z : np.ndarray
+        coordinates of the points
+    DX,DY,DZ : float
+        block sizes
+    data : array like 
+        array with variable values.     
+    """
+
+    # add extension to path 
+    if not path.lower().endswith('.vtu'):
+        path = path + '.vtu'
+
+
+    # number of points/blocks cetroids
+    np = x.shape[0]
+    
+    #number of variables
+    nvar = len(var)
+     
+    # Create array of the points and ID
+    pcoords = vtk.vtkFloatArray()
+    pcoords.SetNumberOfComponents(3)
+    pcoords.SetNumberOfTuples(np) 
+    
+    points = vtk.vtkPoints()
+    pointArray = vtk.vtkCellArray()
+        
+  
+    #for each block
+    for i in range (np):
+        # for each vertex    
+        pcoords.SetTuple3(i, x[i], y[i], z[i])
+            
+    # add points 
+    points.SetData(pcoords)
+
+    # Create the cells.
+    #for each block
+    for i in range (np):        
+        # add next cell
+        pointArray.InsertNextCell(1)  
+        pointArray.InsertCellPoint(i)       
+    
+    # create the unestructured grid
+    ug = vtk.vtkUnstructuredGrid()
+    # Assign points and cells
+    ug.SetPoints(points)
+    ug.SetCells(vtk.VTK_VERTEX, pointArray)
+ 
+    # asign scalar 
+    for i in range(nvar):
+        cscalars = vtknumpy.numpy_to_vtk(var[i])
+        cscalars.SetName(varname[i]) 
+        ug.GetPointData().AddArray(cscalars)
+   
+    # save results 
+    writer = vtk.vtkXMLUnstructuredGridWriter();
+    writer.SetFileName(path);
+    writer.SetInputData(ug)
+    writer.Write()    
+    
+    
 # ----------------------------------------------------------------------
 #   triangilations
 # ----------------------------------------------------------------------

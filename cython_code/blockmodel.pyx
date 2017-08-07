@@ -890,7 +890,7 @@ cdef class Blockmodel:
     cpdef blocks2vtkUnstructuredGrid(self, str path, str varname= None):
         """blocks2vtkUnstructuredGrid(str path, str varname = None)
                 
-        Exports blocks of a partial grid to a vtkRectilinearGrid file. 
+        Exports blocks of a partial grid to a vtkUnestructuredGrid cells. 
           
         Parameters
         ----------
@@ -942,6 +942,60 @@ cdef class Blockmodel:
         pygslib.vtktools.partialgrid2vtkfile(path, x, y, z, 
                              self.dx, self.dy, self.dz, var, prop_name)
 
+    cpdef blocks2vtkUnstructuredGrid_p(self, str path, str varname= None):
+        """blocks2vtkUnstructuredGrid(str path, str varname = None)
+                
+        Exports block centroids of a partial grid to a vtkUnistructuredGrid points. 
+          
+        Parameters
+        ----------
+        path : string 
+               file name and path, without extension. The file extension
+               (*.vtr) will be added automatically. 
+        
+        varname : string 
+                If None export all columns, otherwise export only
+                the column varname
+ 
+               
+        Examples
+        --------
+        >>>
+        >>> blocks2vtkUnstructuredGrid('myfile', 'AU')
+        >>>
+ 
+        Note
+        ----
+        Require XC, YC and ZC.
+        
+        Only numeric variables can be exported 
+        TODO: export all
+        
+        This call pygslib.vtktools.partialgrid2vtkfile 
+
+        """
+        
+        
+        cdef np.ndarray [double, ndim=1] x,y,z
+        
+        x= self.bmtable['XC'].values
+        y= self.bmtable['YC'].values
+        z= self.bmtable['ZC'].values
+        var = []
+        prop_name = []
+        
+        if varname is None:
+            # prepare colums as array of numpy data
+            for i in self.bmtable.columns:
+                var.append(self.bmtable[i].values)
+                prop_name.append(i)
+        else: 
+            var = [self.bmtable[varname]]
+            prop_name = [varname]   
+        
+      
+        pygslib.vtktools.partialgrid2vtkfile_p(path, x, y, z, 
+                             self.dx, self.dy, self.dz, var, prop_name)
 
     cpdef block2point(self, np.ndarray [double, ndim=1] x, 
                             np.ndarray [double, ndim=1] y,

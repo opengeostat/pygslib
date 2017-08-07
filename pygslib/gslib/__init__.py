@@ -700,7 +700,9 @@ def gamv3D(parameters):
     
     """
     
+    #get 4D arrays with dimesions (nlag,ndir,ndip,nvarg)
     np,dis,gam,hm,tm,hv,tv = __variograms.gamv3d(**parameters)
+    
     
     
     return np,dis,gam,hm,tm,hv,tv  

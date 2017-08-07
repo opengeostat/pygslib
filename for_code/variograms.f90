@@ -1292,18 +1292,17 @@ subroutine gamv3D(nd, x, y, z, bhid, nv, vr, &                   ! data array an
 
   ! the dip separation
     if (ndip<1) then
-        ddip = 180
+        ddip = 180.
     else
-        ddip = 180./ndip
+        ddip = 180./(ndip)
     end if
-
 
     ! Initialize the arrays for each direction, variogram, and lag:
 
-    do i=1,nlag
-        do j=1,ndir
-            do k=1,ndip
-                do l=1,nvarg
+    do l=1,nvarg
+        do k=1,ndip
+            do i=1,nlag
+                do j=1,ndir
                     np(i,j,k,l)  = 0
                     dis(i,j,k,l) = 0.0
                     gam(i,j,k,l) = 0.0
