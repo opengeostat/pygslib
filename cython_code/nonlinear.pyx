@@ -44,8 +44,12 @@ from scipy.stats import norm
 from scipy.optimize import brentq
 from libc.math cimport sqrt
 from libc.math cimport exp
+import pygslib
+import matplotlib.pyplot as plt 
 
-# General 
+# is nan test for cython 
+#from libc.math cimport isnan
+
 
 # almost C version of stnormal 
 @cython.boundscheck(False)
@@ -58,95 +62,154 @@ cdef float stnormpdf(float x):
 # ----------------------------------------------------------------------
 #   Transformation table
 # ----------------------------------------------------------------------
-cpdef ttable(np.ndarray [double, ndim=1] z, 
-             np.ndarray [double, ndim=1] w, 
-             long despkn=50, 
-             double despks=0.001, 
-             bint despkm=True):
-    """ttable(np.ndarray [double, ndim=1] z, np.ndarray [double, ndim=1] w, long despkn=50, double despks=0.001, bint despkm=True)
+cpdef ttable(z, w):
+    """ttable(z, w)
     
-    Creates a transformation table
+    Creates a transformation table. 
     
     Parameters
     ---------
-    z,w : 1D numpy arrays of floats
-        variable and declustering weight
-    despkn : int64
-        number of despiking values
-    despks : float64
-        depiking value
-    despkm : boolean
-        if True the dat will be despiked before calculating the transformation table     
+    z,w : 1D numpy arrays of floats 
+        Variable and declustering weight.
+    Returns:
+    transin,transout : 1D numpy arrays with pairs of raw and gaussian values
+    
+    Note: 
+    This function uses gslib.__dist_transf.ns_ttable
     """
-
-    cdef long n
-    cdef np.ndarray [double, ndim=1] ff, yy, zz, ww, wc, e, h
-    cdef np.ndarray [long, ndim=1] I
+    cdef int error
     
-    # size of the input array
-    n= z.shape[0]
-    eps = 2.2204e-16  # octave constant... 
+    transin,transout, error = pygslib.gslib.__dist_transf.ns_ttable(z,w)
     
-    # if no weight provided
-    #if w == None:
-    #    w = np.ones(n)
+    assert error < 1, 'There was an error = {} in the function gslib.__dist_transf.ns_ttable'.format(error)
+    
+    
+    return transin,transout
         
+# ----------------------------------------------------------------------
+#   Normal score
+# ----------------------------------------------------------------------
+cpdef nscore(z, transin, transout, getrank=False):
+    """nscore(z, transin,transout, getrank)
     
-    # add despikes, this is recommended 
-    # this is based on http://cg.ensmp.fr/bibliotheque/public/DERAISME_Communication_02158.pdf
-    if despkn>1:
-        e = np.ones(n)
-        h = np.ones(n)
-        h[:] = w[:] 
+    Normal score transformation, as in GSLIB
+    
         
-        for j in range (despkn):  # add a set of despkn Gaussian values along atoms
-            for i in range(n): 
-                if despkm:
-                    e[i] = z[i] + np.random.normal(loc=0.0, scale=despks*z[i]) # mudulating despikes
-                else:
-                    e[i] = z[i] + np.random.normal(loc=0.0, scale=despks) # mudulating despikes
-                    
-            # append the despikes to the original data
-            z=np.append(z,e)
-            w=np.append(w,h)
-
-    # vector sorting the input array
-    I = np.lexsort((w,z)) # sort by z, then by w
-    
-    # sort with vector
-    zz = z[I]
-    ww = w[I]
-    
-    # Remove tied values 
-    # this is based in code: hist_tra.m from Xavier Emery, at 
-    # paper: "A disjunctive kriging program..."
-    for i in range(n-1):
-      if zz[i+1]-zz[i]<eps:
-        ww[i+1] = ww[i+1]+ww[i]
-        ww[i] = 0
-          
-    # some cleanup
-    zz = zz[ww>0]
-    ww = ww[ww>0]
-    n= ww.shape[0]
-    
-    #normalize 
-    ww = ww/ww.sum()
-    wc = ww.cumsum()
-    
-    # calculate cdf as mean interval [f(y[i]), f(y[i+1])]
-    ff = np.zeros(n)
-    ff[0]= ww[0]/2.
-    for i in range(1,n):
-        ff[i] = wc[i] - (wc[i]-wc[i-1])/2
-    
-    # now we get corresponding y values
-    yy = norm.ppf(ff)
-    
-    return zz, yy, ff, ww
+    Parameters
+    ---------
+    z : 1D numpy array of floats 
+        Variable to transform.
+    transin,transout : 1D numpy arrays of floats
+        transformation table as obtained in function ttable
         
+    Returns
+    -------
+    y : 1D numpy array of floats
+        normal score transformation of variable z
+    
+    Note: 
+    This function uses gslib.__dist_transf.nscore
+    """   
+    return pygslib.gslib.__dist_transf.nscore(z,transin,transout,getrank)
+    
+# ----------------------------------------------------------------------
+#   Back transform using TTable 
+# ----------------------------------------------------------------------
+cpdef backtr(y, transin, transout, ltail, utail, ltpar, utpar, zmin, zmax, getrank=False):
+    """nscore(z, transin,transout, getrank)
+    
+    Normal score transformation, as in GSLIB
+    
+        
+    Parameters
+    ---------
+    y : 1D numpy array of floats 
+        Gaussian values.
+    transin,transout : 1D numpy arrays of floats
+        transformation table as obtained in function ttable
+    ltail : integer
+    utail : integer
+    ltpar : float
+    utpar : float
+    zmin : float
+    zmax : float
+    getrank : Boolean default False
+    
+    
+    
+    Returns
+    -------
+    z : 1D numpy array of floats
+        raw transformation of gaussian variable y
+    
+    Note: 
+    This function uses gslib.__dist_transf.backtr
+    """   
+    cdef int error
+    
+    z, error= pygslib.gslib.__dist_transf.backtr(vnsc = y, transin = transin, transout = transout, 
+                                            ltail = ltail,
+                                            utail = utail, # 4 is hyperbolic
+                                            ltpar = ltpar,
+                                            utpar = utpar,
+                                            zmin = zmin,
+                                            zmax = zmax, 
+                                            getrank = getrank)
+    
+    assert error < 1, 'There was an error = {} in the function gslib.__dist_transf.backtr'.format(error)  
+
+    return z
+    
+# ----------------------------------------------------------------------
+#   Transformation table
+# ----------------------------------------------------------------------
+cpdef stats(z, w, iwt = True, report = True):
+    """stats(z, w)
+    
+    Reports some basic stats using declustering wights 
+    
+    Parameters
+    ---------
+    z,w : 1D numpy arrays of floats 
+        Variable and declustering weight.
+    iwt: boolean default True
+        If True declustering weights will be used to calculate statsistics
+    report : boolean default True
+        If True a printout will be produced
+
+    Returns:
+    xmin,xmax, xcvr,xmen,xvar : floats
+        minimum, maximum, coefficient of variation, media and variance
+    
+    Note: 
+    This function uses gslib.__plot.probplt to optain the stats
+    """
+    cdef int error
+    
+    parameters_probplt = {
+            'iwt'  : iwt,     #int, 1 use declustering weight
+            'va'   : z,       # array('d') with bounds (nd)
+            'wt'   : w}       # array('d') with bounds (nd), wight variable (obtained with declust?)
 
 
+
+    binval,cl,xpt025,xlqt,xmed,xuqt,xpt975,xmin,xmax, xcvr,xmen,xvar,error = pygslib.gslib.__plot.probplt(**parameters_probplt)
+    
+    assert error < 1, 'There was an error = {} in the function gslib.__dist_transf.ns_ttable'.format(error)
+    
+    if report:
+        print  'Stats Summary'
+        print  '-------------'
+        print  'Minimum        ', xmin
+        print  'Maximum        ', xmax
+        print  'CV             ', xcvr
+        print  'Mean           ', xmen
+        print  'Variance       ', xvar
+        
+    return xmin,xmax, xcvr,xmen,xvar 
+    
+    
+    
 # ----------------------------------------------------------------------
 #   Functions for punctual gaussian anamorphosis 
 # ----------------------------------------------------------------------
@@ -544,13 +607,66 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
             continue
         
     return Y
+
+# ----------------------------------------------------------------------
+#   Interactive gaussian anamorphosis modeling 
+# ----------------------------------------------------------------------
+cpdef anamor(z, w, zmin, zmax, ltail=1, utail=1, ltpar=1, utpar=1, K=30):
+    """anamor(z, w)
+    """
+    
+    # a) get experimental transformation table
+    transin, transout = ttable(z, w)
+    
+    # b) genarate a sequence of gaussian values
+    gauss = np.linspace(-5,5,10000)
+    
+    # c) Get the back tansform using normal score transformation
+    raw = pygslib.nonlinear.backtr(y = gauss, 
+                                   transin = transin, 
+                                   transout = transout, 
+                                   ltail = ltail,
+                                   utail = utail, # 4 is hyperbolic
+                                   ltpar = ltpar,
+                                   utpar = utpar,
+                                   zmin = zmin,
+                                   zmax = zmax,
+                                   getrank = False)
+                                   
+    # d) get Hermite expansion
+    H=  pygslib.nonlinear.recurrentH(y=gauss, K=K)
+    
+    # e) Get PCI
+    xmin,xmax,xcvr,xmen,xvar = pygslib.nonlinear.stats(z,w,report=False)
+    PCI, g =  pygslib.nonlinear.fit_PCI( raw, gauss,  H, meanz=np.nan)
+    PCI[0] = xmen
+    raw_var = xvar
+    PCI_var = var_PCI(PCI)
+    
+    # f) Plot transformation
+    zana = pygslib.nonlinear.Y2Z(gauss, PCI, 
+                           zamin = raw.min(), 
+                           yamin = gauss.min(),  
+                           zpmin = raw.min(),  
+                           ypmin = gauss.min(), 
+                           zpmax = raw.max(), 
+                           ypmax = gauss.max(), 
+                           zamax = raw.max(),
+                           yamax = gauss.max(),
+                           r=1.)
+    
+    plt.plot(gauss,raw, '.')
+    plt.plot(gauss,zana, '.')
+    
+    print 'Raw Variance', raw_var
+    print 'Variance from PCI', PCI_var
+    
+    return PCI, raw, gauss, raw_var , PCI_var
     
 
 # ----------------------------------------------------------------------
 #   Extra Functions for support and information effect  
 # ----------------------------------------------------------------------
-
-
 cpdef f_var_Zv(double r,
                np.ndarray [double, ndim=1] PCI,
                double Var_Zv=0):
