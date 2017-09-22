@@ -29,6 +29,7 @@ See also
  - http://www.ccgalberta.com/ccgresources/report04/2002-106-hermite.pdf
  - http://www.ccgalberta.com/ccgresources/report06/2004-112-inference_under_mg.pdf
  - Mining Geostatistics: A. G. Journel, Andre G. Journel, C. J
+ - Introduction to disjunctive Kriging and non linear geostatistcs http://cg.ensmp.fr/bibliotheque/public/RIVOIRARD_Cours_00312.pdf
 
 Warning
 -------
@@ -161,7 +162,7 @@ cpdef backtr(y, transin, transout, ltail, utail, ltpar, utpar, zmin, zmax, getra
     return z
     
 # ----------------------------------------------------------------------
-#   Transformation table
+#   Report some sats from declusterd dataset
 # ----------------------------------------------------------------------
 cpdef stats(z, w, iwt = True, report = True):
     """stats(z, w)
@@ -205,6 +206,7 @@ cpdef stats(z, w, iwt = True, report = True):
         print  'CV             ', xcvr
         print  'Mean           ', xmen
         print  'Variance       ', xvar
+        print  'Quantiles 2.5-97.5' , [xpt025,xlqt,xmed,xuqt,xpt975]
         
     return xmin,xmax, xcvr,xmen,xvar 
     
@@ -397,70 +399,13 @@ cpdef expand_anamor(np.ndarray [double, ndim=1] PCI,
     
     return Z
 
+# ----------------------------------------------------------------------
+#   Helper functions to preprocess punctual/experimental gaussian anamorphosis 
+# ----------------------------------------------------------------------
 
-cpdef ctrpoints(np.ndarray [double, ndim=1] z,
-                np.ndarray [double, ndim=1] y,
-                np.ndarray [double, ndim=1] ze):
-    """ctrpoints(np.ndarray [double, ndim=1] z, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] ze)
-
-    Infers some control points.
-    
-    The admissible minimum and maximum are just logic values defined 
-    by user or by the nature of the problem, ej. grade values may be 
-    between 0 and 100 percent. 
-
-    The practical minimum and maximum are selected as follow
-
-     - are within admissible interval
-     - are within data minimum and maximum values
-     - are within interval where ze do not fluctuates
-    
-    Parameters
-    ----------
-    z,y : 1D array of floats
-        experimental transformation table 
-    ze : 1D array of floats
-        z values obtained with polynomial expansion of y, in other 
-        ze may be calculated as expand_anamor(PCI,H,r=1) 
-
-    Returns
-    -------
-    zamin,yamin,zamax,yamax,zpmin,ypmin,zpmax,ypmax : floats
-        Control points
-        
-    """
-
-    cdef float zamax, yamax, zamin, yamin
-    cdef float zpmax, ypmax, zpmin, ypmin
-
-
-    # initialize authorized interval as data max, min 
-    zamax=z[y.shape[0]-1]
-    yamax=y[y.shape[0]-1]
-    zamin=z[0]
-    yamin=y[0]
-
-    # get the practical maximum interval
-    zpmax=z[y.shape[0]-1]
-    ypmax=y[y.shape[0]-1]
-    for i in range (np.argmin(abs(y)), y.shape[0]-1):  # np.argmin(abs(y)) is around 50% prob. or y~0
-        if ze[i]>ze[i+1] or ze[i]> zamax:
-            zpmax=z[i-1]
-            ypmax=y[i-1]
-            break 
-
-    # get the practical minimum interval
-    zpmin=z[0]
-    ypmin=y[0]
-    for i in range(np.argmin(abs(y)), 1, -1):
-        if ze[i-1]>ze[i] or ze[i]<zamin:
-            zpmin=z[i+1]
-            ypmin=y[i+1]
-            break 
-
-    return  zamin, yamin, zpmin, ypmin, zpmax, ypmax, zamax, yamax
      
-
+# Back transformation from anamorphosis
+# TODO: remove fluctuations before transforming
 cpdef Y2Z(np.ndarray [double, ndim=1] y,
         np.ndarray [double, ndim=1] PCI,
         double zamin, 
@@ -533,7 +478,8 @@ cpdef Y2Z(np.ndarray [double, ndim=1] y,
     #and the new Z values with the existing PCI
     return Z
 
-
+# Transformation from anamorphosis
+# TODO: remove fluctuations before transforming
 cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
                  np.ndarray [double, ndim=1] zm,
                  np.ndarray [double, ndim=1] ym,
@@ -611,15 +557,161 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
 # ----------------------------------------------------------------------
 #   Interactive gaussian anamorphosis modeling 
 # ----------------------------------------------------------------------
-cpdef anamor(z, w, zmin, zmax, ltail=1, utail=1, ltpar=1, utpar=1, K=30):
+
+# automatic calculation of control points
+# TODO: The definition is wrong, fix definitions
+# TODO: The implementation is wron, fix this
+# TODO: Implement function to remove fluctuation in anamorphisis within tolerance
+cpdef ctrpoints(np.ndarray [double, ndim=1] z,
+                np.ndarray [double, ndim=1] y,
+                np.ndarray [double, ndim=1] ze):
+    """ctrpoints(np.ndarray [double, ndim=1] z, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] ze)
+
+    Infers some control points.
+    
+    The admissible minimum and maximum are just logic values defined 
+    by user or by the nature of the problem, ej. grade values may be 
+    between 0 and 100 percent. 
+
+    The practical minimum and maximum are selected as follow
+
+     - are within admissible interval
+     - are within data minimum and maximum values
+     - are within interval where ze do not fluctuates
+    
+    Parameters
+    ----------
+    z,y : 1D array of floats
+        experimental transformation table 
+    ze : 1D array of floats
+        z values obtained with polynomial expansion of y, in other 
+        ze may be calculated as expand_anamor(PCI,H,r=1) 
+
+    Returns
+    -------
+    zamin,yamin,zamax,yamax,zpmin,ypmin,zpmax,ypmax : floats
+        Control points
+        
+    """
+
+    cdef float zamax, yamax, zamin, yamin
+    cdef float zpmax, ypmax, zpmin, ypmin
+
+
+    # initialize authorized interval as data max, min 
+    zamax=z[y.shape[0]-1]
+    yamax=y[y.shape[0]-1]
+    zamin=z[0]
+    yamin=y[0]
+
+    # get the practical maximum interval
+    zpmax=z[y.shape[0]-1]
+    ypmax=y[y.shape[0]-1]
+    for i in range (np.argmin(abs(y)), y.shape[0]-1):  # np.argmin(abs(y)) is around 50% prob. or y~0
+        if ze[i]>ze[i+1] or ze[i]> zamax:
+            zpmax=z[i-1]
+            ypmax=y[i-1]
+            break 
+
+    # get the practical minimum interval
+    zpmin=z[0]
+    ypmin=y[0]
+    for i in range(np.argmin(abs(y)), 1, -1):
+        if ze[i-1]>ze[i] or ze[i]<zamin:
+            zpmin=z[i+1]
+            ypmin=y[i+1]
+            break 
+
+    return  zamin, yamin, zpmin, ypmin, zpmax, ypmax, zamax, yamax
+
+# simular to function above, merge
+cpdef calautorized(zana, zmin, zmax, epson = 0.001):
+
+    cdef int i
+    cdef int j
+        
+
+    # the valid (autorized) min is > zmin and monotonous decreasing mid array
+    
+    zamin= zana[zana.shape[0]/2]
+    zamax= zana[zana.shape[0]/2]
+    
+    for i in range(zana.shape[0]/2, 1, -1): 
+        
+        if zana[i] < zmin + epson or zana[i] + epson < zana[i-1]:
+            break
+           
+        zamin = zana[i]
+        
+    for j in range(zana.shape[0]/2, zana.shape[0]-1): 
+        
+        if zana[j] > zmax + epson or zana[j] + epson < zana[j-1] :
+            break
+           
+        zamax = zana[j]
+
+    return zamin, zamax, i, j   
+
+# similar to function above, merge
+cpdef calpractical(zana, zpmin, zpmax, yamin, yamax):
+
+    cdef int i
+    cdef int j
+    
+    for i in range(zana.shape[0]/2, 1, -1): 
+        
+        if zana[i] < zpmin :
+            zpmin = zana[i]
+            break
+           
+        
+        
+    for j in range(zana.shape[0]/2, zana.shape[0]-1): 
+        
+        if zana[j] > zpmax:
+            zpmax = zana[j]
+            break
+           
+    return zpmin, zpmax, i, j 
+    
+# Interactive anamorphosis modeling, including some plots
+# TODO: improve control points, authorized limits and practical limits
+# Note: Allow using transformation table with max and min over practical and authorized limits
+#      this allows for PCI coefficients to fit better the experimental variance. 
+cpdef anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30, 
+             zmin=None, zmax=None, ymin=None, ymax=None,
+             zamin=None, zamax=None, zpmin=None, zpmax=None,
+             ndisc = 1000, epson = 0.001):
     """anamor(z, w)
     """
+    
+    # z min and max for anamorphosis calculation
+    if zmin==None:
+        zmin = np.min(z)
+        
+    if zmax==None:
+        zmax = np.max(z)
+    
+    # z min and max on any output... 
+    if zpmin==None:
+        zpmin = np.min(z)
+        
+    if zpmax==None:
+        zpmax = np.max(z)
+    
     
     # a) get experimental transformation table
     transin, transout = ttable(z, w)
     
+    if ymin==None:
+        ymin = np.min(transout)
+        
+    if ymax==None:
+        ymax = np.max(transout)
+    
+    
     # b) genarate a sequence of gaussian values
-    gauss = np.linspace(-5,5,10000)
+    gauss = np.linspace(ymin,ymax, ndisc)
     
     # c) Get the back tansform using normal score transformation
     raw = pygslib.nonlinear.backtr(y = gauss, 
@@ -655,13 +747,73 @@ cpdef anamor(z, w, zmin, zmax, ltail=1, utail=1, ltpar=1, utpar=1, K=30):
                            yamax = gauss.max(),
                            r=1.)
     
-    plt.plot(gauss,raw, '.')
-    plt.plot(gauss,zana, '.')
+    zamin, zamax, i, j = calautorized(zana, zmin, zmax, epson = epson )
+    zpmin, zpmax, ii, jj = calpractical(zana, zpmin, zpmax, gauss[i], gauss[j])
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(transout, transin, '-k', linewidth=4.0)
+    ax.plot(gauss[1:-1],raw[1:-1], '-')
+    ax.plot(gauss[1:-1],zana[1:-1], '-')
+    ax.plot(gauss[i],zana[i], 'or',mfc='none')
+    ax.plot(gauss[j],zana[j], 'or',mfc='none')
+    ax.plot(gauss[ii],zana[ii], 'ob',mfc='none')
+    ax.plot(gauss[jj],zana[jj], 'ob',mfc='none')
+    
+    #plt.plot(transout, transin, 'ok', mfc='none')
     
     print 'Raw Variance', raw_var
     print 'Variance from PCI', PCI_var
     
-    return PCI, raw, gauss, raw_var , PCI_var
+    print 'zpmin', zamin
+    print 'zpmax', zamax
+    print 'zamin', zamin, i
+    print 'zamax', zamax, j
+    print 'zpmin', zpmin, ii
+    print 'zpmax', zpmax, jj
+    
+    return PCI, raw, zana, gauss, raw_var , PCI_var, ax
+
+
+# Direct anamorphosis modeling from raw data
+cpdef anamor_raw(z, w, K=30):
+    """anamor(z, w)
+    """ 
+    
+    # a) get experimental transformation table
+    raw, gauss = ttable(z, w)   
+                                   
+    # b) get Hermite expansion
+    H=  pygslib.nonlinear.recurrentH(y=gauss, K=K)
+    
+    # e) Get PCI
+    xmin,xmax,xcvr,xmen,xvar = pygslib.nonlinear.stats(z,w,report=False)
+    PCI, g =  pygslib.nonlinear.fit_PCI( raw, gauss,  H, meanz=np.nan)
+    PCI[0] = xmen
+    raw_var = xvar
+    PCI_var = var_PCI(PCI)
+    
+    # f) Plot transformation
+    zana = pygslib.nonlinear.Y2Z(gauss, PCI, 
+                           zamin = raw.min(), 
+                           yamin = gauss.min(),  
+                           zpmin = raw.min(),  
+                           ypmin = gauss.min(), 
+                           zpmax = raw.max(), 
+                           ypmax = gauss.max(), 
+                           zamax = raw.max(),
+                           yamax = gauss.max(),
+                           r=1.)    
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(gauss,raw, '-k', linewidth=4.0)
+    ax.plot(gauss,zana, '-')
+
+    print 'Raw Variance', raw_var
+    print 'Variance from PCI', PCI_var
+    
+    return PCI, raw, zana, gauss, raw_var , PCI_var, ax
     
 
 # ----------------------------------------------------------------------
