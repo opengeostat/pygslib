@@ -60,6 +60,28 @@ cdef float stnormpdf(float x):
     return num/denom
 
 
+#plotting options
+ana_options = {
+            'dt_pt_color' : 'grey',
+            'dt_pt_line' : '-',
+            'dt_pt_label' : 'data',
+            'ex_pt_color' : 'black',
+            'ex_pt_line' : '--',
+            'ex_pt_label' : 'exp point',
+            'ana_pt_color' : 'orange',
+            'ana_pt_line' : '--',
+            'ana_pt_label' : 'ana point',
+            'ex_ana_pt_color' : 'green',
+            'ex_ana_pt_line' : '-',
+            'ex_ana_pt_label' : 'ana point(fixed)', 
+            'ana_blk_color' : 'red',
+            'ana_blk_line' : '--',
+            'ana_blk_label' : 'ana block',
+            'ex_ana_blk_color' : 'indigo',
+            'ex_ana_blk_line' : '-', 
+            'ex_ana_blk_label' : 'ana block(fixed)', }    
+    
+    
 # ----------------------------------------------------------------------
 #   Transformation table
 # ----------------------------------------------------------------------
@@ -557,133 +579,130 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
 # ----------------------------------------------------------------------
 #   Interactive gaussian anamorphosis modeling 
 # ----------------------------------------------------------------------
-
-# automatic calculation of control points
-# TODO: The definition is wrong, fix definitions
-# TODO: The implementation is wron, fix this
-# TODO: Implement function to remove fluctuation in anamorphisis within tolerance
-cpdef ctrpoints(np.ndarray [double, ndim=1] z,
-                np.ndarray [double, ndim=1] y,
-                np.ndarray [double, ndim=1] ze):
-    """ctrpoints(np.ndarray [double, ndim=1] z, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] ze)
-
-    Infers some control points.
-    
-    The admissible minimum and maximum are just logic values defined 
-    by user or by the nature of the problem, ej. grade values may be 
-    between 0 and 100 percent. 
-
-    The practical minimum and maximum are selected as follow
-
-     - are within admissible interval
-     - are within data minimum and maximum values
-     - are within interval where ze do not fluctuates
-    
-    Parameters
-    ----------
-    z,y : 1D array of floats
-        experimental transformation table 
-    ze : 1D array of floats
-        z values obtained with polynomial expansion of y, in other 
-        ze may be calculated as expand_anamor(PCI,H,r=1) 
-
-    Returns
-    -------
-    zamin,yamin,zamax,yamax,zpmin,ypmin,zpmax,ypmax : floats
-        Control points
-        
-    """
-
-    cdef float zamax, yamax, zamin, yamin
-    cdef float zpmax, ypmax, zpmin, ypmin
-
-
-    # initialize authorized interval as data max, min 
-    zamax=z[y.shape[0]-1]
-    yamax=y[y.shape[0]-1]
-    zamin=z[0]
-    yamin=y[0]
-
-    # get the practical maximum interval
-    zpmax=z[y.shape[0]-1]
-    ypmax=y[y.shape[0]-1]
-    for i in range (np.argmin(abs(y)), y.shape[0]-1):  # np.argmin(abs(y)) is around 50% prob. or y~0
-        if ze[i]>ze[i+1] or ze[i]> zamax:
-            zpmax=z[i-1]
-            ypmax=y[i-1]
-            break 
-
-    # get the practical minimum interval
-    zpmin=z[0]
-    ypmin=y[0]
-    for i in range(np.argmin(abs(y)), 1, -1):
-        if ze[i-1]>ze[i] or ze[i]<zamin:
-            zpmin=z[i+1]
-            ypmin=y[i+1]
-            break 
-
-    return  zamin, yamin, zpmin, ypmin, zpmax, ypmax, zamax, yamax
-
-# simular to function above, merge
-cpdef calautorized(zana, zmin, zmax, epson = 0.001):
-
-    cdef int i
-    cdef int j
-        
-
-    # the valid (autorized) min is > zmin and monotonous decreasing mid array
-    
-    zamin= zana[zana.shape[0]/2]
-    zamax= zana[zana.shape[0]/2]
-    
-    for i in range(zana.shape[0]/2, 1, -1): 
-        
-        if zana[i] < zmin + epson or zana[i] + epson < zana[i-1]:
-            break
-           
-        zamin = zana[i]
-        
-    for j in range(zana.shape[0]/2, zana.shape[0]-1): 
-        
-        if zana[j] > zmax + epson or zana[j] + epson < zana[j-1] :
-            break
-           
-        zamax = zana[j]
-
-    return zamin, zamax, i, j   
-
-# similar to function above, merge
-cpdef calpractical(zana, zpmin, zpmax, yamin, yamax):
+cpdef calautorized(zana, zraw, gauss, zpmin=None, zpmax=None):
 
     cdef int i
     cdef int j
     
+    cdef int ii
+    cdef int jj
+
+    if zpmin is None:
+        zpmin = min(zraw)
+
+    if zpmax is None:
+        zpmax = max(zraw)
+        
+    #get index for zpmax
+    for jj in range(zraw.shape[0]-1, 0, -1):
+        if zraw[jj]<zpmax:
+            break
+            
+    #get index for zpmin
+    for ii in range(0, zraw.shape[0]-1):
+        if zraw[ii]>zpmin:
+            break        
+     
+    # get index for minimum authorized
     for i in range(zana.shape[0]/2, 1, -1): 
         
-        if zana[i] < zpmin :
-            zpmin = zana[i]
+        if zana[i-1] < zraw[ii] or zana[i-1] > zana[i] or gauss[i-1]<gauss[ii]:
             break
-           
+    
+    # get index for maximum authorized
+    for j in range(zana.shape[0]/2, zana.shape[0]-1, +1): 
         
+        if zana[j+1] > zraw[jj] or zana[j+1] < zana[j] or gauss[j+1]>gauss[jj]:
+            break 
         
-    for j in range(zana.shape[0]/2, zana.shape[0]-1): 
+    return i, j, ii, jj 
+
+    
+cpdef calautorized_blk(zana, gauss, zpmin, zpmax):
+
+    cdef int i
+    cdef int j
+    
+    cdef int ii
+    cdef int jj
         
-        if zana[j] > zpmax:
-            zpmax = zana[j]
+    #get index for zpmax
+    jj = zana.shape[0]-1
+    #get index for zpmin
+    ii = 0        
+     
+    # get index for minimum authorized
+    for i in range(zana.shape[0]/2, 1, -1): 
+        
+        if zana[i-1] < zpmin or zana[i-1] > zana[i] or gauss[i-1]<gauss[ii]:
             break
-           
-    return zpmin, zpmax, i, j 
+    
+    # get index for maximum authorized
+    for j in range(zana.shape[0]/2, zana.shape[0]-1, +1): 
+        
+        if zana[j+1] > zpmax or zana[j+1] < zana[j] or gauss[j+1]>gauss[jj]:
+            break 
+        
+    return i, j, ii, jj 
+
+cpdef findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax):
+
+    cdef int i
+    cdef int j
+
+    cdef int ii
+    cdef int jj
+    
+    assert zamax < zamin
+    assert zpmax < zpmin
+    assert zamax <= zpmax
+    assert zamin >= zpmin
+        
+    #get index for zpmax
+    for jj in range(zraw.shape[0]-1, 0, -1):
+        if zraw[jj]<=zpmax:
+            break
+            
+    #get index for zpmin
+    for ii in range(0, zraw.shape[0]-1):
+        if zraw[ii]>=zpmin:
+            break        
+     
+    # get index for zamin
+    for i in range(zana.shape[0]/2, 1, -1): 
+        
+        if zana[i-1] <= zamin:
+            break
+    
+    # get index for zamax
+    for j in range(zana.shape[0]/2, zana.shape[0]-1, +1): 
+        
+        if zana[j+1] >= zamax :
+            break  
+
+    assert zana[j] <= zraw[jj], 'Error: calculated zamax > calculated zpmax'
+    assert zana[i] >= zraw[ii], 'Error: calculated zamin < calculated zpmin'
+    assert gauss[j] <= gauss[jj], 'Error: calculated yamax > calculated ypmax'
+    assert gauss[i] >= gauss[ii], 'Error: calculated yamin < calculated ypmin'    
+    
+    
+    return i, j, ii, jj 
+
+
     
 # Interactive anamorphosis modeling, including some plots
 # TODO: improve control points, authorized limits and practical limits
 # Note: Allow using transformation table with max and min over practical and authorized limits
 #      this allows for PCI coefficients to fit better the experimental variance. 
-cpdef anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30, 
+def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30, 
              zmin=None, zmax=None, ymin=None, ymax=None,
              zamin=None, zamax=None, zpmin=None, zpmax=None,
-             ndisc = 1000, epson = 0.001):
+             ndisc = 1000, **kwargs):
     """anamor(z, w)
     """
+    # set colors and line type
+    options = ana_options
+    options.update(kwargs)
     
     # z min and max for anamorphosis calculation
     if zmin==None:
@@ -736,49 +755,142 @@ cpdef anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     PCI_var = var_PCI(PCI)
     
     # f) Plot transformation
-    zana = pygslib.nonlinear.Y2Z(gauss, PCI, 
-                           zamin = raw.min(), 
-                           yamin = gauss.min(),  
-                           zpmin = raw.min(),  
-                           ypmin = gauss.min(), 
-                           zpmax = raw.max(), 
-                           ypmax = gauss.max(), 
-                           zamax = raw.max(),
-                           yamax = gauss.max(),
-                           r=1.)
+    zana = expand_anamor(PCI, H, r=1)
     
-    zamin, zamax, i, j = calautorized(zana, zmin, zmax, epson = epson )
-    zpmin, zpmax, ii, jj = calpractical(zana, zpmin, zpmax, gauss[i], gauss[j])
+    if zamax is None or zamin is None:
+        i, j, ii, jj = calautorized(zana=zana,
+                                     zraw=raw, 
+                                     gauss=gauss,
+                                     zpmin=zpmin, 
+                                     zpmax=zpmax)
+    else: 
+        i, j, ii, jj = findcontrolpoints(zana=zana,
+                                     zraw  = raw, 
+                                     gauss = gauss,
+                                     zpmin = zpmin, 
+                                     zpmax = zpmax,
+                                     zamin = zamin,
+                                     zamax = zamax)
+
+    # d) Now we get the transformation table for gaussian anamorphosis corrected
+    Z = pygslib.nonlinear.backtr(  y = gauss, 
+                                   transin = zana[i:j+1], 
+                                   transout = gauss[i:j+1], 
+                                   ltail = ltail,
+                                   utail = utail, # 4 is hyperbolic
+                                   ltpar = ltpar,
+                                   utpar = utpar,
+                                   zmin = raw[ii],
+                                   zmax = raw[jj],
+                                   getrank = False)
     
+    # plot results
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(transout, transin, '-k', linewidth=4.0)
-    ax.plot(gauss[1:-1],raw[1:-1], '-')
-    ax.plot(gauss[1:-1],zana[1:-1], '-')
+    plt.ylabel('Z')
+    plt.xlabel('Y')
+    ax.plot(transout, transin, options['dt_pt_line'], color = options['dt_pt_color'], linewidth=4.0, label = options['dt_pt_label'])
+    ax.plot(gauss[1:-1],raw[1:-1], options['ex_pt_line'], color = options['ex_pt_color'], label = options['ex_pt_label'])
+    ax.plot(gauss[1:-1],zana[1:-1], options['ana_pt_line'], color = options['ana_pt_color'], label = options['ana_pt_label'])
+    ax.plot(gauss,Z, options['ex_ana_pt_line'], color = options['ex_ana_pt_color'], label = options['ex_ana_pt_label'])
     ax.plot(gauss[i],zana[i], 'or',mfc='none')
     ax.plot(gauss[j],zana[j], 'or',mfc='none')
-    ax.plot(gauss[ii],zana[ii], 'ob',mfc='none')
-    ax.plot(gauss[jj],zana[jj], 'ob',mfc='none')
+    ax.plot(gauss[ii],raw[ii], 'ob',mfc='none')
+    ax.plot(gauss[jj],raw[jj], 'ob',mfc='none')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     
     #plt.plot(transout, transin, 'ok', mfc='none')
     
     print 'Raw Variance', raw_var
     print 'Variance from PCI', PCI_var
     
-    print 'zpmin', zamin
-    print 'zpmax', zamax
-    print 'zamin', zamin, i
-    print 'zamax', zamax, j
-    print 'zpmin', zpmin, ii
-    print 'zpmax', zpmax, jj
+    print 'zamin', zana[i]
+    print 'zamax', zana[j]
+    print 'yamin', gauss[i]
+    print 'yamax', gauss[j]
     
-    return PCI, raw, zana, gauss, raw_var , PCI_var, ax
+    print 'zpmin', raw[ii]
+    print 'zpmax', raw[jj]
+    print 'ypmin', gauss[ii]
+    print 'ypmax', gauss[jj]
+    
+    
+    return PCI, H, raw, zana, gauss,Z, raw_var , PCI_var, ax
 
+def anamor_blk( PCI, H, r, gauss, Z,
+                  ltail=1, utail=1, ltpar=1, utpar=1,
+                  raw=None, zana=None, **kwargs):  
+    """
+    """
+    
+    # set colors and line type
+    options = ana_options
+    options.update(kwargs)
+    
+    # get practical limits on Z
+    zpmin = np.min(Z)
+    zpmax = np.max(Z)
+    
+    # Get Z experimental
+    z_v= expand_anamor(PCI, H, r)
+    
+    # Get authorized limits on z experimental
+    i, j, ii, jj = calautorized_blk( zana=z_v, 
+                                     gauss=gauss,
+                                     zpmin=zpmin, 
+                                     zpmax=zpmax)
 
+    # Now we get the transformation table corrected
+    ZV = pygslib.nonlinear.backtr( y = gauss, 
+                                   transin = z_v[i:j+1], 
+                                   transout = gauss[i:j+1], 
+                                   ltail = ltail,
+                                   utail = utail, # 4 is hyperbolic
+                                   ltpar = ltpar,
+                                   utpar = utpar,
+                                   zmin = zpmin,
+                                   zmax = zpmax,
+                                   getrank = False)
+
+                                                                
+    
+    # plot results
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.ylabel('Z')
+    plt.xlabel('Y')
+    
+    
+    
+    if raw is not None: 
+        ax.plot(gauss[1:-1],raw[1:-1], options['ex_pt_line'], color = options['ex_pt_color'], label =  options['ex_pt_label'])
+    if zana is not None:
+        ax.plot(gauss[1:-1],zana[1:-1], options['ana_pt_line'], color = options['ana_pt_color'], label =  options['ana_pt_label'])
+    
+    ax.plot(gauss[1:-1],Z[1:-1], options['ex_ana_pt_line'], color = options['ex_ana_pt_color'], label =  options['ex_ana_pt_label'])
+    
+    ax.plot(gauss[1:-1],z_v[1:-1], options['ana_blk_line'], color = options['ana_blk_color'], label =  options['ana_blk_label'])
+    
+    ax.plot(gauss,ZV, options['ex_ana_blk_line'], color = options['ex_ana_blk_color'], label =  options['ex_ana_blk_label'])
+    
+    ax.plot(gauss[i],z_v[i], 'or',mfc='none')
+    ax.plot(gauss[j],z_v[j], 'or',mfc='none')
+    ax.plot(gauss[ii],ZV[ii], 'ob',mfc='none')
+    ax.plot(gauss[jj],ZV[jj], 'ob',mfc='none')
+    
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+    return ZV
+    
+    
 # Direct anamorphosis modeling from raw data
-cpdef anamor_raw(z, w, K=30):
+def anamor_raw(z, w, K=30, **kwargs):
     """anamor(z, w)
     """ 
+    # set colors and line type
+    options = ana_options
+    options.update(kwargs)
+
     
     # a) get experimental transformation table
     raw, gauss = ttable(z, w)   
@@ -804,16 +916,20 @@ cpdef anamor_raw(z, w, K=30):
                            zamax = raw.max(),
                            yamax = gauss.max(),
                            r=1.)    
-    
+
+                           
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(gauss,raw, '-k', linewidth=4.0)
-    ax.plot(gauss,zana, '-')
-
+    plt.ylabel('Z')
+    plt.xlabel('Y')
+    ax.plot(gauss,raw, options['dt_pt_line'], color = options['dt_pt_color'], linewidth=4.0, label = options['dt_pt_label'])
+    ax.plot(gauss,zana, options['ana_pt_line'], color = options['ana_pt_color'], label = options['ana_pt_label'])
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    
     print 'Raw Variance', raw_var
     print 'Variance from PCI', PCI_var
     
-    return PCI, raw, zana, gauss, raw_var , PCI_var, ax
+    return PCI, H, raw, zana, gauss, raw_var , PCI_var, ax
     
 
 # ----------------------------------------------------------------------
