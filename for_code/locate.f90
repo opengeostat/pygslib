@@ -51,7 +51,9 @@ subroutine locate(xx,n,is,ie,x,j)
 
     real, intent(in), dimension(n) :: xx
     real :: x
- 
+    integer, intent (out) :: j
+    !f2py intent(out) j  
+    
     ! Initialize lower and upper methods:
  
     if(is.le.0) is = 1
@@ -96,22 +98,36 @@ subroutine dlocate(xx,n,is,ie,x,j)
 
     ! Bisection Concept From "Numerical Recipes", Press et. al. 1986  pp 90.
     !-----------------------------------------------------------------------
-    implicit real*8 (a-h,o-z)
-    dimension xx(n)
-
+    
+    real, intent (in) :: x
+    real*8, intent (in), dimension(n) :: xx
+    integer, intent (in) :: n,is,ie
+    
+    integer, intent (out) :: j
+    !f2py intent(out) j
+    
+    integer :: jl,ju,jm, iss
+    
+    iss = is
+    
     ! Initialize lower and upper methods:
-
-    jl = is-1
+    if(iss.le.0) iss = 1
+    jl = iss-1
     ju = ie
-
+    if(xx(n).le.x) then
+        j = ie
+        return
+    end if
+    
     ! If we are not done then compute a midpoint:
 
     10 if(ju-jl > 1) then
+    
         jm = (ju+jl)/2
     
         ! Replace the lower or upper limit with the midpoint:
     
-        if((xx(ie) > xx(is)).eqv.(x > xx(jm))) then
+        if((xx(ie) > xx(iss)).eqv.(x > xx(jm))) then
             jl = jm
         else
             ju = jm
@@ -122,5 +138,6 @@ subroutine dlocate(xx,n,is,ie,x,j)
     ! Return with the array index:
 
     j = jl
+    
     return
 end subroutine dlocate

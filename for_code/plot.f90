@@ -63,6 +63,7 @@ include 'sortem.f90'
 ! 
 !***********************************************************************
 
+! TODO: Fix bug, the percentiles are wrong
 subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
                     binval, nincls, cl, clwidth, &
                     xpt025, xlqt, xmed, xuqt, xpt975, xmin, &
@@ -345,7 +346,7 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
 end subroutine  histplt
 
 
-
+! TODO: Fix bug, the percentiles are wrong
 subroutine probplt( iwt, nd, va, wt,  &
                     binval, cl, &
                     xpt025, xlqt, xmed, xuqt, xpt975, xmin, &
@@ -507,6 +508,7 @@ subroutine probplt( iwt, nd, va, wt,  &
         xpt025 = ar1(i) +      (ar1(i+1)-ar1(i)) * &
         (0.025-ar2(i))/(ar2(i+1)-ar2(i))
     endif
+    
     call dlocate(ar2,nd,1,nd,0.25,i)
     if(i == 0) then
         xlqt = ar1(1)
@@ -516,6 +518,7 @@ subroutine probplt( iwt, nd, va, wt,  &
         xlqt = ar1(i) +      (ar1(i+1)-ar1(i)) * &
         (0.25-ar2(i))/(ar2(i+1)-ar2(i))
     endif
+    
     call dlocate(ar2,nd,1,nd,0.75,i)
     if(i == 0) then
         xuqt = ar1(1)
@@ -525,6 +528,7 @@ subroutine probplt( iwt, nd, va, wt,  &
         xuqt = ar1(i) +      (ar1(i+1)-ar1(i)) * &
         (0.75-ar2(i))/(ar2(i+1)-ar2(i))
     endif
+    
     call dlocate(ar2,nd,1,nd,0.975,i)
     if(i == 0) then
         xpt975 = ar1(1)
@@ -534,7 +538,7 @@ subroutine probplt( iwt, nd, va, wt,  &
         xpt975 = ar1(i) +      (ar1(i+1)-ar1(i)) * &
         (0.975-ar2(i))/(ar2(i+1)-ar2(i))
     endif
-
+    
     ! The coeficient of variation:
     xmin = ar1(1)
     xmax = ar1(nd)

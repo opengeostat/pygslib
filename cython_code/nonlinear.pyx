@@ -184,19 +184,21 @@ cpdef backtr(y, transin, transout, ltail, utail, ltpar, utpar, zmin, zmax, getra
     return z
     
 # ----------------------------------------------------------------------
-#   Report some sats from declusterd dataset
+#   Report some stas from a declusterd dataset
 # ----------------------------------------------------------------------
+
+# TODO: fix bug in quantiles reported
 cpdef stats(z, w, iwt = True, report = True):
     """stats(z, w)
     
-    Reports some basic stats using declustering wights 
+    Reports some basic stats using declustering weights 
     
     Parameters
     ---------
     z,w : 1D numpy arrays of floats 
         Variable and declustering weight.
     iwt: boolean default True
-        If True declustering weights will be used to calculate statsistics
+        If True declustering weights will be used to calculate statistics
     report : boolean default True
         If True a printout will be produced
 
@@ -205,14 +207,14 @@ cpdef stats(z, w, iwt = True, report = True):
         minimum, maximum, coefficient of variation, media and variance
     
     Note: 
-    This function uses gslib.__plot.probplt to optain the stats
+    This function uses gslib.__plot.probplt to obtaining stats
     """
     cdef int error
     
     parameters_probplt = {
             'iwt'  : iwt,     #int, 1 use declustering weight
             'va'   : z,       # array('d') with bounds (nd)
-            'wt'   : w}       # array('d') with bounds (nd), wight variable (obtained with declust?)
+            'wt'   : w}       # array('d') with bounds (nd), weight variable (obtained with declust?)
 
 
 
@@ -427,7 +429,6 @@ cpdef expand_anamor(np.ndarray [double, ndim=1] PCI,
 
      
 # Back transformation from anamorphosis
-# TODO: remove fluctuations before transforming
 cpdef Y2Z(np.ndarray [double, ndim=1] y,
         np.ndarray [double, ndim=1] PCI,
         double zamin, 
@@ -501,7 +502,6 @@ cpdef Y2Z(np.ndarray [double, ndim=1] y,
     return Z
 
 # Transformation from anamorphosis
-# TODO: remove fluctuations before transforming
 cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
                  np.ndarray [double, ndim=1] zm,
                  np.ndarray [double, ndim=1] ym,
@@ -579,8 +579,25 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
 # ----------------------------------------------------------------------
 #   Interactive gaussian anamorphosis modeling 
 # ----------------------------------------------------------------------
-cpdef calautorized(zana, zraw, gauss, zpmin=None, zpmax=None):
-
+cpdef calauthorized(zana, zraw, gauss, zpmin=None, zpmax=None):
+    """calauthorized(zana, zraw, gauss, zpmin=None, zpmax=None)
+    
+    Calculate authorized intervals for gaussian anamorphosis with hermite polynomials
+    
+    Parameters
+    ---------
+    zana, zraw, gauss : 1D numpy arrays of floats 
+        z values from anamorphosis, z values experimental and gaussian values.
+        These arrays may have same shape and only one dimension. 
+    zpmin, zpmax : floats (optional, default None)
+        practical minimum and maximum values
+    Returns:
+    i, j, ii, jj : integer
+        index of zamin, zamax, zpmin, zpmax on arrays zana, zraw, gauss
+    
+    Note: 
+    This is a helper function used by pygslib.nonlinear.anamor
+    """
     cdef int i
     cdef int j
     
@@ -618,8 +635,28 @@ cpdef calautorized(zana, zraw, gauss, zpmin=None, zpmax=None):
     return i, j, ii, jj 
 
     
-cpdef calautorized_blk(zana, gauss, zpmin, zpmax):
-
+cpdef calauthorized_blk(zana, gauss, zpmin, zpmax):
+    """calauthorized_blk(zana, gauss, zpmin, zpmax)
+    
+    Calculate authorized intervals for gaussian anamorphosis with hermite polynomials
+    with block support. 
+    
+    Parameters
+    ---------
+    zana, gauss : 1D numpy arrays of floats 
+        z values in block support from anamorphosis and gaussian values.
+        These arrays may have same shape and only one dimension. 
+    zpmin, zpmax : floats (optional, default None)
+        practical minimum and maximum values
+    Returns:
+    i, j, ii, jj : integer
+        index of zamin, zamax, zpmin, zpmax on arrays zana, zraw, gauss
+    
+    Note: 
+    This is a helper function used by pygslib.nonlinear.anamor_blk.
+    The index ii, jj of zpmin, zpmax are dum and set as jj = zana.shape[0]-1 and ii = 0
+    
+    """
     cdef int i
     cdef int j
     
@@ -646,7 +683,26 @@ cpdef calautorized_blk(zana, gauss, zpmin, zpmax):
     return i, j, ii, jj 
 
 cpdef findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax):
-
+    """findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax)
+    
+    Find the index of predefined authorized intervals in the arrays
+    zana, zraw and gauss    
+    
+    Parameters
+    ---------
+    zana, zraw, gauss : 1D numpy arrays of floats 
+        z values from anamorphosis, z values experimental and gaussian values.
+        These arrays may have same shape and only one dimension.  
+    zpmin, zpmax, zamin, zamax : floats
+        practical minimum, practical maximum, authorized minimum and authorized maximum
+    Returns:
+    i, j, ii, jj : integer
+        index of zamin, zamax, zpmin, zpmax on arrays zana, zraw, gauss
+    
+    Note: 
+    This is a helper function used by pygslib.nonlinear.anamor.
+   
+    """
     cdef int i
     cdef int j
 
@@ -690,15 +746,72 @@ cpdef findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax):
 
 
     
-# Interactive anamorphosis modeling, including some plots
-# TODO: improve control points, authorized limits and practical limits
-# Note: Allow using transformation table with max and min over practical and authorized limits
-#      this allows for PCI coefficients to fit better the experimental variance. 
+# Interactive anamorphosis modeling, including some plots 
 def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30, 
              zmin=None, zmax=None, ymin=None, ymax=None,
              zamin=None, zamax=None, zpmin=None, zpmax=None,
              ndisc = 1000, **kwargs):
-    """anamor(z, w)
+    """anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30, 
+             zmin=None, zmax=None, ymin=None, ymax=None,
+             zamin=None, zamax=None, zpmin=None, zpmax=None,
+             ndisc = 1000, **kwargs)
+    
+    Funtion to do interactive fitting of gaussian anamorphosis in point support as it follow
+
+        - create experimental pairs z,y from input data
+        - create an arbitrary secuence of Y ndisc values in interval [ymin, ymax] 
+        - backtransform Y to obtain pairs Z, Y. You can define arbitrary 
+          maximum and minimum practical values beyond data limits and extrapolation functions
+        - calculate gaussian anamorphosis with hermite polynomials and hermite coeficients
+        - calculate variance from hermite coeficients
+        - asign or calculate the authorized and practical intervals of the gaussian anamorphosis
+       
+        You may change the parameters ltail, utail, ltpar, utpar, K, zmin, zmax, ymin, 
+        ymax, zamin, zamax, zpmin, zpmax until the variance calculated with hermite coefficients 
+        aproximates the declustered experimental variance.
+        
+        Note that maximum and minimum values zmin, zmax can be arbitrary and you use 
+        zpmin, zpmax to create a transformation table within your desired intervals. 
+    
+    Parameters
+    ---------
+    z,w : 1D numpy arrays of floats 
+        Variable and declustering weight.
+    ltail, utail, ltpar, utpar: floats/integer (optional, default 1)
+        extrapolation functions, as used in pygslib.nonlinear.backtr 
+        and gslib.__dist_transf.backtr
+    K: integer (optional, default 30)
+        number of hermite polynomials.
+    zmin, zmax: floats (optional, default None)
+        minimum and maximum value in the lookup table used to fit the anamorphosis
+        if None data limits are used, is these values are beyond data limits 
+        interpolation functions are used to deduce Z values correponding to Y values
+    ymin, ymax: floats (optional, default None)
+        minimum and maximum gaussian values. If nont defined y equivalent of data 
+        limits is used. Good values are -5 and 5, these are gaussian with low probability
+    zamin, zamax, zpmin, zpmax: floats (optional, default None)
+        Authorized and practical z value intervals. Authorized intervals are where 
+        the gaussian anamorphosis do not fluctuate. Beyond authorized interval linear 
+        extrapolation to practical interval are used. 
+    ndisc: floats (optional, default 1000) 
+        number of discretization intervals between ymin and ymax.
+    **kwargs: more parameters
+        extra parameters with ploting style
+    
+    Returns:
+    PCI, H: hermite polynomial coefficients and monomials
+    raw, zana, gauss: array of float
+        z experimental extended, calculate with experimental anamorphosis and gaussian values
+    Z: array of float
+        Z of the gaussian anamorphosis pair [Z,Y] corrected
+    raw_var , PCI_var: float
+        variance experimental (declustered) and calculated from hermite polynomials 
+    ax: matplotlib axe
+        gaussian anamorphosis plot 
+    
+    Note: 
+    
+    
     """
     # set colors and line type
     options = ana_options
@@ -729,10 +842,10 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
         ymax = np.max(transout)
     
     
-    # b) genarate a sequence of gaussian values
+    # b) generate a sequence of gaussian values
     gauss = np.linspace(ymin,ymax, ndisc)
     
-    # c) Get the back tansform using normal score transformation
+    # c) Get the back transform using normal score transformation
     raw = pygslib.nonlinear.backtr(y = gauss, 
                                    transin = transin, 
                                    transout = transout, 
@@ -758,7 +871,7 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     zana = expand_anamor(PCI, H, r=1)
     
     if zamax is None or zamin is None:
-        i, j, ii, jj = calautorized(zana=zana,
+        i, j, ii, jj = calauthorized(zana=zana,
                                      zraw=raw, 
                                      gauss=gauss,
                                      zpmin=zpmin, 
@@ -799,7 +912,6 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     ax.plot(gauss[jj],raw[jj], 'ob',mfc='none')
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     
-    #plt.plot(transout, transin, 'ok', mfc='none')
     
     print 'Raw Variance', raw_var
     print 'Variance from PCI', PCI_var
@@ -817,10 +929,40 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     
     return PCI, H, raw, zana, gauss,Z, raw_var , PCI_var, ax
 
+# interactive block anamorphosis transformation
 def anamor_blk( PCI, H, r, gauss, Z,
                   ltail=1, utail=1, ltpar=1, utpar=1,
                   raw=None, zana=None, **kwargs):  
-    """
+    """anamor_blk( PCI, H, r, gauss, Z,
+                  ltail=1, utail=1, ltpar=1, utpar=1,
+                  raw=None, zana=None, **kwargs)
+    
+    Funtion to do obtain gaussian anamorphosis in block support from punctual anamorphosis
+     
+    
+    Parameters
+    ---------
+    PCI, H: 
+        hermite polynomial coefficients and monomials
+    r: float
+        support correlation coefficient
+    gauss, Z: array of floats
+        pair of gaussian and corrected Z anamorphosis
+    ltail, utail, ltpar, utpar: floats/integer (optional, default 1)
+        extrapolation functions, as used in pygslib.nonlinear.backtr 
+        and gslib.__dist_transf.backtr
+    raw, zana: array of floats (default None)
+        extended experimental and non-transformed gaussian z calculated with hermite polynomials
+    **kwargs: more parameters
+        extra parameters with ploting style
+    
+    Returns:
+
+    ZV: array of float
+        corrected Z values in point support
+    Note: 
+    
+    
     """
     
     # set colors and line type
@@ -835,7 +977,7 @@ def anamor_blk( PCI, H, r, gauss, Z,
     z_v= expand_anamor(PCI, H, r)
     
     # Get authorized limits on z experimental
-    i, j, ii, jj = calautorized_blk( zana=z_v, 
+    i, j, ii, jj = calauthorized_blk( zana=z_v, 
                                      gauss=gauss,
                                      zpmin=zpmin, 
                                      zpmax=zpmax)
@@ -885,7 +1027,31 @@ def anamor_blk( PCI, H, r, gauss, Z,
     
 # Direct anamorphosis modeling from raw data
 def anamor_raw(z, w, K=30, **kwargs):
-    """anamor(z, w)
+    """anamor_raw(z, w, K=30, **kwargs)
+    
+    Non-interactive gaussian anamorphosis calculated directly from data 
+        
+    Parameters
+    ---------
+    z,w : 1D numpy arrays of floats 
+        Variable and declustering weight.
+    K: integer (optional, default 30)
+        number of hermite polynomials.
+    **kwargs: more parameters
+        extra parameters with ploting style
+    
+    Returns:
+    PCI, H: hermite polynomial coefficients and monomials
+    raw, zana, gauss: array of float
+        z experimental extended, calculate with experimental anamorphosis and gaussian values
+    raw_var , PCI_var: float
+        variance experimental (declustered) and calculated from hermite polynomials 
+    ax: matplotlib axe
+        gaussian anamorphosis plot 
+    
+    Note: 
+    
+    
     """ 
     # set colors and line type
     options = ana_options
