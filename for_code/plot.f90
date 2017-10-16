@@ -269,7 +269,7 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
 
     ! Obtain the quantiles:
 
-    call dlocate(ar2,nd,1,nd,0.025,i)
+    call dlocate(ar2,nd,1,nd,dble(0.025),i)
     if(i == 0) then
         xpt025 = ar1(1)
     else if(i == nd) then
@@ -278,7 +278,7 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
         xpt025 = ar1(i) +      (ar1(i+1)-ar1(i)) * &
         (0.025-ar2(i))/(ar2(i+1)-ar2(i))
     endif
-    call dlocate(ar2,nd,1,nd,0.25,i)
+    call dlocate(ar2,nd,1,nd,dble(0.25),i)
     if(i == 0) then
         xlqt = ar1(1)
     else if(i == nd) then
@@ -287,7 +287,7 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
         xlqt = ar1(i) +      (ar1(i+1)-ar1(i)) * &
         (0.25-ar2(i))/(ar2(i+1)-ar2(i))
     endif
-    call dlocate(ar2,nd,1,nd,0.50,i)
+    call dlocate(ar2,nd,1,nd,dble(0.50),i)
     if(i == 0) then
         xmed = ar1(1)
     else if(i == nd) then
@@ -296,7 +296,7 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
         xmed = ar1(i) +      (ar1(i+1)-ar1(i)) * &
         (0.50-ar2(i))/(ar2(i+1)-ar2(i))
     endif
-    call dlocate(ar2,nd,1,nd,0.75,i)
+    call dlocate(ar2,nd,1,nd,dble(0.75),i)
     if(i == 0) then
         xuqt = ar1(1)
     else if(i == nd) then
@@ -305,7 +305,7 @@ subroutine  histplt(hmin,hmax, ncl, iwt, ilog, icum, nd, va, wt,  &
         xuqt = ar1(i) +      (ar1(i+1)-ar1(i)) * &
         (0.75-ar2(i))/(ar2(i+1)-ar2(i))
     endif
-    call dlocate(ar2,nd,1,nd,0.975,i)
+    call dlocate(ar2,nd,1,nd,dble(0.975),i)
     if(i == 0) then
         xpt975 = ar1(1)
     else if(i == nd) then
@@ -487,7 +487,7 @@ subroutine probplt( iwt, nd, va, wt,  &
         cl(i) =      ar1(i)
     end do
     
-    call dlocate(ar2,nd,1,nd,0.50,i)
+    call dlocate(ar2,nd,1,nd,dble(0.50),i)
     if(i == 0) then
         xmed = ar1(1)
     else if(i == nd) then
@@ -499,7 +499,7 @@ subroutine probplt( iwt, nd, va, wt,  &
 
     ! Obtain the quantiles:
 
-    call dlocate(ar2,nd,1,nd,0.025,i)
+    call dlocate(ar2,nd,1,nd,dble(0.025),i)
     if(i == 0) then
         xpt025 = ar1(1)
     else if(i == nd) then
@@ -509,7 +509,7 @@ subroutine probplt( iwt, nd, va, wt,  &
         (0.025-ar2(i))/(ar2(i+1)-ar2(i))
     endif
     
-    call dlocate(ar2,nd,1,nd,0.25,i)
+    call dlocate(ar2,nd,1,nd,dble(0.25),i)
     if(i == 0) then
         xlqt = ar1(1)
     else if(i == nd) then
@@ -519,7 +519,7 @@ subroutine probplt( iwt, nd, va, wt,  &
         (0.25-ar2(i))/(ar2(i+1)-ar2(i))
     endif
     
-    call dlocate(ar2,nd,1,nd,0.75,i)
+    call dlocate(ar2,nd,1,nd,dble(0.75),i)
     if(i == 0) then
         xuqt = ar1(1)
     else if(i == nd) then
@@ -529,7 +529,7 @@ subroutine probplt( iwt, nd, va, wt,  &
         (0.75-ar2(i))/(ar2(i+1)-ar2(i))
     endif
     
-    call dlocate(ar2,nd,1,nd,0.975,i)
+    call dlocate(ar2,nd,1,nd,dble(0.975),i)
     if(i == 0) then
         xpt975 = ar1(1)
     else if(i == nd) then

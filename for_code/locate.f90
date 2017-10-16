@@ -99,7 +99,7 @@ subroutine dlocate(xx,n,is,ie,x,j)
     ! Bisection Concept From "Numerical Recipes", Press et. al. 1986  pp 90.
     !-----------------------------------------------------------------------
     
-    real, intent (in) :: x
+    real*8, intent (in) :: x
     real*8, intent (in), dimension(n) :: xx
     integer, intent (in) :: n,is,ie
     

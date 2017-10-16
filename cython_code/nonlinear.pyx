@@ -195,7 +195,7 @@ cpdef stats(z, w, iwt = True, report = True):
     
     Parameters
     ---------
-    z,w : 1D numpy arrays of floats 
+    z,w : 1D arrays of floats 
         Variable and declustering weight.
     iwt: boolean default True
         If True declustering weights will be used to calculate statistics
@@ -225,6 +225,7 @@ cpdef stats(z, w, iwt = True, report = True):
     if report:
         print  'Stats Summary'
         print  '-------------'
+        print  'Count          ', len(z)
         print  'Minimum        ', xmin
         print  'Maximum        ', xmax
         print  'CV             ', xcvr
@@ -804,13 +805,15 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
         z experimental extended, calculate with experimental anamorphosis and gaussian values
     Z: array of float
         Z of the gaussian anamorphosis pair [Z,Y] corrected
+    P: array of float
+        Probability P{Z<c}
     raw_var , PCI_var: float
         variance experimental (declustered) and calculated from hermite polynomials 
     ax: matplotlib axe
         gaussian anamorphosis plot 
-    
+        
     Note: 
-    
+    The pair [Z,P] defines the CDF in point support    
     
     """
     # set colors and line type
@@ -897,6 +900,9 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
                                    zmax = raw[jj],
                                    getrank = False)
     
+    # e) And the probability  Prob[Z<cz] knowing that Prob[Z<cz] == Prob[Y<cz]
+    P = norm.cdf(gauss)
+    
     # plot results
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -927,7 +933,7 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     print 'ypmax', gauss[jj]
     
     
-    return PCI, H, raw, zana, gauss,Z, raw_var , PCI_var, ax
+    return PCI, H, raw, zana, gauss,Z , P, raw_var , PCI_var, ax
 
 # interactive block anamorphosis transformation
 def anamor_blk( PCI, H, r, gauss, Z,
@@ -960,9 +966,12 @@ def anamor_blk( PCI, H, r, gauss, Z,
 
     ZV: array of float
         corrected Z values in point support
+    PV: array of float
+        Probability P{Z<c}        
+    
     Note: 
-    
-    
+    The pair [ZV,PV] defines the CDF in block support
+        
     """
     
     # set colors and line type
@@ -994,7 +1003,8 @@ def anamor_blk( PCI, H, r, gauss, Z,
                                    zmax = zpmax,
                                    getrank = False)
 
-                                                                
+    # And the probability  Prob[ZV<cz] knowing that Prob[ZV<cz] == Prob[YV<cz]
+    PV = norm.cdf(gauss)                                                            
     
     # plot results
     fig = plt.figure()
@@ -1022,7 +1032,7 @@ def anamor_blk( PCI, H, r, gauss, Z,
     
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
-    return ZV
+    return ZV,PV
     
     
 # Direct anamorphosis modeling from raw data
