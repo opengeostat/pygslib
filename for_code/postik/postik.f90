@@ -465,8 +465,15 @@ subroutine postik( &
             eabove = eabove / real(max(1,nabove))
             ebelow = ebelow / real(max(1,nbelow))
             out1(l) = prob
-            out1(l) = eabove
-            out1(l) = ebelow
+            out2(l) = eabove
+            out3(l) = ebelow
+            
+            if (nabove < 1 ) then
+                out1(l) = UNEST            
+                out2(l) = UNEST
+                out3(l) = UNEST
+            end if
+            
         endif
 
         ! Do we need the "Z" value corresponding to a particular CDF?

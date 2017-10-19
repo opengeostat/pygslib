@@ -1518,7 +1518,10 @@ def postik(parameters):
 
     """
   
-
+    if parameters['vr'] is None:
+        assert parameters['ltail']!=3 and parameters['middle']!=3 and parameters['utail']!=3
+        parameters['vr'] = [0.,0.,0.]
+        parameters['wt'] = [1.,1.,1.]
 
     # prepare the output
 
