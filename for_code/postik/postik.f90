@@ -170,7 +170,7 @@ subroutine postik( &
     outpar_ = outpar
     varred_ = varred
 
-    write(*,*) ' output option & par = ',iout,outpar_
+    ! write(*,*) ' output option & par = ',iout,outpar_
     if(iout /= 1 .AND. iout /= 2 .AND. iout /= 3 .AND. iout /= 4) then
         write(*,*) ' ERROR: invalid output option ',iout
         error = 1
@@ -190,9 +190,9 @@ subroutine postik( &
         outpar_ = min(max(outpar_,EPSLON),(1.0-EPSLON))
     end if
 
-    write(*,*) ' number of cutoffs = ',nccut
-    write(*,*) ' cutoffs = ',(ccut1(i),i=1,nccut)
-    write(*,*) ' volume variance = ',ivol,ivtyp,varred_
+    ! write(*,*) ' number of cutoffs = ',nccut
+    ! write(*,*) ' cutoffs = ',(ccut1(i),i=1,nccut)
+    ! write(*,*) ' volume variance = ',ivol,ivtyp,varred_
     if(varred_ < 0.0 .OR. varred_ > 1.0) then
         write(*,*) ' ERROR: invalid variance reduction ',varred_
         write(*,*) '        must be between 0 and 1'
@@ -200,7 +200,7 @@ subroutine postik( &
         return
     end if
 
-    write(*,*) ' minimum and maximum = ',zmin,zmax
+    !write(*,*) ' minimum and maximum = ',zmin,zmax
     if(iout == 2 .AND. outpar_ < zmin) then
         write(*,*) 'Invalid z-value for iout=2'
         error = 4
@@ -210,10 +210,10 @@ subroutine postik( &
         error = 5
     end if
 
-    write(*,*) ' ltail, ltpar = ',ltail,ltpar
-    write(*,*) ' middle, mpar = ',middle,mpar
-    write(*,*) ' utail, utpar = ',utail, utpar
-    write(*,*) ' discretization = ',maxdis
+    ! write(*,*) ' ltail, ltpar = ',ltail,ltpar
+    ! write(*,*) ' middle, mpar = ',middle,mpar
+    ! write(*,*) ' utail, utpar = ',utail, utpar
+    ! write(*,*) ' discretization = ',maxdis
 
 
     ! Do we have a global distribution and do we need it anyway?
@@ -269,11 +269,11 @@ subroutine postik( &
         
             call locate(cdf,ncut,1,ncut,0.5,j)
             gmedian = powint(cdf(j),cdf(j+1),cut(j),cut(j+1),0.5,1.)
-            write(*,*) 'Global cdf from file: ',datafl
-            write(*,*) '   number of data: ',ncut
-            write(*,*) '   global mean:    ',gmean
-            write(*,*) '   global median:  ',gmedian
-            write(*,*)
+            ! write(*,*) 'Global cdf from file: ',datafl
+            ! write(*,*) '   number of data: ',ncut
+            ! write(*,*) '   global mean:    ',gmean
+            ! write(*,*) '   global median:  ',gmedian
+            ! write(*,*)
         end do
     endif
 
@@ -503,17 +503,17 @@ subroutine postik( &
     ! Finished:
 
     procm = procm / max(real(nproc),1.0)
-    write(*,*)
-    write(*,*) 'Number of distributions ',nproc
-    if(procm /= 0.0) write(*,*) 'Overall mean:           ',procm
-    if(iout == 1) write(*,*) 'Local Means (E-type):   ',outfl
-    if(iout == 2) write(*,*) 'Prob and mean > cutoff: ',outfl
-    if(iout == 3) write(*,*) 'Z values for outpar in: ',outfl
-    write(*,*)
+    ! write(*,*)
+    ! write(*,*) 'Number of distributions ',nproc
+    ! if(procm /= 0.0) write(*,*) 'Overall mean:           ',procm
+    ! if(iout == 1) write(*,*) 'Local Means (E-type):   ',outfl
+    ! if(iout == 2) write(*,*) 'Prob and mean > cutoff: ',outfl
+    ! if(iout == 3) write(*,*) 'Z values for outpar in: ',outfl
+    ! write(*,*)
 
     ! Finished:
 
-    write (*,*) ' POSTIK Finished'
+    ! write (*,*) ' POSTIK Finished'
 
     return 
 

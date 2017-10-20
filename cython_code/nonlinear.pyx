@@ -809,7 +809,7 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
         Probability P{Z<c}
     raw_var , PCI_var: float
         variance experimental (declustered) and calculated from hermite polynomials 
-    ax: matplotlib axe
+    fig: matplotlib figure
         gaussian anamorphosis plot 
         
     Note: 
@@ -933,7 +933,7 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     print 'ypmax', gauss[jj]
     
     
-    return PCI, H, raw, zana, gauss,Z , P, raw_var , PCI_var, ax
+    return PCI, H, raw, zana, gauss,Z , P, raw_var , PCI_var, fig
 
 # interactive block anamorphosis transformation
 def anamor_blk( PCI, H, r, gauss, Z,
@@ -967,7 +967,9 @@ def anamor_blk( PCI, H, r, gauss, Z,
     ZV: array of float
         corrected Z values in point support
     PV: array of float
-        Probability P{Z<c}        
+        Probability P{Z<c}
+    fig: matplotlib figure
+        gaussian anamorphosis plot     
     
     Note: 
     The pair [ZV,PV] defines the CDF in block support
@@ -1032,7 +1034,7 @@ def anamor_blk( PCI, H, r, gauss, Z,
     
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
-    return ZV,PV
+    return ZV,PV, fig
     
     
 # Direct anamorphosis modeling from raw data
@@ -1056,7 +1058,7 @@ def anamor_raw(z, w, K=30, **kwargs):
         z experimental extended, calculate with experimental anamorphosis and gaussian values
     raw_var , PCI_var: float
         variance experimental (declustered) and calculated from hermite polynomials 
-    ax: matplotlib axe
+    fig: matplotlib figure
         gaussian anamorphosis plot 
     
     Note: 
@@ -1105,7 +1107,7 @@ def anamor_raw(z, w, K=30, **kwargs):
     print 'Raw Variance', raw_var
     print 'Variance from PCI', PCI_var
     
-    return PCI, H, raw, zana, gauss, raw_var , PCI_var, ax
+    return PCI, H, raw, zana, gauss, raw_var , PCI_var, fig
     
 
 # ----------------------------------------------------------------------
@@ -1162,6 +1164,8 @@ cpdef f_var_Zv(double r,
     
     for i in range(1,len(PCI)):
        a+=PCI[i]**2. * r**(2.*i)
+    
+    
     return a-Var_Zv
 
 # this is to pass a function to brentq
@@ -1220,6 +1224,8 @@ cpdef f_covar_ZvZv(double ro,
     
     for i in range(1,len(PCI)):
        a+=PCI[i]**2. * r**i * s**i * ro**i
+    
+    
     return a-Covar_ZvZv
 
 
@@ -1322,6 +1328,107 @@ cpdef get_ro(double Covar_ZvZv,
     return brentq(f=f_covar_ZvZv, a=0, b=1, args=(s,r,PCI,Covar_ZvZv))
 
 
+    
+    
+# ----------------------------------------------------------------------
+#   Grade tonnage curves
+# ----------------------------------------------------------------------
+def gtcurve (cutoff, z, p, varred = 1, ivtyp = 0, zmin = None, zmax = None,
+             ltail = 1, ltpar = 1, middle = 1, mpar = 1, utail = 1, utpar = 1,maxdis = 1000):
+    """
+    TODO: 
+    """
+    
+    t = np.zeros([len(cutoff)])
+    ga = np.zeros([len(cutoff)])
+    gb = np.zeros([len(cutoff)])
+    
+    t[:] = np.nan
+    ga[:] = np.nan
+    gb[:] = np.nan
+    
+    ivol = 0
+    
+    if varred!=1.: 
+        ivol = 1
+        
+    if zmin is None:
+        zmin = min(z)
+        
+    if zmax is None:
+        zmax = max(z)
+    
+    postik_parameters = {
+            # output option, output parameter
+            'iout'   : 2 ,   # 2 to calculate prob and mean above cutoff 
+            'outpar' : None ,   # the cutoff. 
+            # the thresholds
+            'ccut1'  : z,   # these are Z values in the CDF
+            # volume support?, type, varred
+            'ivol'   : ivol,   # input int
+            'ivtyp'  : ivtyp,   # input int
+            'varred' : varred,   # input float
+            # minimum and maximum Z value
+            'zmin'   : zmin,   # input float
+            'zmax'   : zmax,   # input float
+            # lower,middle and upper tail: option, parameter
+            'ltail'  : ltail,   # input int
+            'ltpar'  : ltpar,   # input float
+            'middle'  : middle,   # input int
+            'mpar'  : mpar,   # input float
+            'utail'  : utail,   # input int
+            'utpar'  : utpar,   # input float
+            # maximum discretization
+            'maxdis' : maxdis,   # input int
+            # 1D arrays with global distribution
+            'vr'     : [0,0,0],   # input rank-1 array('f') with bounds (nc)
+            'wt'     : [0,0,0],   # input rank-1 array('f') with bounds (nc)
+            # 2D array with IK3D output (continuous)
+            'p'      : [p]}   # input rank-2 array('f') with bounds (na,nc)
+    
+    for i in range(len(cutoff)):
+        postik_parameters['outpar'] = cutoff[i]
+        out1,out2,out3 = pygslib.gslib.postik(postik_parameters)
+        
+        t[i] = out1[0]
+        ga[i] = out2[0]
+        gb[i] = out3[0]
+        
+    return t,ga,gb    
+    
+def plotgt(cutoff, t, g, label):
+    """
+    TODO: 
+    """
+    
+    # prepare ax and fig
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel('cutoff')
+    ax1.set_ylabel('Tonnage')
+    ax1.tick_params('y')
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Grade')
+    ax2.tick_params('y')
+    
+    # plot tonage
+    for i,l in zip(t,label): 
+        ax1.plot(cutoff, i, label = l)
+
+    ax1.legend(bbox_to_anchor=(1.15, 1), loc=2, borderaxespad=0.)     
+        
+    # plot grade
+    for i in g:
+        ax2.plot(cutoff, i)
+
+    fig.tight_layout()
+    plt.show()
+    
+    return fig    
+    
+    
+    
+    
+ 
 
 # ----------------------------------------------------------------------
 #   Uniform conditioning functions
