@@ -1263,7 +1263,7 @@ cpdef get_r(double Var_Zv,
       
     See Also
     --------
-    f_var_Zv, fit_PCI, scipy.optimize.brentq
+    f_var_Zv, fit_PCI, anamor, scipy.optimize.brentq
     
     Note
     ----
