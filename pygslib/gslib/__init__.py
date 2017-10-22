@@ -1539,7 +1539,7 @@ def postik(parameters):
 #    Plot fuctions (declustering supported) 
 #
 #-----------------------------------------------------------------------------------------------------------------
-def histgplt(parameters, fig = None, ax = None, title = 'Bin probability', label = 'Data', alpha= 0.7, grid=True, loc = 2, color='b'):
+def histgplt(parameters, fig = None, ax = None, title = 'Bin probability', label = 'Data', alpha= 0.7, grid=True, loc = 2, color='b', c = 0.001, edgecolor= 'black'):
     """Plot histogram. It uses declustering weight. 
          
     
@@ -1592,8 +1592,7 @@ def histgplt(parameters, fig = None, ax = None, title = 'Bin probability', label
     >>>     
 
     """
-  
-
+    
     # set weight if not included in the input
     if 'wt' not in parameters: 
         parameters['wt']= np.ones(parameters['va'].shape[0], dtype = parameters['va'].dtype)
@@ -1605,15 +1604,14 @@ def histgplt(parameters, fig = None, ax = None, title = 'Bin probability', label
     if parameters['ilog'] is None:
         parameters['ilog']= 1
     if parameters['ilog'] < 0:
-        parameters['ilog']= 1
-
+        parameters['ilog']= 1    
         
     if 'hmin' not in parameters:
         parameters['hmin']= parameters['va'].min()
     if parameters['hmin'] is None:
         parameters['hmin']= parameters['va'].min()
     if parameters['hmin']<=0 and parameters['ilog']==1:
-        parameters['hmin']= 0.001
+        parameters['hmin']= c
     
     if 'hmax' not in parameters:
         parameters['hmax']= parameters['va'].max()
@@ -1669,7 +1667,7 @@ def histgplt(parameters, fig = None, ax = None, title = 'Bin probability', label
         fig, ax = plt.subplots(1,1)
         ax.set_title(title)
         if parameters['ilog']>0:
-            ax.set_xscale('log')
+            ax.set_xscale('log', nonposy='clip')
     else:
         if ax is not None and fig is not None:
             pass
@@ -1677,7 +1675,103 @@ def histgplt(parameters, fig = None, ax = None, title = 'Bin probability', label
             raise NameError('Parameter error on ax or fig, both may be None or not None')
         
     
-    ax.bar (cl, binval, width=-clwidth, alpha=alpha, color=color, label = label)
+    ax.bar (cl-clwidth/2., binval, width=-clwidth, align='center', alpha=alpha, color=color, label = label, edgecolor= edgecolor)
+    ax.grid(grid)
+    ax.legend(loc=loc)
+    
+    return out1, ax, fig
+    
+    
+def cdfplt(parameters, fig = None, ax = None, title = 'Bin probability', label = 'Data',  grid=True, loc = 2, color='b', xlog = True, ylog=True, style = '+'):
+    """Plot cdf. It uses declustering weight. 
+         
+    
+    Parameters
+    ----------
+        parameters  :  dict
+            dictionary with calculation parameters
+
+    The dictionary with parameters may be as follows::
+
+        cdfplt_parameters = {
+            # CDF limits and definition.    
+            'iwt'  : , # input boolean (Optional: set True). Use weight variable?
+            'va'   : , # input rank-1 array('d') with bounds (nd). Variable
+            'wt'   : } # input rank-1 array('d') with bounds (nd) (Optional, set to array of ones). Declustering weight. 
+            
+    
+            
+    Returns
+    -------
+    dict: a dictionary with some data parameters
+    
+    {'binval' : , # rank-1 array('d') with bounds (ncl). Class frequency. 
+     'cl'     : , # rank-1 array('d') with bounds (ncl). Class. 
+     'xpt025' : , # float. Percentile 0.025
+     'xlqt'   : , # float. Percentile 0.25
+     'xmed'   : , # float. Mediam (Percentile 0.50)
+     'xuqt'   : , # float. Percentile 0.75
+     'xpt975' : , # float. Percentile 0.975
+     'xmin'   : , # float. Minimum value.
+     'xmax'   : , # float. Maximum value.
+     'xcvr'   : , # float. Coeficient of variation. 
+     'xmen'   : , # float. Mean
+     'xvar'   : } # float. Class width (thmax-thmin)/real(ncl), only usefull if using arithmetic scale.  
+    
+    fig: a matplotlib figure 
+
+    Example
+    -------
+    
+    >>>     
+
+    """
+
+    # set weight if not included in the input
+    if 'wt' not in parameters: 
+        parameters['wt']= np.ones(parameters['va'].shape[0], dtype = parameters['va'].dtype)
+
+    if 'iwt' not in parameters:
+        parameters['iwt']= 0
+    if parameters['iwt'] is None:
+        parameters['iwt']= 0 
+        
+    
+    # prepare the output
+
+    binval,cl,xpt025,xlqt,xmed,xuqt,xpt975,xmin,xmax, \
+    xcvr,xmen,xvar,error = pygslib.gslib.__plot.probplt(**parameters)
+
+    out1 = {'binval' : binval, # rank-1 array('d') with bounds (ncl). Class frequency. 
+     'cl'     : cl , # rank-1 array('d') with bounds (ncl). Class. 
+     'xpt025' : xpt025, # float. Percentile 0.025
+     'xlqt'   : xlqt, # float. Percentile 0.25
+     'xmed'   : xmed, # float. Mediam (Percentile 0.50)
+     'xuqt'   : xuqt, # float. Percentile 0.75
+     'xpt975' : xpt975, # float. Percentile 0.975
+     'xmin'   : xmin, # float. Minimum value.
+     'xmax'   : xmax, # float. Maximum value.
+     'xcvr'   : xcvr, # float. Coeficient of variation. 
+     'xmen'   : xmen, # float. Mean
+     'xvar'   : xvar} # float. Variance  
+    
+    # create a figure or update one
+    
+    if ax is None and fig is None:
+        fig, ax = plt.subplots(1,1)
+        ax.set_title(title)
+        if xlog:
+            ax.set_xscale('log')
+        if ylog:
+            ax.set_yscale('log')
+    else:
+        if ax is not None and fig is not None:
+            pass
+        else:
+            raise NameError('Parameter error on ax or fig, both may be None or not None')
+        
+    
+    ax.plot (cl, binval, color=color, label = label)
     ax.grid(grid)
     ax.legend(loc=loc)
     
