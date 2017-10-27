@@ -11,6 +11,7 @@ Priority
 - [ ] (nonlinear) Implement global change of support with affine and indirect (see function pygslib.nonlinear.gtcurve)
 - [ ] (gslib) complete variogram3d and python interface
 - [ ] (gslib) create an Ipython interface with widgets for friendly variogram modeling 
+- [ ] (blockmodel) implement grade tonnage report and block cdf
 
 Do this later...
 ---
