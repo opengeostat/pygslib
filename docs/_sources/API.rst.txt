@@ -36,7 +36,11 @@ PyGSLIB.nonlinear
 .. automodule:: pygslib.nonlinear
    :members:
 
-
+PyGSLIB.charttable
+----------------------------------------
+.. automodule:: pygslib.charttable
+   :members:   
+   
 
 Indices and tables
 ==================

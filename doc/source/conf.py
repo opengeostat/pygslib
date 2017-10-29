@@ -116,7 +116,7 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_rtd_theme'
 #html_theme = 'bootstrap'
 #html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
@@ -134,7 +134,7 @@ todo_include_todos = True
 #html_title = u'PyGSLIB Documentation v0.0.0.3.8'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+html_short_title = 'Opengeostat_fav.png'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
