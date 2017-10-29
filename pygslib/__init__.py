@@ -32,6 +32,9 @@ import pygslib.gslib
 import pygslib.plothtml
 import pygslib.charttable
 
+
+from .version import __version__
+
 #-----------------------------------------------------------------------------------------------------------------
 #
 #    Put Opengeostat logo in the ipython notebook at runtime
@@ -52,51 +55,6 @@ x.innerHTML = '<img  title="Opengeostat" alt="Opengeostat" src="data:image/jpeg;
 # change logo if running in ipython notebook
 if 'ipykernel' in sys.modules:
     display(HTML(javascript))
-
-
-
-#-----------------------------------------------------------------------------------------------------------------
-#
-#    General functions
-#
-#-----------------------------------------------------------------------------------------------------------------
-
-def version():
-    """
-    Returns version information
-    
-    
-    Returns
-    -------
-    dict 
-        {'python':python wrap version},[operating system] 
-
-    
-    Each version has the keys that follows::
-    
-
-         {'major':major , 
-          'minor':minor , 
-          'maintenance': maintenance, 
-          'build': build, 
-          'month':month, 
-          'year': year}
-          
-    """
-
-    pyversion={'major':0, 
-               'minor':0 , 
-               'maintenance':0, 
-               'build':3, 
-               'month':8, 
-               'year':2016}
-
-    osplatform=platform.platform()
-
-    return {'python version': pyversion,
-            'platform': osplatform }
-
-
 
 
 

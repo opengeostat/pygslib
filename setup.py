@@ -54,7 +54,10 @@ class PyTest(TestCommand):
     2 for release candidate
     3 for (final) release
 """
-version = '0.0.0.3.8.5'
+# get version from package 
+exec(open('pygslib/version.py').read())
+
+version = __version__
 description = 'Python wrap of GSLIB modified code and general geostatistical package'
 name='pygslib'
 long_description=open("README.md").read()
