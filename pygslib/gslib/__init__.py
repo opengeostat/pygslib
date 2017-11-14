@@ -1453,31 +1453,31 @@ def postik(parameters):
 
         postik_parameters = {
             # output option, output parameter
-            'iout'   : ,   # input int. Possible (1,2,3 or 4)
-            'voutpar' : ,   # input float
+            'iout'   : ,   # int. 1 E-type,2 P and means outpar,3 p-quantile for outpar=p, and 4 conditional variance
+            'outpar' : ,   # float. Parameter for iout
             # the thresholds
-            'ccut1'  : ,   # input rank-1 array('f') with bounds (nccut)
+            'ccut1'  : ,   # 1D array of floats. Cutoff used in MIK
             # volume support?, type, varred
-            'ivol'   : ,   # input int
-            'ivtyp'  : ,   # input int
-            'varred' : ,   # input float
+            'ivol'   : ,   # int. If 1 the support correction is applied
+            'ivtyp'  : ,   # int. 1 for affine correction and indirect lognormal correction
+            'varred' : ,   # float. Volumen correction, ussually r~ Block variance/Point variance
             # minimum and maximum Z value
-            'zmin'   : ,   # input float
-            'zmax'   : ,   # input float
+            'zmin'   : ,   # float. Minimum value in local CDF 
+            'zmax'   : ,   # float. Maximum value in local CDF
             # lower,middle and upper tail: option, parameter
-            'ltail'  : ,   # input int
-            'ltpar'  : ,   # input float
-            'middle'  : ,   # input int
-            'mpar'  : ,   # input float
-            'utail'  : ,   # input int
-            'utpar'  : ,   # input float
+            'ltail'  : ,   # int. Lower tail interpolation function, 1 linear, 2  power model, 3 tabulated quantiles 
+            'ltpar'  : ,   # float. Lower tail function parameter
+            'middle'  : ,  # int. Middle CDF interpolation function 1 linear, 2  power model, 3 tabulated quantiles 
+            'mpar'  : ,    # float.  Middle CDF segment function parameter
+            'utail'  : ,   # int. Upper tail interpolation function, 1 linear, 2  power model, 3 tabulated quantiles, 4 hyperbolic 
+            'utpar'  : ,   # float. Uper tail function parameter
             # maximum discretization
-            'maxdis' : ,   # input int
+            'maxdis' : ,   # int. Discretization of the local CDF. 
             # 1D arrays with global distribution
-            'vr'     : ,   # input rank-1 array('f') with bounds (nc)
-            'wt'     : ,   # input rank-1 array('f') with bounds (nc)
+            'vr'     : ,   # 1D array of floats for table look-up if tabulated quantiles are used as interpolation function
+            'wt'     : ,   # 1D array of floats with wights on table look-up 
             # 2D array with IK3D output (continuous)
-            'p'      : }   # input rank-2 array('f') with bounds (na,nc)
+            'p'      : }   # 2D array of floats. This is the MIK output or any array of local CDFs
             
     Returns
     -------
@@ -1500,21 +1500,16 @@ def postik(parameters):
     If ``iout == 4`` (conditional variance) ``out1`` will be the  
     conditional variance. ``out2`` and ``out3`` will be NaN
                
-      
-    Note
-    -----
-    ``iout`` options are: 
-    
-       1 = E-type
-       2 = probability and mean above ``voutpar`` (e.j. cutoff value)
-       3 = Z percentile corresponding to a probability ``voutpar``
-       4 = conditional variance
-    
+        
 
     Example
     -------
     
     >>>     out1,out2,out3,error = postik(parameters)
+    
+    TODO
+    ----
+    Fix bug. The algorithm fails if there are nans in probabilities. 
 
     """
   

@@ -8,10 +8,12 @@ Priority
 - [ ] (nonlinear) Implement Uniform conditioning
 - [ ] (nonlinear) Implement localization
 - [ ] (nonlinear) Implement calc cdf function using pygslib.gslib.__plot.probplt
-- [ ] (nonlinear) Implement global change of support with affine and indirect (see function pygslib.nonlinear.gtcurve)
+- [ ] (nonlinear) Add upper and lower tail CDF model fitting tool
+- [ ] (blockmodel) implement grade tonnage report and block cdf
 - [ ] (gslib) complete variogram3d and python interface
 - [ ] (gslib) create an Ipython interface with widgets for friendly variogram modeling 
 - [ ] (blockmodel) implement grade tonnage report and block cdf
+
 
 Do this later...
 ---
