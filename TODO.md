@@ -17,7 +17,7 @@ Priority
 
 Do this later...
 ---
-- [ ] (user manual) Update user manual and find a way to update faster the user manual (probably a separate git repo for doc sphinx?)
+- [x] (user manual) Update user manual and find a way to update faster the user manual (probably a separate git repo for doc sphinx?). Using shinx page on git\docs
 - [ ] (user manual) Simplify examples
 - [ ] (general) Review interface and improve user experience
 - [ ] (general) Add GUI for ipython
