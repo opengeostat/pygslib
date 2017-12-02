@@ -37,7 +37,7 @@ requirements:
     - vtk  >=6
     - ipython
     - pyevtk
-    - color
+    - colour
     - mingw
     - libpython ==1.0 
 
