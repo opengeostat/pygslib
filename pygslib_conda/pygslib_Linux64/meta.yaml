@@ -10,6 +10,7 @@ source:
 requirements:
   build:
     - python
+    - cython
     - setuptools
     - numpy 
     - pandas >=0.17

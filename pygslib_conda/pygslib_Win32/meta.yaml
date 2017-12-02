@@ -19,6 +19,7 @@ requirements:
     - mingw
     - libpython ==1 
     - python
+    - cython
     - setuptools
     - numpy 
     - pandas >=0.17
