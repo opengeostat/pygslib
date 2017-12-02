@@ -1,6 +1,7 @@
 #!/bin/bash
 
 conda config --add channels https://conda.anaconda.org/opengeostat
+conda config --add channels menpo
 
 # this is to fix error in conda build... see https://github.com/numpy/numpy/issues/7427
 LDFLAGS="$LDFLAGS -undefined dynamic_lookup -bundle"
