@@ -4,7 +4,8 @@ TODO list:
 Priority
 ----
 
-- [ ] (conda package) Update conda module
+- [ ] ()Python 3 version 
+- [ ] (vtk) Replace pyevtk with vtk.util.numpy_support
 - [ ] (nonlinear) Implement Uniform conditioning
 - [ ] (nonlinear) Implement localization
 - [ ] (nonlinear) Implement calc cdf function using pygslib.gslib.__plot.probplt
@@ -13,6 +14,7 @@ Priority
 - [ ] (gslib) complete variogram3d and python interface
 - [ ] (gslib) create an Ipython interface with widgets for friendly variogram modeling 
 - [ ] (blockmodel) implement grade tonnage report and block cdf
+- [ ] (drillhole) Implement find duplicates and twin data using kdtree structures
 
 
 Do this later...
@@ -44,7 +46,6 @@ Do this later...
 - [ ] (vtk) Add boolean operations (find alternative to vtkbooleanoperationpolydatafilter, e.j. vtkImplicitBoolean)
 - [ ] (vtk) Implement Unfolding with vtkwarpvector (hint, vector interpolation (angle + scallar) required)
 - [ ] (vtk) Add slice operation
-- [ ] (vtk) Replace pyevtk with vtk.util.numpy_support
 - [ ] (vtk) Add export 3D grid (centroids points / no blocks)
 - [ ] (drillhole) Generate reposts with reportlab??? for example for log files. Or use pygslib.charttable to creat nice plots in Ipython
  

@@ -27,6 +27,10 @@ requirements:
     - scipy
     - vc ==9
     - vs2008_runtime
+    - colour
+    - pyevtk
+    - ipython
+    - vtk  >=6.0
 
   run:
     - python
@@ -34,7 +38,7 @@ requirements:
     - pandas >=0.17
     - matplotlib
     - scipy
-    - vtk  >=6
+    - vtk  >=6.0
     - ipython
     - pyevtk
     - colour

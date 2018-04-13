@@ -17,6 +17,10 @@ requirements:
     - matplotlib
     - scipy
     - libgfortran
+    - ipython
+    - pyevtk 
+    - colour
+    - vtk  >=6.0
 
   run:
     - python
@@ -28,6 +32,7 @@ requirements:
     - ipython 
     - pyevtk 
     - libgfortran 
+    - colour
  
 test:
   # Python imports
