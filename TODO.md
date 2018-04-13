@@ -5,6 +5,7 @@ Priority
 ----
 
 - [ ] ()Python 3 version 
+- [ ] ()Prepare wheel distribution package for pip 
 - [ ] (vtk) Replace pyevtk with vtk.util.numpy_support
 - [ ] (nonlinear) Implement Uniform conditioning
 - [ ] (nonlinear) Implement localization
