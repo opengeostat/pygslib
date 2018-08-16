@@ -36,7 +36,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import vtk
-
+import sys
 
 #gslib fortran code
 import pygslib.gslib.__gslib__kt3d
@@ -148,10 +148,21 @@ def read_gslib_file(fname, maxnvar=500):
     assert os.path.isfile(fname), "invalid file name"
         
     comment_line,varnames,nvar,error = __read_gslib.read_header(fname ,maxnvar)
+    
+    assert error == 0, "gslib error = {} at __read_gslib.read_header".format(error)
+    
     #the var names requires this work around in f2py
     vnames=[]
-    for i in varnames[0:nvar]:
-        vnames.append(str.strip(i.tostring()))
+    if sys.version_info[0]==2:                     # python 2.X
+        for i in varnames[0:nvar]:
+            vnames.append(str.strip(i.tostring()))
+    else:                                          # python 3.X
+        for i in varnames[0:nvar]:
+            a=''
+            for j in i:
+                a= a+j.decode("utf-8")
+            vnames.append(a.strip())
+    
 
     #now read data 
     maxdat,error=__read_gslib.read_ndata(fname, nvar)
@@ -545,8 +556,8 @@ def check_gamv_par(parameters):
     assert  ndir > 0, "ndir is too small: check parameter file"
 
     for i in range(ndir):
-        assert parameters['bandwh']>=0, "Horizontal bandwidth is too small!"
-        assert parameters['bandwd']>=0, "Vertical bandwidth is too small!"
+        assert parameters['bandwh'][i]>=0, "Horizontal bandwidth is too small!"
+        assert parameters['bandwd'][i]>=0, "Vertical bandwidth is too small!"
     
     assert nvarg>0, "nvarg is too small: check parameters"
 
