@@ -11,6 +11,7 @@
 *.so
 *.pyd
 *.c
+*.dll
 
 
 #temporary files
