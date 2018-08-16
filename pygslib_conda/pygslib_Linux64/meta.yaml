@@ -33,6 +33,7 @@ requirements:
     - pyevtk 
     - libgfortran 
     - colour
+    - bokeh
  
 test:
   # Python imports

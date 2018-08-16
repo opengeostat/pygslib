@@ -30,6 +30,7 @@ requirements:
     - ipython
     - pyevtk
     - colour
+    - bokeh
 
 test:
   # Python imports
