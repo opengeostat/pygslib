@@ -20,8 +20,9 @@ c:\>python setup.py config --compiler=mingw32 build --compiler=mingw32 install
 """
 import warnings
 import sys
+import os
 from setuptools.command.test import test as TestCommand
-from numpy.distutils.core import Extension
+
 
 
 # check some dependencies
@@ -80,8 +81,12 @@ if __name__ == '__main__':
     #-------------------------------------------------------------------
     #make sure you use the setup from numpy
     from numpy.distutils.core import setup # this is numpy's setup
-    from setuptools import find_packages
-
+    from numpy.distutils.extension import Extension
+    import setuptools
+    #from numpy import get_include
+    from Cython.Build import cythonize
+    
+    
     # these are the almost intact gslib code
     gslib_kt3d = Extension(name = 'pygslib.gslib.__gslib__kt3d',
                      sources = ['for_code/kt3d/kt3d.f90', 
@@ -160,9 +165,43 @@ if __name__ == '__main__':
 
     gslib_dm2csv = Extension(name = 'pygslib.gslib.__dm2csv',
                      sources = ['for_code/dm2csv.f90'] ) 
-
                      
-    # define fortran code setup in here 
+                     
+    # Cython
+  
+    drillhole = Extension(name ='pygslib.drillhole', sources =['cython_code/drillhole.pyx'])
+    blockmodel= Extension(name ='pygslib.blockmodel', sources =['cython_code/blockmodel.pyx'])
+    vtktools= Extension(name ='pygslib.vtktools', sources =['cython_code/vtktools.pyx'])
+    nonlinear= Extension(name ='pygslib.nonlinear',sources =['cython_code/nonlinear.pyx'])
+    sandbox= Extension(name ='pygslib.sandbox',sources =['cython_code/sandbox.pyx'])                                
+    
+	# All extensions Fortran + Cython 
+	
+    extensions =[gslib_variograms,
+				 gslib_bigaus,
+				 gslib_bicalib,
+				 gslib_trans,
+				 gslib_draw,
+				 gslib_dm2csv,
+				 gslib_addcoord,
+				 gslib_rotscale,
+				 gslib_read_gslib, 
+				 gslib_declus,
+				 gslib_dist_transf,
+				 gslib_block_covariance,
+				 gslib_plot,
+				 gslib_kt3d,
+				 gslib_postik,
+				 gslib_general,
+				 drillhole,
+				 blockmodel,
+				 vtktools,
+				 nonlinear,
+				 sandbox]
+    
+    extensions = cythonize(extensions)
+    
+    
     setup(name=name,
           version=version,
           description= description,
@@ -172,90 +211,19 @@ if __name__ == '__main__':
           author=author,
           author_email=author_email,
           url=url,
-          license='MIT',
-          packages=find_packages(exclude=[]),
+          license='GPL/MIT',
           include_package_data=True,
           zip_safe=False,
           tests_require=[],
           cmdclass={'test': PyTest},   
           install_requires=[],
-          ext_modules = [gslib_variograms,
-                         gslib_bigaus,
-                         gslib_bicalib,
-                         gslib_trans,
-                         gslib_draw,
-                         gslib_dm2csv,
-                         gslib_addcoord,
-                         gslib_rotscale,
-                         gslib_read_gslib, 
-                         gslib_declus,
-                         gslib_dist_transf,
-                         gslib_block_covariance,
-                         gslib_plot,
-                         gslib_kt3d,
-                         gslib_postik,
-                         gslib_general])
+          ext_modules = extensions)                    
+
+
+	# copy dll if so is windows
+    if os.name=='nt' and sys.version_info[0]==3:
+        os.system('copy build\\lib.win-amd64-3.6\\pygslib\\.libs\\*.dll pygslib\\gslib\\')
     
-    print (" OPENGEOSTAT SAYS FORTRAN CODE COMPILED")
     
-    #Cython code extension
-    #-------------------------------------------------------------------
-    from distutils.core import setup    # this is the standard setup
-    from distutils.extension import Extension as CYExtension
-    #from Cython.Build import cythonize
-    import numpy
-    
-    drillhole = CYExtension( 'pygslib.drillhole', 
-                            ['cython_code/drillhole.pyx'], 
-                            include_dirs=[numpy.get_include()]) 
-                                
-    blockmodel = CYExtension( 'pygslib.blockmodel', 
-                            ['cython_code/blockmodel.pyx'],
-                            include_dirs=[numpy.get_include()]) 
-      
-    vtktools = CYExtension( 'pygslib.vtktools', 
-                            ['cython_code/vtktools.pyx'],
-                            include_dirs=[numpy.get_include()]) 
 
-    nonlinear = CYExtension( 'pygslib.nonlinear', 
-                            ['cython_code/nonlinear.pyx'],
-                            include_dirs=[numpy.get_include()]) 
-                            
-    sandbox = CYExtension( 'pygslib.sandbox', 
-                            ['cython_code/sandbox.pyx'],
-                            include_dirs=[numpy.get_include()])                            
-                            
-                            
-    #deprecated
-    #neighborhood = CYExtension( 'pygslib.neighborhood', 
-                            #['cython_code/neighborhood.pyx'],
-                            #include_dirs=[numpy.get_include()]) 
-
-    #interpolators = CYExtension( 'pygslib.interpolators', 
-                            #['cython_code/interpolators.pyx'],
-                            #include_dirs=[numpy.get_include()])
-
-                            
-    setup(name=name,
-          version=version,
-          description= description,
-          long_description=long_description,
-          classifiers=classifiers,
-          keywords=keywords, 
-          author=author,
-          author_email=author_email,
-          url=url,
-          license='GPL',
-          packages=find_packages(exclude=['examples', 'tests']),
-          include_package_data=True,
-          zip_safe=False,
-          tests_require=[],
-          cmdclass={'test': PyTest},   
-          install_requires=[],
-          ext_modules = [drillhole,
-                        blockmodel,
-                        vtktools,
-                        nonlinear,
-                        sandbox])
-
-    print (" OPENGEOSTAT SAYS CYTHON CODE COMPILED")
+    print (" OPENGEOSTAT SAYS CYTHON/FORTRAN CODE COMPILED")
