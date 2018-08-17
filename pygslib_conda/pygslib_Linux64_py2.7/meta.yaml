@@ -1,9 +1,9 @@
 
-package: 
-  name: pygslib 
-  version: "0.0.0.3.8.4" 
+package:
+  name: pygslib
+  version: "0.0.0.3.9.0"
 
-source: 
+source:
   path: ../../
 
 
@@ -12,15 +12,8 @@ requirements:
     - python
     - cython
     - setuptools
-    - numpy 
-    - pandas >=0.17
-    - matplotlib
-    - scipy
+    - numpy
     - libgfortran
-    - ipython
-    - pyevtk 
-    - colour
-    - vtk  >=6.0
 
   run:
     - python
@@ -28,13 +21,13 @@ requirements:
     - pandas >=0.17
     - matplotlib
     - scipy
-    - vtk >=6.0
-    - ipython 
-    - pyevtk 
-    - libgfortran 
+    - vtk >=7.1
+    - ipython
+    - pyevtk
+    - libgfortran
     - colour
     - bokeh
- 
+
 test:
   # Python imports
   #imports:
@@ -48,12 +41,12 @@ test:
   # You can also put a file called run_test.py in the recipe that will be run
   # at test time.
 
-  requires: 
-    - matplotlib 
-    - mock 
+  requires:
+    - matplotlib
+    - mock
     - nose
-    - numpy 
-    - pandas >=0.17 
+    - numpy
+    - pandas >=0.17
     - scipy
     - libgfortran
     # Put any additional test requirements here.  For example

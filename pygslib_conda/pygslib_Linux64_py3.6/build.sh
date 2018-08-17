@@ -1,9 +1,6 @@
 #!/bin/bash
 
-conda config --add channels opengeostat
-conda config --add channels menpo
-
-$PYTHON setup.py install 
+pip install --no-deps /home/adrian/pygslib/dist/pygslib-0.0.0.3.9-cp36-cp36m-linux_x86_64.whl
 
 # Add more build steps here, if they are necessary.
 
