@@ -1,0 +1,3 @@
+Requirement already satisfied: Automat in c:\users\amartinez\appdata\local\continuum\miniconda3\lib\site-packages (0.0.0)
+Requirement already satisfied: attrs>=16.1.0 in c:\users\amartinez\appdata\local\continuum\miniconda3\lib\site-packages (from Automat) (18.1.0)
+Requirement already satisfied: six in c:\users\amartinez\appdata\local\continuum\miniconda3\lib\site-packages (from Automat) (1.11.0)

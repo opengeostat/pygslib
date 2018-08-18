@@ -26,26 +26,18 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="PyGSLIB 0.0.0.3.9 documentation" href="#"/>
-        <link rel="next" title="Tutorial: Resource estimation with PyGSLIB" href="Tutorial.html"/> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial: Resource estimation with PyGSLIB" href="Tutorial.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -106,7 +98,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="#">PyGSLIB</a>
@@ -114,9 +106,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -171,17 +164,17 @@ or to do loops required by some nonconventional applications such as drillhole
 spacing studies with conditional simulations.</p>
 <p>PyGSLIB is subdivided into five modules:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">gslib</span></code>. This is for geostatistics and interpolation. It was built with GSLIB FORTRAN code enhanced and linked to Python.</li>
-<li><code class="docutils literal"><span class="pre">drillhole</span></code>. This is for basic drillhole operation, such as compositing and desurveying.</li>
-<li><code class="docutils literal"><span class="pre">blockmodel</span></code>. This is for block modelling, it has functions to fill wireframes with blocks, reblocking, among others.</li>
-<li><code class="docutils literal"><span class="pre">vtktools</span></code>. This is for 3D computational geometry based on VTK, for example, to select samples within wireframes.  It also handles VTK files.</li>
-<li><code class="docutils literal"><span class="pre">nonlinear</span></code>. <strong>This module is Under construction!</strong>  It is an experimental module for nonlinear geostatistics based on the Discrete Gaussian Model.</li>
+<li><code class="docutils literal notranslate"><span class="pre">gslib</span></code>. This is for geostatistics and interpolation. It was built with GSLIB FORTRAN code enhanced and linked to Python.</li>
+<li><code class="docutils literal notranslate"><span class="pre">drillhole</span></code>. This is for basic drillhole operation, such as compositing and desurveying.</li>
+<li><code class="docutils literal notranslate"><span class="pre">blockmodel</span></code>. This is for block modelling, it has functions to fill wireframes with blocks, reblocking, among others.</li>
+<li><code class="docutils literal notranslate"><span class="pre">vtktools</span></code>. This is for 3D computational geometry based on VTK, for example, to select samples within wireframes.  It also handles VTK files.</li>
+<li><code class="docutils literal notranslate"><span class="pre">nonlinear</span></code>. <strong>This module is Under construction!</strong>  It is an experimental module for nonlinear geostatistics based on the Discrete Gaussian Model.</li>
 </ul>
 <div class="section" id="installation-win64-linux64-osx64">
 <h2>Installation (Win64, Linux64, OSX64)<a class="headerlink" href="#installation-win64-linux64-osx64" title="Permalink to this headline">¶</a></h2>
 <p>The easiest way to install and work with PyGSLIB is using the Python distribution <a class="reference external" href="https://www.continuum.io/downloads">Anaconda</a>.
 To install PyGSLIB in the root environment of your anaconda distribution simply type in a terminal:</p>
-<p><code class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">opengeostat</span> <span class="pre">pygslib</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">opengeostat</span> <span class="pre">pygslib</span></code></p>
 <p>You may also install <a class="reference external" href="http://www.paraview.org/download/">Paraview</a>, this is required for visualization.</p>
 <p>This video shows a demonstration of installation in Windows, these steps are similar for Linux or Mac installation.</p>
 <div style="margin-top:10px;">
@@ -196,7 +189,7 @@ To install PyGSLIB in the root environment of your anaconda distribution simply 
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial: Resource estimation with PyGSLIB</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#preliminaries">Preliminaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#loading-python-packages">Loading python packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#loading-the-drillhole-tables">Loading the drillhole tables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#creating-drillhole-object">Creating drillhole object</a></li>
@@ -207,9 +200,12 @@ To install PyGSLIB in the root environment of your anaconda distribution simply 
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#tagging-samples-with-domain-code">Tagging samples with domain code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#block-modeling">Block modeling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#some-basic-stats">Some basic stats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#variography">Variography</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#estimating-cu-grade-in-one-block">Estimating Cu grade in one block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#estimating-in-all-blocks">Estimating in all blocks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorial.html#validating-the-results">Validating the results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#create-swath-plots">Create swath plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#global-change-of-support">Global change of support</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="API.html">PyGSLIB API autogenerated documentation!</a><ul>
@@ -237,9 +233,7 @@ To install PyGSLIB in the root environment of your anaconda distribution simply 
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -259,7 +253,7 @@ To install PyGSLIB in the root environment of your anaconda distribution simply 
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -278,6 +272,7 @@ To install PyGSLIB in the root environment of your anaconda distribution simply 
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'0.0.0.3.9',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -291,19 +286,13 @@ To install PyGSLIB in the root environment of your anaconda distribution simply 
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

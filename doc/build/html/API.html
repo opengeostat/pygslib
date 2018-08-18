@@ -26,26 +26,18 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="PyGSLIB 0.0.0.3.9 documentation" href="index.html"/>
-        <link rel="prev" title="Tutorial: Resource estimation with PyGSLIB" href="Tutorial.html"/> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Tutorial: Resource estimation with PyGSLIB" href="Tutorial.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -114,7 +106,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">PyGSLIB</a>
@@ -122,9 +114,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -180,8 +173,8 @@ programs provided by contributors.</p>
 <p>The original Fortran 77 code was modified. That was required to convert
 the existing standalone executables into shared libraries. The original
 code was also modified to introduce extra functionality, for example,
-maximum number of samples per drillhole in the program <code class="docutils literal"><span class="pre">kt3D</span></code> and
-variogram cloud in the program <code class="docutils literal"><span class="pre">gamv</span></code>. The main changes consisted of:</p>
+maximum number of samples per drillhole in the program <code class="docutils literal notranslate"><span class="pre">kt3D</span></code> and
+variogram cloud in the program <code class="docutils literal notranslate"><span class="pre">gamv</span></code>. The main changes consisted of:</p>
 <blockquote>
 <div><ul class="simple">
 <li>the old Fortran 77 as converted to Fortran 90.</li>
@@ -251,7 +244,7 @@ for example</p>
 </tbody>
 </table>
 <p>Parameters are E-Type in a dictionary as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
   <span class="c1"># Coordinates of the discretization points</span>
    <span class="s1">&#39;xdb&#39;</span>  <span class="p">:</span>  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># array(&#39;f&#39;)</span>
    <span class="s1">&#39;ydb&#39;</span>  <span class="p">:</span>  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># array(&#39;f&#39;)</span>
@@ -279,7 +272,7 @@ for example</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">pygslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">block_covariance</span><span class="p">(</span><span class="n">parameters_blk</span><span class="p">))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">pygslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">block_covariance</span><span class="p">(</span><span class="n">parameters_blk</span><span class="p">))</span>
 <span class="go">0.803182760643</span>
 </pre></div>
 </div>
@@ -298,7 +291,7 @@ for example</p>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cdfplt_parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cdfplt_parameters</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># CDF limits and definition.</span>
     <span class="s1">&#39;iwt&#39;</span>  <span class="p">:</span> <span class="p">,</span> <span class="c1"># input boolean (Optional: set True). Use weight variable?</span>
     <span class="s1">&#39;va&#39;</span>   <span class="p">:</span> <span class="p">,</span> <span class="c1"># input rank-1 array(&#39;d&#39;) with bounds (nd). Variable</span>
@@ -329,7 +322,7 @@ for example</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -338,7 +331,7 @@ for example</p>
 <dt id="pygslib.gslib.check_gamv_par">
 <code class="descclassname">pygslib.gslib.</code><code class="descname">check_gamv_par</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.gslib.check_gamv_par" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the variogram calculation parameters</p>
-<p>Verifies the parameters of the <code class="docutils literal"><span class="pre">gamv</span></code> function
+<p>Verifies the parameters of the <code class="docutils literal notranslate"><span class="pre">gamv</span></code> function
 and checks for possible errors or inconsistencies</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -349,7 +342,7 @@ and checks for possible errors or inconsistencies</p>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
   <span class="c1"># Coordinates of the data points</span>
    <span class="s1">&#39;x&#39;</span>      <span class="p">:</span>  <span class="n">X</span><span class="p">,</span>              <span class="c1"># array(&#39;f&#39;) with bounds (nd), nd is number of data points</span>
    <span class="s1">&#39;y&#39;</span>      <span class="p">:</span>  <span class="n">Y</span><span class="p">,</span>              <span class="c1"># array(&#39;f&#39;) with bounds (nd)</span>
@@ -386,7 +379,7 @@ and checks for possible errors or inconsistencies</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">pygslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">check_gamv_par</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span> <span class="p">,</span> <span class="s1">&#39;sorry this parameter file is wrong&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">pygslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">check_gamv_par</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span> <span class="p">,</span> <span class="s1">&#39;sorry this parameter file is wrong&#39;</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
@@ -405,7 +398,7 @@ and checks for possible errors or inconsistencies</p>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
   <span class="c1"># Coordinates of point 1 and 2</span>
    <span class="s1">&#39;x1&#39;</span>    <span class="p">:</span>  <span class="mi">0</span><span class="p">,</span>         <span class="c1"># X coordinates, point 1, float</span>
    <span class="s1">&#39;y1&#39;</span>    <span class="p">:</span>  <span class="mi">0</span><span class="p">,</span>         <span class="c1"># Y coordinates, point 1, float</span>
@@ -445,7 +438,7 @@ cova is the actual covariance value.<p>Note: The variogram can be calculated as 
 <p class="last">calculate irot and rotmat internally and remove it from parameter dict.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># this is the covariance between the points x1, x2</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># this is the covariance between the points x1, x2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cmax</span><span class="p">,</span><span class="n">cova</span><span class="o">=</span><span class="n">pygslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">cova3</span><span class="p">(</span><span class="n">parameters_mod</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">cmax</span><span class="p">,</span> <span class="n">cova</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="mf">2.40999984741</span> <span class="mf">2.24302244186</span>
@@ -467,7 +460,7 @@ declustering cell sizes</p>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
        <span class="c1"># database</span>
         <span class="s1">&#39;x&#39;</span>      <span class="p">:</span>  <span class="n">mydata</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>     <span class="c1"># data x coordinates, array(&#39;f&#39;) with bounds (na), na is number of data points</span>
         <span class="s1">&#39;y&#39;</span>      <span class="p">:</span>  <span class="n">mydata</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>     <span class="c1"># data y coordinates, array(&#39;f&#39;) with bounds (na)</span>
@@ -510,7 +503,7 @@ error = 2    ! deallocation error</li>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Minimun and maximum valid data values are not tested. Filter out <code class="docutils literal"><span class="pre">vr</span></code>
+<p class="last">Minimun and maximum valid data values are not tested. Filter out <code class="docutils literal notranslate"><span class="pre">vr</span></code>
 values before using this function.</p>
 </div>
 <div class="admonition-todo admonition" id="index-1">
@@ -544,7 +537,7 @@ This is a limitation and may create non-readable ascii
 outputs. Non-readable outputs are automatically replaced
 with the string ‘<strong>****</strong>’.</p>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pygslib</span> <span class="k">as</span> <span class="nn">gslib</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pygslib</span> <span class="k">as</span> <span class="nn">gslib</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydata</span><span class="o">=</span> <span class="n">gslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">dm2csv_ep</span><span class="p">(</span><span class="s1">&#39;points.dm&#39;</span><span class="p">,</span> <span class="s1">&#39;points.csv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;F10.2&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -576,7 +569,7 @@ This is a limitation and may create non-readable ascii
 outputs. Non-readable outputs are automatically replaced
 with the string ‘<strong>****</strong>’.</p>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pygslib</span> <span class="k">as</span> <span class="nn">gslib</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pygslib</span> <span class="k">as</span> <span class="nn">gslib</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydata</span><span class="o">=</span> <span class="n">gslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">dm2csv_sp</span><span class="p">(</span><span class="s1">&#39;points.dm&#39;</span><span class="p">,</span> <span class="s1">&#39;points.csv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;F10.2&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -596,7 +589,7 @@ with the string ‘<strong>****</strong>’.</p>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;nx&#39;</span>     <span class="p">:</span>  <span class="mi">50</span><span class="p">,</span>       <span class="c1"># number of rows in the gridded data</span>
         <span class="s1">&#39;ny&#39;</span>     <span class="p">:</span>  <span class="mi">50</span><span class="p">,</span>       <span class="c1"># number of columns in the gridded data</span>
         <span class="s1">&#39;nz&#39;</span>     <span class="p">:</span>  <span class="mi">1</span><span class="p">,</span>        <span class="c1"># number of levels in the gridded data</span>
@@ -638,7 +631,7 @@ with the string ‘<strong>****</strong>’.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>For two variables use flatten array with order F, for example:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">vr</span><span class="o">=</span><span class="n">mydata</span><span class="p">[[</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;FORTRAN&#39;</span><span class="p">)</span>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vr</span><span class="o">=</span><span class="n">mydata</span><span class="p">[[</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;FORTRAN&#39;</span><span class="p">)</span>
 <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;vr&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">vr</span>
 </pre></div>
 </div>
@@ -660,7 +653,7 @@ GSLIB standalone program <cite>gam</cite>.</p>
 <li>the indicator automatic transformation is not applied; you may define
 indicator variables externally.</li>
 <li>a bhid variable is always required, to avoid downhole variogram use
-<code class="docutils literal"><span class="pre">bhid=None</span></code> or <code class="docutils literal"><span class="pre">bhid</span> <span class="pre">=</span> <span class="pre">0</span></code>.</li>
+<code class="docutils literal notranslate"><span class="pre">bhid=None</span></code> or <code class="docutils literal notranslate"><span class="pre">bhid</span> <span class="pre">=</span> <span class="pre">0</span></code>.</li>
 <li>Z variable is required, you can use constant coordinate to reduce
 dimensions, for example use Z=None in the parameter file or
 Z = 0 in the file.</li>
@@ -677,7 +670,7 @@ variogram and first direction. It only works for some variogram types.</li>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;x&#39;</span>      <span class="p">:</span>  <span class="n">X</span><span class="p">,</span>             <span class="c1"># X coordinates, array(&#39;f&#39;) with bounds (nd), nd is number of data points</span>
         <span class="s1">&#39;y&#39;</span>      <span class="p">:</span>  <span class="n">Y</span><span class="p">,</span>             <span class="c1"># Y coordinates, array(&#39;f&#39;) with bounds (nd)</span>
         <span class="s1">&#39;z&#39;</span>      <span class="p">:</span>  <span class="n">Z</span><span class="p">,</span>             <span class="c1"># Z coordinates, array(&#39;f&#39;) with bounds (nd)</span>
@@ -798,7 +791,7 @@ tv : rank-4 array(‘d’) with bounds (nlag,ndir,ndip,nvarg)</p>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">histgplt_parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">histgplt_parameters</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># histogram limits and definition.</span>
     <span class="s1">&#39;hmin&#39;</span> <span class="p">:</span> <span class="p">,</span> <span class="c1"># input float (Optional: set as minimum value in dataset). Minimun value in the histogram.</span>
     <span class="s1">&#39;hmax&#39;</span> <span class="p">:</span> <span class="p">,</span> <span class="c1"># input float (Optional: set as maximum value in dataset). Maximum value in the histogram.</span>
@@ -838,7 +831,7 @@ tv : rank-4 array(‘d’) with bounds (nlag,ndir,ndip,nvarg)</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -871,7 +864,7 @@ undesired values before estimating</li>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kt3d_parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kt3d_parameters</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># Input Data</span>
     <span class="c1"># ----------</span>
     <span class="s1">&#39;x&#39;</span> <span class="p">:</span> <span class="p">,</span>   <span class="c1"># rank-1 array(&#39;f&#39;) with bounds (nd)</span>
@@ -950,9 +943,9 @@ array of zeros unless specified.</p>
 </tr>
 </tbody>
 </table>
-<p>The estimation results <code class="docutils literal"><span class="pre">output</span></code> will be as follows:</p>
+<p>The estimation results <code class="docutils literal notranslate"><span class="pre">output</span></code> will be as follows:</p>
 <p>If iktype=0 returns variable estimate as:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;outest&#39;</span>    <span class="p">:</span> <span class="p">,</span>  <span class="c1"># kriging estimate</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;outest&#39;</span>    <span class="p">:</span> <span class="p">,</span>  <span class="c1"># kriging estimate</span>
 <span class="s1">&#39;outkvar&#39;</span>    <span class="p">:</span> <span class="p">,</span>  <span class="c1"># kriging variance</span>
 <span class="s1">&#39;outidpower&#39;</span> <span class="p">:</span> <span class="p">,</span>  <span class="c1"># inverse of the power of the distance estimate</span>
 <span class="s1">&#39;outnn&#39;</span>      <span class="p">:</span> <span class="p">}</span>  <span class="c1"># nearest neightbor estimate</span>
@@ -961,15 +954,15 @@ array of zeros unless specified.</p>
 </pre></div>
 </div>
 <p>If ktype=1 returns median indicator kriging estimate as:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;outcdf&#39;</span>     <span class="p">:</span> <span class="p">}</span>  <span class="c1">#rank-2 array(&#39;f&#39;) with bounds (nout,ncut)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;outcdf&#39;</span>     <span class="p">:</span> <span class="p">}</span>  <span class="c1">#rank-2 array(&#39;f&#39;) with bounds (nout,ncut)</span>
 </pre></div>
 </div>
-<p>The debug output <code class="docutils literal"><span class="pre">debug</span></code> will be only for the last block estimated
-but calculated for all the blocks. Make sure to set <code class="docutils literal"><span class="pre">idbg</span></code>
+<p>The debug output <code class="docutils literal notranslate"><span class="pre">debug</span></code> will be only for the last block estimated
+but calculated for all the blocks. Make sure to set <code class="docutils literal notranslate"><span class="pre">idbg</span></code>
 to zero for estimation in large models.</p>
-<p>If idbg = 0 <code class="docutils literal"><span class="pre">debug</span></code> will be an empty dictionary.
-If debug &gt; 0 <code class="docutils literal"><span class="pre">debug</span></code> will be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;cbb&#39;</span>       <span class="p">:</span> <span class="p">,</span>  <span class="c1">#float</span>
+<p>If idbg = 0 <code class="docutils literal notranslate"><span class="pre">debug</span></code> will be an empty dictionary.
+If debug &gt; 0 <code class="docutils literal notranslate"><span class="pre">debug</span></code> will be as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;cbb&#39;</span>       <span class="p">:</span> <span class="p">,</span>  <span class="c1">#float</span>
 <span class="s1">&#39;neq&#39;</span>        <span class="p">:</span> <span class="p">,</span>  <span class="c1">#int</span>
 <span class="s1">&#39;na&#39;</span>         <span class="p">:</span> <span class="p">,</span>  <span class="c1">#int</span>
 <span class="s1">&#39;dbgxdat&#39;</span>    <span class="p">:</span> <span class="p">,</span>  <span class="c1">#rank-1 array(&#39;f&#39;) with bounds (ndmax)</span>
@@ -985,7 +978,7 @@ If debug &gt; 0 <code class="docutils literal"><span class="pre">debug</span></c
 <span class="s1">&#39;ellipsoid&#39;</span>  <span class="p">:</span>  <span class="p">}</span> <span class="c1">#vtkpolydata object with ellipsoid</span>
 </pre></div>
 </div>
-<p>The output <code class="docutils literal"><span class="pre">estimate</span></code> is to provide an estimation summary
+<p>The output <code class="docutils literal notranslate"><span class="pre">estimate</span></code> is to provide an estimation summary
 but this is not implemented yet.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1015,33 +1008,33 @@ stdout (the terminal) and will not be available in Ipython Notebooks.</p>
 </tbody>
 </table>
 <p>The dictionary with parameters may be as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">postik_parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">postik_parameters</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># output option, output parameter</span>
-    <span class="s1">&#39;iout&#39;</span>   <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input int. Possible (1,2,3 or 4)</span>
-    <span class="s1">&#39;voutpar&#39;</span> <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input float</span>
+    <span class="s1">&#39;iout&#39;</span>   <span class="p">:</span> <span class="p">,</span>   <span class="c1"># int. 1 E-type,2 P and means outpar,3 p-quantile for outpar=p, and 4 conditional variance</span>
+    <span class="s1">&#39;outpar&#39;</span> <span class="p">:</span> <span class="p">,</span>   <span class="c1"># float. Parameter for iout</span>
     <span class="c1"># the thresholds</span>
-    <span class="s1">&#39;ccut1&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input rank-1 array(&#39;f&#39;) with bounds (nccut)</span>
+    <span class="s1">&#39;ccut1&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># 1D array of floats. Cutoff used in MIK</span>
     <span class="c1"># volume support?, type, varred</span>
-    <span class="s1">&#39;ivol&#39;</span>   <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input int</span>
-    <span class="s1">&#39;ivtyp&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input int</span>
-    <span class="s1">&#39;varred&#39;</span> <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input float</span>
+    <span class="s1">&#39;ivol&#39;</span>   <span class="p">:</span> <span class="p">,</span>   <span class="c1"># int. If 1 the support correction is applied</span>
+    <span class="s1">&#39;ivtyp&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># int. 1 for affine correction and indirect lognormal correction</span>
+    <span class="s1">&#39;varred&#39;</span> <span class="p">:</span> <span class="p">,</span>   <span class="c1"># float. Volumen correction, ussually r~ Block variance/Point variance</span>
     <span class="c1"># minimum and maximum Z value</span>
-    <span class="s1">&#39;zmin&#39;</span>   <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input float</span>
-    <span class="s1">&#39;zmax&#39;</span>   <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input float</span>
+    <span class="s1">&#39;zmin&#39;</span>   <span class="p">:</span> <span class="p">,</span>   <span class="c1"># float. Minimum value in local CDF</span>
+    <span class="s1">&#39;zmax&#39;</span>   <span class="p">:</span> <span class="p">,</span>   <span class="c1"># float. Maximum value in local CDF</span>
     <span class="c1"># lower,middle and upper tail: option, parameter</span>
-    <span class="s1">&#39;ltail&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input int</span>
-    <span class="s1">&#39;ltpar&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input float</span>
-    <span class="s1">&#39;middle&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input int</span>
-    <span class="s1">&#39;mpar&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input float</span>
-    <span class="s1">&#39;utail&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input int</span>
-    <span class="s1">&#39;utpar&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input float</span>
+    <span class="s1">&#39;ltail&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># int. Lower tail interpolation function, 1 linear, 2  power model, 3 tabulated quantiles</span>
+    <span class="s1">&#39;ltpar&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># float. Lower tail function parameter</span>
+    <span class="s1">&#39;middle&#39;</span>  <span class="p">:</span> <span class="p">,</span>  <span class="c1"># int. Middle CDF interpolation function 1 linear, 2  power model, 3 tabulated quantiles</span>
+    <span class="s1">&#39;mpar&#39;</span>  <span class="p">:</span> <span class="p">,</span>    <span class="c1"># float.  Middle CDF segment function parameter</span>
+    <span class="s1">&#39;utail&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># int. Upper tail interpolation function, 1 linear, 2  power model, 3 tabulated quantiles, 4 hyperbolic</span>
+    <span class="s1">&#39;utpar&#39;</span>  <span class="p">:</span> <span class="p">,</span>   <span class="c1"># float. Uper tail function parameter</span>
     <span class="c1"># maximum discretization</span>
-    <span class="s1">&#39;maxdis&#39;</span> <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input int</span>
+    <span class="s1">&#39;maxdis&#39;</span> <span class="p">:</span> <span class="p">,</span>   <span class="c1"># int. Discretization of the local CDF.</span>
     <span class="c1"># 1D arrays with global distribution</span>
-    <span class="s1">&#39;vr&#39;</span>     <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input rank-1 array(&#39;f&#39;) with bounds (nc)</span>
-    <span class="s1">&#39;wt&#39;</span>     <span class="p">:</span> <span class="p">,</span>   <span class="c1"># input rank-1 array(&#39;f&#39;) with bounds (nc)</span>
+    <span class="s1">&#39;vr&#39;</span>     <span class="p">:</span> <span class="p">,</span>   <span class="c1"># 1D array of floats for table look-up if tabulated quantiles are used as interpolation function</span>
+    <span class="s1">&#39;wt&#39;</span>     <span class="p">:</span> <span class="p">,</span>   <span class="c1"># 1D array of floats with wights on table look-up</span>
     <span class="c1"># 2D array with IK3D output (continuous)</span>
-    <span class="s1">&#39;p&#39;</span>      <span class="p">:</span> <span class="p">}</span>   <span class="c1"># input rank-2 array(&#39;f&#39;) with bounds (na,nc)</span>
+    <span class="s1">&#39;p&#39;</span>      <span class="p">:</span> <span class="p">}</span>   <span class="c1"># 2D array of floats. This is the MIK output or any array of local CDFs</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1057,28 +1050,23 @@ stdout (the terminal) and will not be available in Ipython Notebooks.</p>
 </tr>
 </tbody>
 </table>
-<p>If <code class="docutils literal"><span class="pre">iout</span> <span class="pre">==</span> <span class="pre">1</span></code> (E-Type estimate) <code class="docutils literal"><span class="pre">out1</span></code> will be the E-Type
-estimate. <code class="docutils literal"><span class="pre">out2</span></code> and <code class="docutils literal"><span class="pre">out3</span></code> will be NaN</p>
-<p>If <code class="docutils literal"><span class="pre">iout</span> <span class="pre">==</span> <span class="pre">2</span></code> (prob &gt; cutoff) <code class="docutils literal"><span class="pre">out1</span></code> will be the probability
-above the cutoff, <code class="docutils literal"><span class="pre">out2</span></code> the mean above the cutoff and <code class="docutils literal"><span class="pre">out3</span></code>
+<p>If <code class="docutils literal notranslate"><span class="pre">iout</span> <span class="pre">==</span> <span class="pre">1</span></code> (E-Type estimate) <code class="docutils literal notranslate"><span class="pre">out1</span></code> will be the E-Type
+estimate. <code class="docutils literal notranslate"><span class="pre">out2</span></code> and <code class="docutils literal notranslate"><span class="pre">out3</span></code> will be NaN</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">iout</span> <span class="pre">==</span> <span class="pre">2</span></code> (prob &gt; cutoff) <code class="docutils literal notranslate"><span class="pre">out1</span></code> will be the probability
+above the cutoff, <code class="docutils literal notranslate"><span class="pre">out2</span></code> the mean above the cutoff and <code class="docutils literal notranslate"><span class="pre">out3</span></code>
 the mean below the cutoff</p>
-<p>If <code class="docutils literal"><span class="pre">iout</span> <span class="pre">==</span> <span class="pre">3</span></code> (p-quantile estimate) <code class="docutils literal"><span class="pre">out1</span></code> will be the
-Z value corresponding to the CDF == p. <code class="docutils literal"><span class="pre">out2</span></code> and <code class="docutils literal"><span class="pre">out3</span></code> will be
+<p>If <code class="docutils literal notranslate"><span class="pre">iout</span> <span class="pre">==</span> <span class="pre">3</span></code> (p-quantile estimate) <code class="docutils literal notranslate"><span class="pre">out1</span></code> will be the
+Z value corresponding to the CDF == p. <code class="docutils literal notranslate"><span class="pre">out2</span></code> and <code class="docutils literal notranslate"><span class="pre">out3</span></code> will be
 NaN</p>
-<p>If <code class="docutils literal"><span class="pre">iout</span> <span class="pre">==</span> <span class="pre">4</span></code> (conditional variance) <code class="docutils literal"><span class="pre">out1</span></code> will be the
-conditional variance. <code class="docutils literal"><span class="pre">out2</span></code> and <code class="docutils literal"><span class="pre">out3</span></code> will be NaN</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p><code class="docutils literal"><span class="pre">iout</span></code> options are:</p>
-<blockquote class="last">
-<div>1 = E-type
-2 = probability and mean above <code class="docutils literal"><span class="pre">voutpar</span></code> (e.j. cutoff value)
-3 = Z percentile corresponding to a probability <code class="docutils literal"><span class="pre">voutpar</span></code>
-4 = conditional variance</div></blockquote>
-</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">iout</span> <span class="pre">==</span> <span class="pre">4</span></code> (conditional variance) <code class="docutils literal notranslate"><span class="pre">out1</span></code> will be the
+conditional variance. <code class="docutils literal notranslate"><span class="pre">out2</span></code> and <code class="docutils literal notranslate"><span class="pre">out3</span></code> will be NaN</p>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>    <span class="n">out1</span><span class="p">,</span><span class="n">out2</span><span class="p">,</span><span class="n">out3</span><span class="p">,</span><span class="n">error</span> <span class="o">=</span> <span class="n">postik</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>    <span class="n">out1</span><span class="p">,</span><span class="n">out2</span><span class="p">,</span><span class="n">out3</span><span class="p">,</span><span class="n">error</span> <span class="o">=</span> <span class="n">postik</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">Fix bug. The algorithm fails if there are nans in probabilities.</p>
 </div>
 </dd></dl>
 
@@ -1106,7 +1094,7 @@ conditional variance. <code class="docutils literal"><span class="pre">out2</spa
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pygslib</span> <span class="k">as</span> <span class="nn">gslib</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pygslib</span> <span class="k">as</span> <span class="nn">gslib</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydata</span><span class="o">=</span> <span class="n">gslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">read_gslib_file</span><span class="p">(</span><span class="s1">&#39;dataset/cluster.dat&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">mydata</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
 <span class="go">          Xlocation  Ylocation  Primary  Secondary  Declustering Weight</span>
@@ -1166,7 +1154,7 @@ origin at [x = 0, y = 0, z = 0]. This point corresponds to
 </tbody>
 </table>
 <p>Parameters are pased in a dictionary as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;x&#39;</span>      <span class="p">:</span>  <span class="n">mydata</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="c1"># data x coordinates, array(&#39;f&#39;) with bounds (na), na is number of data points</span>
         <span class="s1">&#39;y&#39;</span>      <span class="p">:</span>  <span class="n">mydata</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="c1"># data y coordinates, array(&#39;f&#39;) with bounds (na)</span>
         <span class="s1">&#39;z&#39;</span>      <span class="p">:</span>  <span class="n">mydata</span><span class="o">.</span><span class="n">z</span><span class="p">,</span><span class="c1"># data z coordinates, array(&#39;f&#39;) with bounds (na)</span>
@@ -1220,7 +1208,7 @@ origin at [x = 0, y = 0, z = 0]. This point corresponds to
 <p class="first admonition-title">Note</p>
 <p class="last">This will change the behavior of KT3D in the actual python section.</p>
 </div>
-<p>to see the actual non-estimated value you may call <code class="docutils literal"><span class="pre">__gslib__kt3d.UNEST</span></code></p>
+<p>to see the actual non-estimated value you may call <code class="docutils literal notranslate"><span class="pre">__gslib__kt3d.UNEST</span></code></p>
 </dd></dl>
 
 <dl class="function">
@@ -1291,7 +1279,7 @@ validate drillholes.</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span> <span class="o">=</span> <span class="n">pygslib</span><span class="o">.</span><span class="n">drillhole</span><span class="o">.</span><span class="n">Drillhole</span><span class="p">(</span><span class="n">collar</span><span class="p">,</span> <span class="n">survey</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">addtable</span><span class="p">(</span><span class="n">assay</span><span class="p">,</span> <span class="s1">&#39;assay&#39;</span> <span class="p">,</span><span class="n">overwrite</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -1344,11 +1332,11 @@ and FROM, TO with dtypes <cite>float64</cite>.</p>
 <p class="first admonition-title">Note</p>
 <p>A new copy of the input data will be created in memory. To work with
 shared memory in an external DataFrame you may copy back the table:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">shared_collar</span> <span class="o">=</span> <span class="n">mydrillholeDB</span><span class="o">.</span><span class="n">collar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">shared_collar</span> <span class="o">=</span> <span class="n">mydrillholeDB</span><span class="o">.</span><span class="n">collar</span>
 </pre></div>
 </div>
 <ul class="last simple">
-<li>To add interval tables use <code class="docutils literal"><span class="pre">addtable</span></code></li>
+<li>To add interval tables use <code class="docutils literal notranslate"><span class="pre">addtable</span></code></li>
 <li>The existence of compulsory fields is only validated during
 object initialization and when adding interval tables</li>
 <li>Survey tables may have at least 2 intervals and an interval AT=0
@@ -1360,10 +1348,10 @@ is required for desurvey</li>
 <code class="descname">add_gaps</code><span class="sig-paren">(</span><em>str table_name</em>, <em>str new_table_name</em>, <em>bint overwrite =False</em>, <em>double tol=0.01</em>, <em>bint endhole=False</em>, <em>bint clean=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.drillhole.Drillhole.add_gaps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fills gaps with new FROM-TO intervals.</p>
 <p>All the gaps, including the gaps at collar and at the end of
-drillholes will be filled with <code class="docutils literal"><span class="pre">NaN</span></code> intervals.</p>
-<p>A code field <code class="docutils literal"><span class="pre">_id0</span></code> will be added to new and existing tables.
-<code class="docutils literal"><span class="pre">_id0</span></code> can be used to link input table rows with the output
-table rows. Gaps will have <code class="docutils literal"><span class="pre">_id0=</span> <span class="pre">-999</span></code></p>
+drillholes will be filled with <code class="docutils literal notranslate"><span class="pre">NaN</span></code> intervals.</p>
+<p>A code field <code class="docutils literal notranslate"><span class="pre">_id0</span></code> will be added to new and existing tables.
+<code class="docutils literal notranslate"><span class="pre">_id0</span></code> can be used to link input table rows with the output
+table rows. Gaps will have <code class="docutils literal notranslate"><span class="pre">_id0=</span> <span class="pre">-999</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1395,7 +1383,7 @@ TO  &gt; LENGTH.</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gap</span><span class="p">,</span><span class="n">overlap</span><span class="o">=</span> <span class="n">mydrillhole</span><span class="o">.</span><span class="n">add_gaps</span><span class="p">(</span><span class="n">table_name</span> <span class="o">=</span> <span class="s1">&#39;assay&#39;</span><span class="p">,</span>
 <span class="go">                                     new_table_name = &#39;tmp&#39;,</span>
 <span class="go">                                     overwrite=False,</span>
@@ -1407,7 +1395,7 @@ TO  &gt; LENGTH.</li>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The output <code class="docutils literal"><span class="pre">gap</span></code> and <code class="docutils literal"><span class="pre">overlap</span></code> contain <code class="docutils literal"><span class="pre">_id0</span></code> of the raws
+<p class="last">The output <code class="docutils literal notranslate"><span class="pre">gap</span></code> and <code class="docutils literal notranslate"><span class="pre">overlap</span></code> contain <code class="docutils literal notranslate"><span class="pre">_id0</span></code> of the raws
 before the gap or the overlap was detected.
 Gaps and overlaps at the end of the drillhole
 (if endhole==True) _id0 will have value -888.</p>
@@ -1434,7 +1422,7 @@ overwrite the existing table with the new input table</li>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">addtable</span><span class="p">(</span><span class="n">assay</span><span class="p">,</span> <span class="s1">&#39;assay&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">addtable</span><span class="p">(</span><span class="n">assay</span><span class="p">,</span> <span class="s1">&#39;assay&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1466,7 +1454,7 @@ table will be overwrite.</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">collar2table</span><span class="p">(</span><span class="n">table_name</span> <span class="o">=</span> <span class="s1">&#39;assay&#39;</span><span class="p">,</span>
 <span class="go">                             new_table_name = &#39;assay&#39;,</span>
 <span class="go">                             collar_prop = [&#39;TYPE&#39;, &#39;COMMENT&#39;],</span>
@@ -1489,7 +1477,7 @@ table will be overwrite.</li>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">addtable</span><span class="p">(</span><span class="s1">&#39;assay&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">addtable</span><span class="p">(</span><span class="s1">&#39;assay&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1499,7 +1487,7 @@ table will be overwrite.</li>
 <code class="descname">desurvey</code><span class="sig-paren">(</span><em>str table_name</em>, <em>bint endpoints=False</em>, <em>bint warns=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.drillhole.Drillhole.desurvey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Desurvey a drillhole table.</p>
 <p>Create coordinates and direction angles at table midpoint
-intervals. If <code class="docutils literal"><span class="pre">endpoints=True</span></code> it also creates coordinate fields
+intervals. If <code class="docutils literal notranslate"><span class="pre">endpoints=True</span></code> it also creates coordinate fields
 at end point intervals. The existing coordinate fields will be
 overwritten.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1517,7 +1505,7 @@ overwritten.</p>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># sort with pandas function DataFrame.sort</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># sort with pandas function DataFrame.sort</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">collar</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;BHID&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;BHID&#39;</span><span class="p">,</span> <span class="s1">&#39;AT&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;assay&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;BHID&#39;</span><span class="p">,</span> <span class="s1">&#39;FROM&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1561,7 +1549,7 @@ will be overwritten.</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">downh_composite</span><span class="p">(</span><span class="n">table_name</span> <span class="o">=</span> <span class="s1">&#39;assay&#39;</span><span class="p">,</span>
 <span class="go">                                variable_name = &#39;Au&#39;,</span>
 <span class="go">                                new_table_name = &#39;cmp&#39;,</span>
@@ -1607,14 +1595,14 @@ are required.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><code class="xref py py-meth docutils literal"><span class="pre">pygslib.vtktool()</span></code></p>
+<p class="last"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pygslib.vtktool()</span></code></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">To export to VTK points see pygslib.vtktool</p>
 </div>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">export_core_vtk_line</span><span class="p">(</span><span class="n">table_name</span> <span class="o">=</span> <span class="s1">&#39;assay&#39;</span><span class="p">,</span>
 <span class="go">                                    filename = &#39;assay_line.vtk&#39;)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -1628,7 +1616,7 @@ are required.</p>
 <dd><p>Fixes drillholes with a single survey record.</p>
 <p>Drillholes may have at least two survey records. This function
 adds a dummy survey record in drillholes with a single survey
-interval at a position <code class="docutils literal"><span class="pre">dummy_at</span></code>.</p>
+interval at a position <code class="docutils literal notranslate"><span class="pre">dummy_at</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1638,7 +1626,7 @@ interval at a position <code class="docutils literal"><span class="pre">dummy_at
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">fix_survey_one_interval_err</span><span class="p">(</span><span class="n">dummy_at</span> <span class="o">=</span> <span class="mf">900.0</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -1646,7 +1634,7 @@ interval at a position <code class="docutils literal"><span class="pre">dummy_at
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>The dummy records added are a duplicated of the unique record
-available but with <code class="docutils literal"><span class="pre">AT</span> <span class="pre">=</span> <span class="pre">dummy_at</span></code>. The result will be a
+available but with <code class="docutils literal notranslate"><span class="pre">AT</span> <span class="pre">=</span> <span class="pre">dummy_at</span></code>. The result will be a
 straight drillhole.</p>
 <p class="last">You will not be able to desurvey if there are drillholes with
 only one survey record.</p>
@@ -1683,7 +1671,7 @@ TO  &gt; LENGTH.</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gap</span><span class="p">,</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">mydrillhole</span><span class="o">.</span><span class="n">fix_zero_interval</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span> <span class="s1">&#39;assay&#39;</span><span class="p">,</span>
 <span class="go">                                        new_table_name = &#39;tmp&#39;,</span>
 <span class="go">                                        overwrite = False,</span>
@@ -1725,7 +1713,7 @@ will be overwritten.</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="admonition-todo admonition" id="index-2">
+<div class="admonition-todo admonition" id="index-3">
 <p class="first admonition-title">Todo</p>
 <p class="last">Add accumulator and count variable</p>
 </div>
@@ -1757,7 +1745,7 @@ adjusted</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">table_A</span> <span class="o">=</span> <span class="s1">&#39;assay&#39;</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">table_A</span> <span class="o">=</span> <span class="s1">&#39;assay&#39;</span><span class="p">,</span>
 <span class="go">                    table_B = &#39;litho&#39;,</span>
 <span class="go">                    new_table_name = &#39;tmp&#39;,</span>
 <span class="go">                    overwrite =False,</span>
@@ -1773,11 +1761,11 @@ adjusted</li>
 <dt id="pygslib.drillhole.Drillhole.split_long_intervals">
 <code class="descname">split_long_intervals</code><span class="sig-paren">(</span><em>str table</em>, <em>str new_table</em>, <em>double maxlength</em>, <em>double splitlength</em>, <em>double minlength=0</em>, <em>bint overwrite =False</em>, <em>bint clean=True</em>, <em>long buff=10</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.drillhole.Drillhole.split_long_intervals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Split long sample intervals in a table.</p>
-<p>This function split sample intervals longer than <code class="docutils literal"><span class="pre">maxlength</span></code> into
-intervals approximatelly <code class="docutils literal"><span class="pre">splitlength</span></code>, to be precise, equal to</p>
+<p>This function split sample intervals longer than <code class="docutils literal notranslate"><span class="pre">maxlength</span></code> into
+intervals approximatelly <code class="docutils literal notranslate"><span class="pre">splitlength</span></code>, to be precise, equal to</p>
 <blockquote>
-<div><code class="docutils literal"><span class="pre">newlength</span> <span class="pre">=</span> <span class="pre">interval_lenght</span> <span class="pre">/</span> <span class="pre">splitlength</span></code></div></blockquote>
-<p>The interval will be not splitted if <code class="docutils literal"><span class="pre">newlength</span> <span class="pre">&lt;</span> <span class="pre">minlength</span></code></p>
+<div><code class="docutils literal notranslate"><span class="pre">newlength</span> <span class="pre">=</span> <span class="pre">interval_lenght</span> <span class="pre">/</span> <span class="pre">splitlength</span></code></div></blockquote>
+<p>The interval will be not splitted if <code class="docutils literal notranslate"><span class="pre">newlength</span> <span class="pre">&lt;</span> <span class="pre">minlength</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1804,7 +1792,7 @@ in memory use a larger number.</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">split_long_intervals</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">split_long_intervals</span><span class="p">(</span>
 <span class="go">             table= &quot;litho&quot;,</span>
 <span class="go">             new_table = &quot;litho_split&quot;,</span>
 <span class="go">             maxlength = 5,</span>
@@ -1822,10 +1810,10 @@ in memory use a larger number.</li>
 <dt id="pygslib.drillhole.Drillhole.txt2intID">
 <code class="descname">txt2intID</code><span class="sig-paren">(</span><em>str table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.drillhole.Drillhole.txt2intID" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an alternative BHID of type integer</p>
-<p>A new <code class="docutils literal"><span class="pre">BHIDint</span></code> will be created on the <code class="docutils literal"><span class="pre">table[table_name]</span></code>
-and in collar. <code class="docutils literal"><span class="pre">BHIDint</span></code> is just and ordered list of integers.</p>
+<p>A new <code class="docutils literal notranslate"><span class="pre">BHIDint</span></code> will be created on the <code class="docutils literal notranslate"><span class="pre">table[table_name]</span></code>
+and in collar. <code class="docutils literal notranslate"><span class="pre">BHIDint</span></code> is just and ordered list of integers.</p>
 <p>BHIDint may be required in some functions compiles in Fortran,
-for example <code class="docutils literal"><span class="pre">pyslib.gslib.gamv</span></code> and <code class="docutils literal"><span class="pre">pyslib.gslib.kt3d</span></code>.</p>
+for example <code class="docutils literal notranslate"><span class="pre">pyslib.gslib.gamv</span></code> and <code class="docutils literal notranslate"><span class="pre">pyslib.gslib.kt3d</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1835,7 +1823,7 @@ for example <code class="docutils literal"><span class="pre">pyslib.gslib.gamv</
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">collar</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;BHID&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;assay&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;BHID&#39;</span><span class="p">,</span> <span class="s1">&#39;FROM&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">txt2intID</span><span class="p">(</span><span class="s1">&#39;assay&#39;</span><span class="p">)</span>
@@ -1860,7 +1848,7 @@ consisting of:</p>
 <li>check survey without collar and collar without survey</li>
 </ul>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -1873,7 +1861,7 @@ consisting of:</p>
 <li>Validation errors will raise a python error</li>
 </ul>
 </div>
-<div class="admonition-todo admonition" id="index-3">
+<div class="admonition-todo admonition" id="index-4">
 <p class="first admonition-title">Todo</p>
 <ul class="last simple">
 <li>Implement check relation between table, large variations in
@@ -1884,7 +1872,7 @@ survey angles, missing BHID.</li>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.drillhole.Drillhole.validate_table" title="pygslib.drillhole.Drillhole.validate_table"><code class="xref py py-meth docutils literal"><span class="pre">validate_table()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.drillhole.Drillhole.validate_table" title="pygslib.drillhole.Drillhole.validate_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate_table()</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -1906,7 +1894,7 @@ consisting of:</p>
 <li>No value is returned, it raises an error</li>
 </ul>
 </div>
-<div class="admonition-todo admonition" id="index-4">
+<div class="admonition-todo admonition" id="index-5">
 <p class="first admonition-title">Todo</p>
 <p>Implement check relation between tables, gaps, overlays,
 missing BHID, missing Survey, Interval longer that max_depth.</p>
@@ -1915,10 +1903,10 @@ Collect all warnings and return a list of warnings.</p>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.drillhole.Drillhole.validate" title="pygslib.drillhole.Drillhole.validate"><code class="xref py py-meth docutils literal"><span class="pre">validate()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.drillhole.Drillhole.validate" title="pygslib.drillhole.Drillhole.validate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a></p>
 </div>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">validate_table</span><span class="p">(</span><span class="s1">&#39;assay&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydrillhole</span><span class="o">.</span><span class="n">validate_table</span><span class="p">(</span><span class="s1">&#39;assay&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1941,12 +1929,12 @@ the dip angle measured from horizontal surface positive downward</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>out</strong> – Cartesian coordinates.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of floats, <code class="docutils literal"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of floats, <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">ang2cart</span><span class="p">(</span> <span class="n">azm</span> <span class="o">=</span> <span class="mi">45</span><span class="p">,</span> <span class="n">dip</span> <span class="o">=</span> <span class="mi">75</span><span class="p">)</span>
 <span class="go">(0.1830127239227295, 0.1830127090215683, -0.9659258127212524)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -1954,7 +1942,7 @@ the dip angle measured from horizontal surface positive downward</td>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.drillhole.cart2ang" title="pygslib.drillhole.cart2ang"><code class="xref py py-func docutils literal"><span class="pre">cart2ang()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.drillhole.cart2ang" title="pygslib.drillhole.cart2ang"><code class="xref py py-func docutils literal notranslate"><span class="pre">cart2ang()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1993,12 +1981,12 @@ the result will be wrong</p>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>out</strong> – The direction angles azimuth, with 0 or 360 pointing north and
 the dip angle measured from horizontal surface positive downward</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">tuple of floats, <code class="docutils literal"><span class="pre">(azm,</span> <span class="pre">dip)</span></code></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">tuple of floats, <code class="docutils literal notranslate"><span class="pre">(azm,</span> <span class="pre">dip)</span></code></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">cart2ang</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.18301</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mf">0.18301</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.96593</span><span class="p">)</span>
 <span class="go">(45.0, 75.00092315673828)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -2006,7 +1994,7 @@ the dip angle measured from horizontal surface positive downward</td>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.drillhole.ang2cart" title="pygslib.drillhole.ang2cart"><code class="xref py py-func docutils literal"><span class="pre">ang2cart()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.drillhole.ang2cart" title="pygslib.drillhole.ang2cart"><code class="xref py py-func docutils literal notranslate"><span class="pre">ang2cart()</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -2021,9 +2009,9 @@ the dip angle measured from horizontal surface positive downward</td>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>codes</strong> (<em>Pandas DataFrame</em>) – DataFrame with categories and corresponding grouped categories</li>
 <li><strong>table</strong> (<em>Pandas DataFrame</em>) – DataFrame with categories to be grouped</li>
-<li><strong>ccol</strong> (<em>str</em>) – column with categories in DataFrame <code class="docutils literal"><span class="pre">codes</span></code></li>
-<li><strong>cgroup</strong> (<em>str</em>) – column with grouped categories in DataFrame <code class="docutils literal"><span class="pre">codes</span></code></li>
-<li><strong>tablegrup</strong> (<em>str</em><em>, </em><em>defaul</em><em>(</em><em>'GROUP'</em><em>)</em>) – column with categories DataFrame <code class="docutils literal"><span class="pre">table</span></code></li>
+<li><strong>ccol</strong> (<em>str</em>) – column with categories in DataFrame <code class="docutils literal notranslate"><span class="pre">codes</span></code></li>
+<li><strong>cgroup</strong> (<em>str</em>) – column with grouped categories in DataFrame <code class="docutils literal notranslate"><span class="pre">codes</span></code></li>
+<li><strong>tablegrup</strong> (<em>str</em><em>, </em><em>defaul</em><em>(</em><em>'GROUP'</em><em>)</em>) – column with categories DataFrame <code class="docutils literal notranslate"><span class="pre">table</span></code></li>
 </ul>
 </td>
 </tr>
@@ -2042,10 +2030,10 @@ the dip angle measured from horizontal surface positive downward</td>
 <dt id="pygslib.drillhole.interp_ang1D">
 <code class="descclassname">pygslib.drillhole.</code><code class="descname">interp_ang1D</code><span class="sig-paren">(</span><em>float azm1</em>, <em>float dip1</em>, <em>float azm2</em>, <em>float dip2</em>, <em>float len12</em>, <em>float d1</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.drillhole.interp_ang1D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interpolates the azimuth and dip angle over a line.</p>
-<p>Given a line with length <code class="docutils literal"><span class="pre">len12</span></code> and endpoints with direction
-angles <code class="docutils literal"><span class="pre">azm1,</span> <span class="pre">dip1,</span> <span class="pre">azm2,</span> <span class="pre">dip2</span></code>, this function returns the
+<p>Given a line with length <code class="docutils literal notranslate"><span class="pre">len12</span></code> and endpoints with direction
+angles <code class="docutils literal notranslate"><span class="pre">azm1,</span> <span class="pre">dip1,</span> <span class="pre">azm2,</span> <span class="pre">dip2</span></code>, this function returns the
 direction angles of a point over this line, located at a distance
-d1 of the point with direction angles <code class="docutils literal"><span class="pre">azm1,</span> <span class="pre">dip1</span></code>.</p>
+d1 of the point with direction angles <code class="docutils literal notranslate"><span class="pre">azm1,</span> <span class="pre">dip1</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2060,12 +2048,12 @@ between point 1 and point 2.</td>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>out</strong> – The direction angles azimuth, with 0 or 360 pointing north and
 the dip angle measured from horizontal surface positive downward</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of floats, <code class="docutils literal"><span class="pre">(azm,</span> <span class="pre">dip)</span></code></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple of floats, <code class="docutils literal notranslate"><span class="pre">(azm,</span> <span class="pre">dip)</span></code></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">interp_ang1D</span><span class="p">(</span><span class="n">azm1</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span>
 <span class="go">                       dip1=75,</span>
 <span class="go">                       azm2=90,</span>
@@ -2078,12 +2066,12 @@ the dip angle measured from horizontal surface positive downward</td>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.drillhole.ang2cart" title="pygslib.drillhole.ang2cart"><code class="xref py py-func docutils literal"><span class="pre">ang2cart()</span></code></a>, <a class="reference internal" href="#pygslib.drillhole.cart2ang" title="pygslib.drillhole.cart2ang"><code class="xref py py-func docutils literal"><span class="pre">cart2ang()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.drillhole.ang2cart" title="pygslib.drillhole.ang2cart"><code class="xref py py-func docutils literal notranslate"><span class="pre">ang2cart()</span></code></a>, <a class="reference internal" href="#pygslib.drillhole.cart2ang" title="pygslib.drillhole.cart2ang"><code class="xref py py-func docutils literal notranslate"><span class="pre">cart2ang()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The output direction angles are interpolated using average weighted
-by the distances <code class="docutils literal"><span class="pre">d1</span></code> and <code class="docutils literal"><span class="pre">len12-d1</span></code>. To avoid issues with
+by the distances <code class="docutils literal notranslate"><span class="pre">d1</span></code> and <code class="docutils literal notranslate"><span class="pre">len12-d1</span></code>. To avoid issues with
 angles the azimuth and dip are converted to x,y,z, then interpolated
 and finally converted back to azimuth,dip angles.</p>
 </div>
@@ -2186,7 +2174,7 @@ along with this program.  If not, see &lt;<a class="reference external" href="ht
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Au_at_point</span><span class="o">=</span> <span class="n">point2block</span><span class="p">(</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">prop_name</span><span class="o">=</span> <span class="s1">&#39;Au&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2215,12 +2203,12 @@ azm 0 will point north and dip positive means downward direction
 (like surface drillholes)</li>
 <li><strong>test</strong> (<em>integer</em><em>, </em><em>default 1</em>) – <blockquote>
 <div><dl class="docutils">
-<dt><code class="docutils literal"><span class="pre">test</span> <span class="pre">==</span> <span class="pre">1</span></code> test inside closed surface. Here we use</dt>
+<dt><code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">==</span> <span class="pre">1</span></code> test inside closed surface. Here we use</dt>
 <dd>vtkOBBTree::InsideOrOutside. Closed surface are required</dd>
 </dl>
-<p><code class="docutils literal"><span class="pre">test</span> <span class="pre">==</span> <span class="pre">2</span></code> test ‘above’ surface
-<code class="docutils literal"><span class="pre">test</span> <span class="pre">==</span> <span class="pre">3</span></code> test ‘below’ surface
-<code class="docutils literal"><span class="pre">test</span> <span class="pre">==</span> <span class="pre">4</span></code> test ‘inside’ surface (the surface can be open)</p>
+<p><code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">==</span> <span class="pre">2</span></code> test ‘above’ surface
+<code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">==</span> <span class="pre">3</span></code> test ‘below’ surface
+<code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">==</span> <span class="pre">4</span></code> test ‘inside’ surface (the surface can be open)</p>
 </div></blockquote>
 <dl class="docutils">
 <dt>overwrite <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
@@ -2234,7 +2222,7 @@ values will be overwritten</dd>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fillblocks</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">azm</span><span class="p">,</span> <span class="n">dip</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2264,7 +2252,7 @@ the blocks will be removed first.</p>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">blocks2vtkRectilinearGrid</span><span class="p">(</span><span class="s1">&#39;myfile&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2296,7 +2284,7 @@ the column varname</li>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">blocks2vtkUnstructuredGrid</span><span class="p">(</span><span class="s1">&#39;myfile&#39;</span><span class="p">,</span> <span class="s1">&#39;AU&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2330,7 +2318,7 @@ the column varname</li>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">blocks2vtkUnstructuredGrid</span><span class="p">(</span><span class="s1">&#39;myfile&#39;</span><span class="p">,</span> <span class="s1">&#39;AU&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2359,7 +2347,7 @@ will be overwritten.</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">calc_ijk</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">calc_ijk</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -2382,7 +2370,7 @@ will be overwritten.</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">calc_ixyz_fromijk</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">calc_ixyz_fromijk</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -2405,7 +2393,7 @@ will be overwritten.</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">calc_ixyz_fromxyz</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">calc_ixyz_fromxyz</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -2428,7 +2416,7 @@ will be overwritten.</p>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">calc_xyz_fromixyz</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">calc_xyz_fromixyz</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -2450,7 +2438,7 @@ overwritten</td>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mymodel</span><span class="o">.</span><span class="n">create_3Dgrid</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2462,7 +2450,7 @@ overwritten</td>
 <code class="descname">create_IJK</code><span class="sig-paren">(</span><em>bint overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.blockmodel.Blockmodel.create_IJK" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new block model table with IJK indices.</p>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">create_IJK</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2491,7 +2479,7 @@ overwritten</td>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mymodel</span><span class="o">.</span><span class="n">create_gridxy</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2514,7 +2502,7 @@ overwritten</td>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mymodel</span><span class="o">.</span><span class="n">create_gridxz</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2537,7 +2525,7 @@ overwritten</td>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mymodel</span><span class="o">.</span><span class="n">create_gridyz</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2549,7 +2537,7 @@ overwritten</td>
 <code class="descname">delete_blocks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.blockmodel.Blockmodel.delete_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deletes the block model table</p>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">delete_blocks</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">myblockmodel</span><span class="o">.</span><span class="n">bmtable</span>
 <span class="go">None</span>
@@ -2568,21 +2556,21 @@ be preserved in any external instance of bmtable.</p>
 <code class="descname">fillwireframe</code><span class="sig-paren">(</span><em>object surface</em>, <em>float toll=0</em>, <em>bint overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.blockmodel.Blockmodel.fillwireframe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a full block model given a VTK surface (polydata) using
 vtkPolyDataToImageStencil. The results consist of blocks with
-parameter <code class="docutils literal"><span class="pre">in</span></code>  with value between 0 and 1.</p>
-<p><code class="docutils literal"><span class="pre">in</span> <span class="pre">=</span> <span class="pre">0</span></code> represent blocks completely outside the wireframe
-<code class="docutils literal"><span class="pre">in</span> <span class="pre">=</span> <span class="pre">1</span></code> represent blocks completely inside the wireframe
-<code class="docutils literal"><span class="pre">1</span> <span class="pre">&gt;in</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> represent blocks cut by the wireframe</p>
+parameter <code class="docutils literal notranslate"><span class="pre">in</span></code>  with value between 0 and 1.</p>
+<p><code class="docutils literal notranslate"><span class="pre">in</span> <span class="pre">=</span> <span class="pre">0</span></code> represent blocks completely outside the wireframe
+<code class="docutils literal notranslate"><span class="pre">in</span> <span class="pre">=</span> <span class="pre">1</span></code> represent blocks completely inside the wireframe
+<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">&gt;in</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> represent blocks cut by the wireframe</p>
 <p>The parameter in is calculated as the sum of corners of the
 block, each corner is equal to 1 if is inside the block or equal
 to 0 if is outside.</p>
-<p>The parameter <code class="docutils literal"><span class="pre">in</span></code> can be used as percentage of inclusion in
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">in</span></code> can be used as percentage of inclusion in
 the block with an error proportional to the size of the block
 and the resolution/complexity of the wireframe.</p>
 <p>The method may fail if the wireframe is narrower than a block,
 e.j. larg blocks in narrow veins. In this case you can set
 a tolerance value 1&gt;=toll&gt;=0. The output may not be used as
 volume, only as selection of blocks within a wireframe
-(with <code class="docutils literal"><span class="pre">in&gt;0</span></code>).</p>
+(with <code class="docutils literal notranslate"><span class="pre">in&gt;0</span></code>).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2600,7 +2588,7 @@ overwritten</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mymodel</span><span class="o">.</span><span class="n">fillwireframe</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">toll</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2639,7 +2627,7 @@ point in the block will be used to assign the value.</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">point2block</span><span class="p">(</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">prop_name</span><span class="o">=</span> <span class="s1">&#39;Au&#39;</span><span class="p">,</span>  <span class="n">average</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2694,7 +2682,7 @@ greater or equal than old dimensions in all directions.</td>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">set_block_size</span><span class="p">(</span><span class="n">dx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">dy</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">dz</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2723,7 +2711,7 @@ table.</p>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bmtable</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;IJK&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">set_blocks</span><span class="p">(</span><span class="n">bmtable</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -2754,7 +2742,7 @@ left corner of the lower left block (not-the centroid).</p>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">set_origin</span><span class="p">(</span><span class="n">xorg</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span><span class="n">yorg</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">zorg</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 </pre></div>
@@ -2771,7 +2759,7 @@ left corner of the lower left block (not-the centroid).</p>
 <li>nx*ny*nz may be equal to the actual number of blocks</li>
 </ul>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">set_rcl</span><span class="p">(</span><span class="n">nx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">ny</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">nz</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myblockmodel</span><span class="o">.</span><span class="n">set_rcl</span><span class="p">(</span><span class="n">nx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">ny</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">nz</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -2789,12 +2777,12 @@ and levels without changing the total number of blocks.</p>
 <dl class="function">
 <dt id="pygslib.blockmodel.ijk2ind">
 <code class="descclassname">pygslib.blockmodel.</code><code class="descname">ijk2ind</code><span class="sig-paren">(</span><em>np.ndarray [long</em>, <em>ndim=1] ijk</em>, <em>unsigned int nx</em>, <em>unsigned int ny</em>, <em>unsigned int nz</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.blockmodel.ijk2ind" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the raw, column, level indices <code class="docutils literal"><span class="pre">ix,</span> <span class="pre">iy,</span> <span class="pre">iz</span></code> from IJK.</p>
+<dd><p>Calculates the raw, column, level indices <code class="docutils literal notranslate"><span class="pre">ix,</span> <span class="pre">iy,</span> <span class="pre">iz</span></code> from IJK.</p>
 <p>The IJK block index is a unique identifier of each block position.
 This is equivalent to the position of a block in a <cite>gslib</cite> grid file.
 All the points within a block will have the same IJK number.</p>
 <p>From IJK you can calculate ix, iy and iz as:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">iz</span> <span class="o">=</span>  <span class="n">ijk</span> <span class="o">/</span> <span class="n">nx</span><span class="o">*</span><span class="n">ny</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iz</span> <span class="o">=</span>  <span class="n">ijk</span> <span class="o">/</span> <span class="n">nx</span><span class="o">*</span><span class="n">ny</span>
 <span class="n">iy</span> <span class="o">=</span> <span class="p">(</span><span class="n">ijk</span><span class="o">-</span><span class="n">iz</span><span class="o">*</span><span class="n">nx</span><span class="o">*</span><span class="n">ny</span><span class="p">)</span><span class="o">/</span><span class="n">nx</span>
 <span class="n">ix</span> <span class="o">=</span>  <span class="n">ijk</span><span class="o">-</span><span class="n">iz</span><span class="o">*</span><span class="n">nx</span><span class="o">*</span><span class="n">ny</span> <span class="o">-</span> <span class="n">iy</span><span class="o">*</span><span class="n">nx</span>
 </pre></div>
@@ -2818,7 +2806,7 @@ All the points within a block will have the same IJK number.</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ijk</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ix</span><span class="p">,</span><span class="n">iy</span><span class="p">,</span><span class="n">iz</span> <span class="o">=</span> <span class="n">ijk2ind</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">ix</span>
@@ -2832,7 +2820,7 @@ All the points within a block will have the same IJK number.</p>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.blockmodel.x2ix" title="pygslib.blockmodel.x2ix"><code class="xref py py-func docutils literal"><span class="pre">x2ix()</span></code></a>, <a class="reference internal" href="#pygslib.blockmodel.ijk2ind" title="pygslib.blockmodel.ijk2ind"><code class="xref py py-func docutils literal"><span class="pre">ijk2ind()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.blockmodel.x2ix" title="pygslib.blockmodel.x2ix"><code class="xref py py-func docutils literal notranslate"><span class="pre">x2ix()</span></code></a>, <a class="reference internal" href="#pygslib.blockmodel.ijk2ind" title="pygslib.blockmodel.ijk2ind"><code class="xref py py-func docutils literal notranslate"><span class="pre">ijk2ind()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -2868,7 +2856,7 @@ All the points within a block will have the same IJK number.</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># a 2D grid with 2x2x1 cells</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">iy</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
@@ -2880,7 +2868,7 @@ All the points within a block will have the same IJK number.</p>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.blockmodel.x2ix" title="pygslib.blockmodel.x2ix"><code class="xref py py-func docutils literal"><span class="pre">x2ix()</span></code></a>, <a class="reference internal" href="#pygslib.blockmodel.ijk2ind" title="pygslib.blockmodel.ijk2ind"><code class="xref py py-func docutils literal"><span class="pre">ijk2ind()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.blockmodel.x2ix" title="pygslib.blockmodel.x2ix"><code class="xref py py-func docutils literal notranslate"><span class="pre">x2ix()</span></code></a>, <a class="reference internal" href="#pygslib.blockmodel.ijk2ind" title="pygslib.blockmodel.ijk2ind"><code class="xref py py-func docutils literal notranslate"><span class="pre">ijk2ind()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -2914,7 +2902,7 @@ All the points within a block will have the same IJK number.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.blockmodel.x2ix" title="pygslib.blockmodel.x2ix"><code class="xref py py-func docutils literal"><span class="pre">x2ix()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.blockmodel.x2ix" title="pygslib.blockmodel.x2ix"><code class="xref py py-func docutils literal notranslate"><span class="pre">x2ix()</span></code></a></p>
 </div>
 <p class="rubric">Notes</p>
 <p>The index starts at zero (first block)
@@ -2952,7 +2940,7 @@ with arbitrary coordinates.</p>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.1</span><span class="p">,</span><span class="mf">7.8</span><span class="p">,</span><span class="mf">15.9</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">31</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x2ix</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">xorg</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="go">array([ 0,  5, 13, 18, 28, 29])</span>
@@ -2961,7 +2949,7 @@ with arbitrary coordinates.</p>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.blockmodel.ind2ijk" title="pygslib.blockmodel.ind2ijk"><code class="xref py py-func docutils literal"><span class="pre">ind2ijk()</span></code></a>, <a class="reference internal" href="#pygslib.blockmodel.ijk2ind" title="pygslib.blockmodel.ijk2ind"><code class="xref py py-func docutils literal"><span class="pre">ijk2ind()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.blockmodel.ind2ijk" title="pygslib.blockmodel.ind2ijk"><code class="xref py py-func docutils literal notranslate"><span class="pre">ind2ijk()</span></code></a>, <a class="reference internal" href="#pygslib.blockmodel.ijk2ind" title="pygslib.blockmodel.ijk2ind"><code class="xref py py-func docutils literal notranslate"><span class="pre">ijk2ind()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -3005,7 +2993,7 @@ as a numpy array.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.vtktools.SetPointsInPolydata" title="pygslib.vtktools.SetPointsInPolydata"><code class="xref py py-func docutils literal"><span class="pre">SetPointsInPolydata()</span></code></a>, <a class="reference internal" href="#pygslib.vtktools.SavePolydata" title="pygslib.vtktools.SavePolydata"><code class="xref py py-func docutils literal"><span class="pre">SavePolydata()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.vtktools.SetPointsInPolydata" title="pygslib.vtktools.SetPointsInPolydata"><code class="xref py py-func docutils literal notranslate"><span class="pre">SetPointsInPolydata()</span></code></a>, <a class="reference internal" href="#pygslib.vtktools.SavePolydata" title="pygslib.vtktools.SavePolydata"><code class="xref py py-func docutils literal notranslate"><span class="pre">SavePolydata()</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -3046,7 +3034,7 @@ points shape may be equal to [polydata.GetNumberOfPoints(),3]</li>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.vtktools.GetPointsInPolydata" title="pygslib.vtktools.GetPointsInPolydata"><code class="xref py py-func docutils literal"><span class="pre">GetPointsInPolydata()</span></code></a>, <a class="reference internal" href="#pygslib.vtktools.SavePolydata" title="pygslib.vtktools.SavePolydata"><code class="xref py py-func docutils literal"><span class="pre">SavePolydata()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.vtktools.GetPointsInPolydata" title="pygslib.vtktools.GetPointsInPolydata"><code class="xref py py-func docutils literal notranslate"><span class="pre">GetPointsInPolydata()</span></code></a>, <a class="reference internal" href="#pygslib.vtktools.SavePolydata" title="pygslib.vtktools.SavePolydata"><code class="xref py py-func docutils literal notranslate"><span class="pre">SavePolydata()</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -3112,16 +3100,16 @@ this file.</li>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-5">
+<div class="admonition-todo admonition" id="index-6">
 <p class="first admonition-title">Todo</p>
 <p class="last">Add variables to triangles (vtk cell) and to points (vtk points)</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p><code class="docutils literal"><span class="pre">pid1,pid2,pid3</span></code> are the row number in the point table of the
+<p><code class="docutils literal notranslate"><span class="pre">pid1,pid2,pid3</span></code> are the row number in the point table of the
 three points that form a triangle.</p>
-<p><code class="docutils literal"><span class="pre">pid</span></code> indices start at zero of indexone == False,
-otherwise <code class="docutils literal"><span class="pre">pid</span></code> indices start at one</p>
+<p><code class="docutils literal notranslate"><span class="pre">pid</span></code> indices start at zero of indexone == False,
+otherwise <code class="docutils literal notranslate"><span class="pre">pid</span></code> indices start at one</p>
 <p>For example:</p>
 <p>a point table</p>
 <table border="1" class="docutils">
@@ -3322,7 +3310,7 @@ otherwise <code class="docutils literal"><span class="pre">pid</span></code> ind
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.vtktools.vtk_raycasting" title="pygslib.vtktools.vtk_raycasting"><code class="xref py py-func docutils literal"><span class="pre">vtk_raycasting()</span></code></a>, <a class="reference internal" href="#pygslib.vtktools.pointquering" title="pygslib.vtktools.pointquering"><code class="xref py py-func docutils literal"><span class="pre">pointquering()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.vtktools.vtk_raycasting" title="pygslib.vtktools.vtk_raycasting"><code class="xref py py-func docutils literal notranslate"><span class="pre">vtk_raycasting()</span></code></a>, <a class="reference internal" href="#pygslib.vtktools.pointquering" title="pygslib.vtktools.pointquering"><code class="xref py py-func docutils literal notranslate"><span class="pre">pointquering()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -3347,12 +3335,12 @@ closed, the results are undefined.</p>
 azm 0 will point north and dip positive meas downward direction
 (like surface drillholes)</li>
 <li><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> (<em>1D array of floats</em>) – coordinates of the points to be tested</li>
-<li><strong>test</strong> (<em>integer</em>) – If <code class="docutils literal"><span class="pre">test==1</span></code> it queries points inside closed surface. It
+<li><strong>test</strong> (<em>integer</em>) – If <code class="docutils literal notranslate"><span class="pre">test==1</span></code> it queries points inside closed surface. It
 only works with closed solids.
-If <code class="docutils literal"><span class="pre">test==2</span></code> it queries point above surface.
-If <code class="docutils literal"><span class="pre">test==3</span></code> it queries point below surface.
-If <code class="docutils literal"><span class="pre">test==4</span></code> it queries point above and below the surface.
-<code class="docutils literal"><span class="pre">test==4</span></code> is similar to <code class="docutils literal"><span class="pre">test==1</span></code> but it works with
+If <code class="docutils literal notranslate"><span class="pre">test==2</span></code> it queries point above surface.
+If <code class="docutils literal notranslate"><span class="pre">test==3</span></code> it queries point below surface.
+If <code class="docutils literal notranslate"><span class="pre">test==4</span></code> it queries point above and below the surface.
+<code class="docutils literal notranslate"><span class="pre">test==4</span></code> is similar to <code class="docutils literal notranslate"><span class="pre">test==1</span></code> but it works with
 open surfaces.</li>
 </ul>
 </td>
@@ -3370,7 +3358,7 @@ open surfaces.</li>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.vtktools.vtk_raycasting" title="pygslib.vtktools.vtk_raycasting"><code class="xref py py-func docutils literal"><span class="pre">vtk_raycasting()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.vtktools.vtk_raycasting" title="pygslib.vtktools.vtk_raycasting"><code class="xref py py-func docutils literal notranslate"><span class="pre">vtk_raycasting()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -3443,7 +3431,7 @@ intersection points</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><code class="xref py py-func docutils literal"><span class="pre">vtk_show()</span></code>, <a class="reference internal" href="#pygslib.vtktools.loadSTL" title="pygslib.vtktools.loadSTL"><code class="xref py py-func docutils literal"><span class="pre">loadSTL()</span></code></a></p>
+<p class="last"><code class="xref py py-func docutils literal notranslate"><span class="pre">vtk_show()</span></code>, <a class="reference internal" href="#pygslib.vtktools.loadSTL" title="pygslib.vtktools.loadSTL"><code class="xref py py-func docutils literal notranslate"><span class="pre">loadSTL()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -3509,7 +3497,7 @@ out of the control points.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.nonlinear.recurrentH" title="pygslib.nonlinear.recurrentH"><code class="xref py py-func docutils literal"><span class="pre">recurrentH()</span></code></a>, <a class="reference internal" href="#pygslib.nonlinear.expand_anamor" title="pygslib.nonlinear.expand_anamor"><code class="xref py py-func docutils literal"><span class="pre">expand_anamor()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.nonlinear.recurrentH" title="pygslib.nonlinear.recurrentH"><code class="xref py py-func docutils literal notranslate"><span class="pre">recurrentH()</span></code></a>, <a class="reference internal" href="#pygslib.nonlinear.expand_anamor" title="pygslib.nonlinear.expand_anamor"><code class="xref py py-func docutils literal notranslate"><span class="pre">expand_anamor()</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -3543,7 +3531,7 @@ corresponding to z within the [zamin, zamax] intervals</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.nonlinear.Y2Z" title="pygslib.nonlinear.Y2Z"><code class="xref py py-func docutils literal"><span class="pre">Y2Z()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.nonlinear.Y2Z" title="pygslib.nonlinear.Y2Z"><code class="xref py py-func docutils literal notranslate"><span class="pre">Y2Z()</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -3752,7 +3740,7 @@ These arrays may have same shape and only one dimension.</li>
 <dl class="function">
 <dt id="pygslib.nonlinear.expand_anamor">
 <code class="descclassname">pygslib.nonlinear.</code><code class="descname">expand_anamor</code><span class="sig-paren">(</span><em>np.ndarray [double</em>, <em>ndim=1] PCI</em>, <em>np.ndarray [double</em>, <em>ndim=2] H</em>, <em>double r=1.</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.nonlinear.expand_anamor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Expands the anamorphosis function, that is <span class="math">\(Z = \sum_p(PSI_p*r^p*Hp(Yv))\)</span></p>
+<dd><p>Expands the anamorphosis function, that is <span class="math notranslate nohighlight">\(Z = \sum_p(PSI_p*r^p*Hp(Yv))\)</span></p>
 <p>r is the support effect. If r = 1 Z with point support will returned.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3775,7 +3763,7 @@ These arrays may have same shape and only one dimension.</li>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.nonlinear.recurrentH" title="pygslib.nonlinear.recurrentH"><code class="xref py py-func docutils literal"><span class="pre">recurrentH()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.nonlinear.recurrentH" title="pygslib.nonlinear.recurrentH"><code class="xref py py-func docutils literal notranslate"><span class="pre">recurrentH()</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -3785,7 +3773,7 @@ These arrays may have same shape and only one dimension.</li>
 <dd><p>This is an internal function used to deduce the coefficients
 ro = covar(Yv, Yv*). This function represents the expression:</p>
 <blockquote>
-<div><span class="math">\(Covar (Zv,Zv^*) = \sum PCI^2 * r^n * s^n * ro^n\)</span></div></blockquote>
+<div><span class="math notranslate nohighlight">\(Covar (Zv,Zv^*) = \sum PCI^2 * r^n * s^n * ro^n\)</span></div></blockquote>
 <p>ro is necessary to account for the conditional bias in the
 information effect.</p>
 <p>see “The information effect and estimating recoverable reserves”
@@ -3805,14 +3793,14 @@ J. Deraisme (Geovariances), C. Roth (Geovariances) for more information</p>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p><span class="math">\(Covar (Zv,Zv^*) = var(Zv) - Kriging variance - LaGrange multiplier\)</span></p>
+<p><span class="math notranslate nohighlight">\(Covar (Zv,Zv^*) = var(Zv) - Kriging variance - LaGrange multiplier\)</span></p>
 <p>see expression 7.47, page 97 on Basic Linear Geostatistics by
 Margaret Armstrong.</p>
 <p>In case of information effect this can be calculated with a dummy
 dataset in a single block representing future information, for
 example blast holes.</p>
 <p>Note that the slop of regression is</p>
-<p class="last"><span class="math">\(p = Covar (Zv,Zv*) / (Covar (Zv,Zv*)  - LaGrange multiplier)\)</span></p>
+<p class="last"><span class="math notranslate nohighlight">\(p = Covar (Zv,Zv*) / (Covar (Zv,Zv*)  - LaGrange multiplier)\)</span></p>
 </div>
 </dd></dl>
 
@@ -3822,9 +3810,9 @@ example blast holes.</p>
 <dd><p>This is an internal function used to deduce the coefficients r
 (or s), representing the support effect. It defines the relations:</p>
 <blockquote>
-<div><p><span class="math">\(Var(Zv) = \sum PCI^2 * r^(n*2)\)</span></p>
+<div><p><span class="math notranslate nohighlight">\(Var(Zv) = \sum PCI^2 * r^(n*2)\)</span></p>
 <p>or</p>
-<p><span class="math">\(Var(Zv*) = \sum PCI^2 * s^(n*2)\)</span></p>
+<p><span class="math notranslate nohighlight">\(Var(Zv*) = \sum PCI^2 * s^(n*2)\)</span></p>
 </div></blockquote>
 <p>r is necessary to account for information effect
 s is necessary to account for smoothing in the information effect.</p>
@@ -3905,14 +3893,14 @@ These arrays may have same shape and only one dimension.</li>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.nonlinear.var_PCI" title="pygslib.nonlinear.var_PCI"><code class="xref py py-func docutils literal"><span class="pre">var_PCI()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.nonlinear.var_PCI" title="pygslib.nonlinear.var_PCI"><code class="xref py py-func docutils literal notranslate"><span class="pre">var_PCI()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><code class="docutils literal"><span class="pre">PCI[0]=mean(z)</span></code> and  <code class="docutils literal"><span class="pre">sum=(PCI[1...n]^2)</span></code>. To validate the fit
-calculate the variance with the function <code class="docutils literal"><span class="pre">var_PCI()</span></code> and compare
+<p class="last"><code class="docutils literal notranslate"><span class="pre">PCI[0]=mean(z)</span></code> and  <code class="docutils literal notranslate"><span class="pre">sum=(PCI[1...n]^2)</span></code>. To validate the fit
+calculate the variance with the function <code class="docutils literal notranslate"><span class="pre">var_PCI()</span></code> and compare
 it with the experimental variance of <cite>z</cite>. You may also validate the
-fit by calculating <code class="docutils literal"><span class="pre">error=</span> <span class="pre">z-PHI(y)</span></code>, where <code class="docutils literal"><span class="pre">PHI(y)</span></code> are the
+fit by calculating <code class="docutils literal notranslate"><span class="pre">error=</span> <span class="pre">z-PHI(y)</span></code>, where <code class="docutils literal notranslate"><span class="pre">PHI(y)</span></code> are the
 <cite>z’</cite> values calculated with the hermite polynomial expansion.</p>
 </div>
 </dd></dl>
@@ -3924,9 +3912,9 @@ fit by calculating <code class="docutils literal"><span class="pre">error=</span
 or the information effect coefficient, smoothing component, s
 defined by the equations:</p>
 <blockquote>
-<div><p><span class="math">\(Var(Zv) = \sum PCI^2 * r^(n*2)\)</span></p>
+<div><p><span class="math notranslate nohighlight">\(Var(Zv) = \sum PCI^2 * r^(n*2)\)</span></p>
 <p>and</p>
-<p><span class="math">\(Var(Zv*) = \sum PCI^2 * s^(n*2)\)</span></p>
+<p><span class="math notranslate nohighlight">\(Var(Zv*) = \sum PCI^2 * s^(n*2)\)</span></p>
 </div></blockquote>
 <p>The value of r is deduced by finding the root of the equation
 f_var_Zv, using the classic Brent method (see scipy.optimize.brentq)</p>
@@ -3950,7 +3938,7 @@ f_var_Zv, using the classic Brent method (see scipy.optimize.brentq)</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.nonlinear.f_var_Zv" title="pygslib.nonlinear.f_var_Zv"><code class="xref py py-func docutils literal"><span class="pre">f_var_Zv()</span></code></a>, <a class="reference internal" href="#pygslib.nonlinear.fit_PCI" title="pygslib.nonlinear.fit_PCI"><code class="xref py py-func docutils literal"><span class="pre">fit_PCI()</span></code></a>, <a class="reference internal" href="#pygslib.nonlinear.anamor" title="pygslib.nonlinear.anamor"><code class="xref py py-func docutils literal"><span class="pre">anamor()</span></code></a>, <code class="xref py py-func docutils literal"><span class="pre">scipy.optimize.brentq()</span></code></p>
+<p class="last"><a class="reference internal" href="#pygslib.nonlinear.f_var_Zv" title="pygslib.nonlinear.f_var_Zv"><code class="xref py py-func docutils literal notranslate"><span class="pre">f_var_Zv()</span></code></a>, <a class="reference internal" href="#pygslib.nonlinear.fit_PCI" title="pygslib.nonlinear.fit_PCI"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_PCI()</span></code></a>, <a class="reference internal" href="#pygslib.nonlinear.anamor" title="pygslib.nonlinear.anamor"><code class="xref py py-func docutils literal notranslate"><span class="pre">anamor()</span></code></a>, <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.optimize.brentq()</span></code></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -3969,7 +3957,7 @@ example blast holes.</p>
 <dd><p>This function deduces the information effect coefficient,
 conditional bias component, ro defined by the equations:</p>
 <blockquote>
-<div><span class="math">\(Covar (Zv,Zv^*) = \sum PCI^2 * r^n * s^n * ro^n\)</span></div></blockquote>
+<div><span class="math notranslate nohighlight">\(Covar (Zv,Zv^*) = \sum PCI^2 * r^n * s^n * ro^n\)</span></div></blockquote>
 <p>ro is necessary to account for the conditional bias in the
 information effect.</p>
 <p>The value of ro is deduced by finding the root of the equation
@@ -3990,14 +3978,14 @@ scipy.optimize.brentq)</p>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p><span class="math">\(Covar (Zv,Zv*) = var(Zv) - Kriging variance - LaGrange multiplier\)</span></p>
+<p><span class="math notranslate nohighlight">\(Covar (Zv,Zv*) = var(Zv) - Kriging variance - LaGrange multiplier\)</span></p>
 <p>see expression 7.47, page 97 on Basic Linear Geostatistics by
 Margaret Armstrong.</p>
 <p>In case of information effect this can be calculated with a dummy
 dataset in a single block representing future information, for
 example blast holes.</p>
 <p>Note that the slop of regression is</p>
-<p class="last"><span class="math">\(p = Covar (Zv,Zv^*) / (Covar (Zv,Zv^*)  - LaGrange multiplier)\)</span></p>
+<p class="last"><span class="math notranslate nohighlight">\(p = Covar (Zv,Zv^*) / (Covar (Zv,Zv^*)  - LaGrange multiplier)\)</span></p>
 </div>
 </dd></dl>
 
@@ -4063,7 +4051,7 @@ example blast holes.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><code class="xref py py-func docutils literal"><span class="pre">pygslib.gslib.__dist_transf.anatbl()</span></code></p>
+<p class="last"><code class="xref py py-func docutils literal notranslate"><span class="pre">pygslib.gslib.__dist_transf.anatbl()</span></code></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -4140,7 +4128,7 @@ for this calculation because are the mid interval in the bin.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#pygslib.nonlinear.fit_PCI" title="pygslib.nonlinear.fit_PCI"><code class="xref py py-func docutils literal"><span class="pre">fit_PCI()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#pygslib.nonlinear.fit_PCI" title="pygslib.nonlinear.fit_PCI"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_PCI()</span></code></a></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -4152,10 +4140,204 @@ may be close to the experimental variance of z.</p>
 </div>
 <div class="section" id="module-pygslib.charttable">
 <span id="pygslib-charttable"></span><h2>PyGSLIB.charttable<a class="headerlink" href="#module-pygslib.charttable" title="Permalink to this headline">¶</a></h2>
-<p>ChartTable creates HTML code of tables with chart columns.</p>
-<p>Copyright 2015, Adrian Martinez Vargas</p>
-<p>This software may be modified and distributed under the terms
-of the GPL license.  See the LICENSE.txt file for details.</p>
+<p>Charttable: HTML Tables with bars charts for exploratory data analysis</p>
+<p>Copyright 2016, Adrian Martinez Vargas.
+Licensed under GPL.</p>
+<dl class="class">
+<dt id="pygslib.charttable.HTMLTable">
+<em class="property">class </em><code class="descclassname">pygslib.charttable.</code><code class="descname">HTMLTable</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.HTMLTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define and create tables with special formats: bars and coloured
+columns. This is useful for exploratory data analysis</p>
+<dl class="attribute">
+<dt id="pygslib.charttable.HTMLTable.table">
+<code class="descname">table</code><a class="headerlink" href="#pygslib.charttable.HTMLTable.table" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – Table with special columns</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygslib.charttable.HTMLTable.html">
+<code class="descname">html</code><a class="headerlink" href="#pygslib.charttable.HTMLTable.html" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> – HTML code of the table with special columns</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygslib.charttable.HTMLTable.nrows">
+<code class="descname">nrows</code><a class="headerlink" href="#pygslib.charttable.HTMLTable.nrows" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – Number of rows</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygslib.charttable.HTMLTable.columns">
+<code class="descname">columns</code><a class="headerlink" href="#pygslib.charttable.HTMLTable.columns" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of str</em> – Columns labels. The table will be plot in the same order</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>This is intended to plot nice tables with special format in Ipython
+or Jupyter notebooks. The formats are</p>
+<ol class="loweralpha simple">
+<li>simple text</li>
+<li>colored cells</li>
+<li>colored bars</li>
+</ol>
+<p class="last">The parameters for colour, bar size and text can be different, for
+example, a color bar can contain color as a rock type, bar size as
+gold grade and text as Silver grade. In other words 3 different source
+of information can be represented in one column</p>
+</div>
+<dl class="method">
+<dt id="pygslib.charttable.HTMLTable.addcolumn">
+<code class="descname">addcolumn</code><span class="sig-paren">(</span><em>name</em>, <em>text</em>, <em>bar=None</em>, <em>colour=None</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.HTMLTable.addcolumn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a special column to self.table</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>str</em>) – column name</li>
+<li><strong>text</strong> (<em>1D array like</em>) – array of textual values for the column</li>
+<li><strong>bar</strong> (<em>1D array like</em>) – array with bar sizes (0-100)</li>
+<li><strong>colour</strong> (<em>1D array like</em>) – array of colours compatibles to the class Colour</li>
+<li><strong>overwrite</strong> (<em>boolean</em>) – set to True to overwrite column with existing name</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygslib.charttable.HTMLTable.clear_table">
+<code class="descname">clear_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.HTMLTable.clear_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all data from self.Table and reassign index from self.data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygslib.charttable.HTMLTable.display">
+<code class="descname">display</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.HTMLTable.display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the Table in Ipython/Jupyter notebooks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygslib.charttable.HTMLTable.make_html">
+<code class="descname">make_html</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.HTMLTable.make_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the HTML code of the table on self.html</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pygslib.charttable.Leyend_cat">
+<em class="property">class </em><code class="descclassname">pygslib.charttable.</code><code class="descname">Leyend_cat</code><span class="sig-paren">(</span><em>values</em>, <em>cmax='red'</em>, <em>cmin='blue'</em>, <em>undef='grey'</em>, <em>convert=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.Leyend_cat" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Leyend_cat(values</dt>
+<dd>cmax = Color(“red”),
+cmin = Color(“blue”),
+undef = Color(“grey”),
+nval= 5)</dd>
+</dl>
+<p>Define a legend class for categories</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>values</strong> (<em>array</em>) – Categories with any arbitrary value.</li>
+<li><strong>cmax</strong> (<em>cmin</em><em>,</em>) – Minimum and maximum colours for the colour scale.</li>
+<li><strong>undef</strong> (<em>instance of class Color</em>) – Color for undefined values (nan or our of range).</li>
+<li><strong>nval</strong> (<em>numerical value</em>) – Number of intervals in the colour scale.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="pygslib.charttable.Leyend_cat.c">
+<code class="descname">c</code><a class="headerlink" href="#pygslib.charttable.Leyend_cat.c" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Numpy array of Color instances</em> – colours of the colour scale. c[0] is for undefined values</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygslib.charttable.Leyend_cat.v">
+<code class="descname">v</code><a class="headerlink" href="#pygslib.charttable.Leyend_cat.v" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Numpy array of numeric values</em> – corresponding value interval [v(i),v(i+1)[ for the colour c(i).
+[v(n), inf[ will take the colour c(n).</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Use function apply_colour to get the color for each value in an
+arbitrary array</p>
+</div>
+<dl class="method">
+<dt id="pygslib.charttable.Leyend_cat.apply_colour">
+<code class="descname">apply_colour</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.Leyend_cat.apply_colour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns colour corresponding to each value in an array</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cc</span> <span class="o">=</span> <span class="n">my_leyend_num</span><span class="o">.</span><span class="n">apply_colour</span><span class="p">([</span><span class="s1">&#39;granite&#39;</span><span class="p">,</span> <span class="s1">&#39;basalt&#39;</span><span class="p">,</span> <span class="s1">&#39;NA&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pygslib.charttable.Leyend_num">
+<em class="property">class </em><code class="descclassname">pygslib.charttable.</code><code class="descname">Leyend_num</code><span class="sig-paren">(</span><em>vmin=0</em>, <em>vmax=10</em>, <em>cmax='red'</em>, <em>cmin='blue'</em>, <em>undef='grey'</em>, <em>nval=5</em>, <em>convert=None</em>, <em>log=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.Leyend_num" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Leyend_num(vmin=0,</dt>
+<dd>vmax=10,
+cmax = Color(“red”),
+cmin = Color(“blue”),
+undef = Color(“grey”),
+nval= 5)</dd>
+</dl>
+<p>Define a legend class for continuous numerical intervals</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vmax</strong> (<em>vmin</em><em>,</em>) – Minimum and maximum values for the colour scale.</li>
+<li><strong>cmax</strong> (<em>cmin</em><em>,</em>) – Minimum and maximum colours for the colour scale.</li>
+<li><strong>undef</strong> (<em>instance of class Color</em>) – Color for undefined values (nan or our of range).</li>
+<li><strong>nval</strong> (<em>numerical value</em>) – Number of intervals in the colour scale.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="pygslib.charttable.Leyend_num.c">
+<code class="descname">c</code><a class="headerlink" href="#pygslib.charttable.Leyend_num.c" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Numpy array of Color instances</em> – colours of the colour scale. c[0] is for undefined values</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygslib.charttable.Leyend_num.v">
+<code class="descname">v</code><a class="headerlink" href="#pygslib.charttable.Leyend_num.v" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Numpy array of numeric values</em> – corresponding value interval [v(i),v(i+1)[ for the colour c(i).
+[v(n), inf[ will take the colour c(n).</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Use function apply_colour to get the color for each value in an
+arbitrary array</p>
+</div>
+<dl class="method">
+<dt id="pygslib.charttable.Leyend_num.apply_colour">
+<code class="descname">apply_colour</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.charttable.Leyend_num.apply_colour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns colour corresponding to each value in an array</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cc</span> <span class="o">=</span> <span class="n">my_leyend_num</span><span class="o">.</span><span class="n">apply_colour</span><span class="p">([</span><span class="mi">77</span><span class="p">,</span> <span class="mf">87.9</span><span class="p">,</span> <span class="mi">77</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -4169,9 +4351,7 @@ of the GPL license.  See the LICENSE.txt file for details.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -4191,7 +4371,7 @@ of the GPL license.  See the LICENSE.txt file for details.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -4210,6 +4390,7 @@ of the GPL license.  See the LICENSE.txt file for details.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'0.0.0.3.9',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -4223,19 +4404,13 @@ of the GPL license.  See the LICENSE.txt file for details.</p>
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
