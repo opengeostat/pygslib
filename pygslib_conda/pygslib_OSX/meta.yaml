@@ -6,19 +6,16 @@ package:
 source:
   path: ../../
 
+python:
+  - 3.6
+
 requirements:
   build:
     - python
     - cython
     - setuptools
-    - numpy 
-    - pandas >=0.17
-    - matplotlib
-    - scipy
-    - colour
-    - pyevtk
-    - ipython
-    - vtk  >= 6.0
+    - numpy
+    - libgfortran
 
   run:
     - python
@@ -26,9 +23,10 @@ requirements:
     - pandas >=0.17
     - matplotlib
     - scipy
-    - vtk  >= 6
+    - vtk >=7.1
     - ipython
     - pyevtk
+    - libgfortran
     - colour
     - bokeh
 

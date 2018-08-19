@@ -6,6 +6,8 @@ package:
 source:
   path: ../../
 
+python:
+  - 3.6
 
 requirements:
   build:
