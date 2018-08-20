@@ -3,9 +3,6 @@ package:
   name: pygslib
   version: "0.0.0.3.9.0"
 
-source:
-  path: ../../
-
 python:
   - 2.7
 
@@ -30,35 +27,7 @@ requirements:
     - colour
     - bokeh
 
-test:
-  # Python imports
-  #imports:
-  #  - pygslib
-
-  # commands:
-    # You can put test commands to be run here.  Use this to test that the
-    # entry points work.
-
-
-  # You can also put a file called run_test.py in the recipe that will be run
-  # at test time.
-
-  requires:
-    - matplotlib
-    - mock
-    - nose
-    - numpy
-    - pandas >=0.17
-    - scipy
-    - libgfortran
-    # Put any additional test requirements here.  For example
-    # - nose
-
 about:
   home: https://github.com/opengeostat/pygslib
   license: MIT License
   summary: 'Python wrap of GSLIB modified code and general geostatistical package'
-
-# See
-# http://docs.continuum.io/conda/build.html for
-# more information about meta.yaml
