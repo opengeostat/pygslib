@@ -58,8 +58,8 @@ cpdef ang2cart( float azm,
 
     Examples
     --------
-    >>>
-    >>> print ang2cart( azm = 45, dip = 75)
+    >>> from pygslib.drillhole import ang2cart
+    >>> ang2cart( azm = 45, dip = 75)
     (0.1830127239227295, 0.1830127090215683, -0.9659258127212524)
     >>>
 
@@ -134,8 +134,8 @@ cpdef cart2ang( float x,
 
     Examples
     --------
-    >>>
-    >>> print cart2ang(x = 0.18301, y = 0.18301, z = -0.96593)
+    >>> from pygslib.drillhole import cart2ang
+    >>> cart2ang(x = 0.18301, y = 0.18301, z = -0.96593)
     (45.0, 75.00092315673828)
     >>>
 
@@ -224,13 +224,8 @@ cpdef interp_ang1D( float azm1,
 
     Example
     --------
-    >>>
-    >>> print interp_ang1D(azm1=45,
-                           dip1=75,
-                           azm2=90,
-                           dip2=20,
-                           len12=10,
-                           d1=5)
+    >>> from pygslib.drillhole import interp_ang1D
+    >>> interp_ang1D(azm1=45, dip1=75, azm2=90, dip2=20, len12=10, d1=5)
     (80.74163055419922, 40.84182357788086)
     >>>
 
@@ -311,8 +306,8 @@ cpdef __dsmincurb( float len12,
 
     Example
     --------
-    >>>
-    >>> print __dsmincurb(len12=10, azm1=45, dip1=75, azm2=90, dip2=20)
+    >>> from pygslib.drillhole import __dsmincurb
+    >>> __dsmincurb(len12=10, azm1=45, dip1=75, azm2=90, dip2=20)
     (7.207193374633789, 1.0084573030471802, 6.186459064483643)
     >>>
 
@@ -405,6 +400,12 @@ cpdef __dstangential( float len12,
         Differences in elevation, north coordinate (or y) and
         east coordinate (or x) in a Euclidean coordinate system.
 
+    Example
+    -------
+    >>> from pygslib.drillhole import __dstangential
+    >>> __dstangential(len12=10, azm1=45, dip1=75)
+    (9.659257888793945, 1.8301270008087158, 1.8301271200180054)
+    >>>
 
     See Also
     --------
@@ -456,8 +457,9 @@ cpdef __angleson1dh(int indbs,
                np.ndarray[double, ndim=1] dips,
                float lpt,
                bint warns=True):
-
-
+    """
+    TODO: complete docstring
+    """
     # output (angles at begin, mid and end interval)
     cdef:
         float azt
@@ -574,6 +576,9 @@ cpdef __composite1dh(double[:] ifrom,
     --------
     Drillhole.downh_composite
 
+    TODO
+    ----
+     - [] Fix example section
 
     """
 
@@ -721,7 +726,7 @@ cdef __min_int(double la,
 
     TODO
     ----
-    Hide this function
+     - [] Fix example section
 
     """
 
@@ -767,7 +772,7 @@ cdef __merge_one_dhole(double[:] la,
 
     TODO
     ----
-    Hide this function
+     - [] Fix example section
     """
 
     # general declarations
@@ -844,7 +849,7 @@ cdef __fillgap1Dhole(double[:] in_f,
 
     TODO
     ----
-    Hide this function
+     - [] Fix example section
 
     """
 
@@ -1024,6 +1029,10 @@ def groupcat(codes, table, ccol, cgroup, tablegrup= 'GROUP'):
     Dataframe with grouped categories
     Dict with grouping table
 
+    TODO
+    ----
+     - [] Add example section
+
     """
 
     # make deep copy
@@ -1054,6 +1063,9 @@ def txt2int(text):
     ------
     array of integers
 
+    TODO
+    ----
+     - [] Add example section
 
     """
 
@@ -1126,6 +1138,10 @@ cdef class Drillhole:
     - Survey tables may have at least 2 intervals and an interval AT=0
       is required for desurvey
 
+    TODO
+    ----
+     - [] Fix example section.
+
     """
     cdef readonly object collar
     cdef readonly object survey
@@ -1148,6 +1164,9 @@ cdef class Drillhole:
 
         survey :  Pandas Dataframe
 
+        TODO
+        ----
+         - [] Add example section.
 
         """
         #check the input is correct
@@ -1219,6 +1238,9 @@ cdef class Drillhole:
 
         >>> mydrillhole.addtable(assay, 'assay')
 
+        TODO
+        ----
+         - [] Fix example section.
 
         """
         #check the input is correct
@@ -1270,6 +1292,9 @@ cdef class Drillhole:
 
         >>> mydrillhole.addtable('assay')
 
+        TODO
+        ----
+         - [] Fix example section.
 
         """
         #check the input is correct
@@ -1306,10 +1331,11 @@ cdef class Drillhole:
 
         TODO
         ----
-        - Implement check relation between table, large variations in
+         - [] Implement check relation between table, large variations in
           survey angles, missing BHID.
-        - Collect all errors and return a list of errors.
-        - Collect all warnings and return a list of warnings.
+         - [] Collect all errors and return a list of errors.
+         - [] Collect all warnings and return a list of warnings.
+         - [] Fix example section.
 
         See Also
         --------
@@ -1409,6 +1435,11 @@ cdef class Drillhole:
     cdef __checkAt0(self,np.ndarray BHID, np.ndarray[double, ndim=1] AT):
         """
         This function checks if the first interval is approximately zero
+
+        TODO
+        ----
+         - [] Fix example section.
+
         """
         # this is a hide function
         # the input data is assumed sorted
@@ -1459,6 +1490,10 @@ cdef class Drillhole:
         You will not be able to desurvey if there are drillholes with
         only one survey record.
 
+        TODO
+        ----
+         - [] Fix example section.
+
         """
 
 
@@ -1503,11 +1538,11 @@ cdef class Drillhole:
 
         TODO
         ----
-        Implement check relation between tables, gaps, overlays,
-        missing BHID, missing Survey, Interval longer that max_depth.
-
-        Collect all errors and return a list of errors.
-        Collect all warnings and return a list of warnings.
+         - [] Implement check relation between tables, gaps, overlays,
+              missing BHID, missing Survey, Interval longer that max_depth.
+         - [] Collect all errors and return a list of errors.
+         - [] Collect all warnings and return a list of warnings.
+         - [] Fix example section.
 
         See Also
         --------
@@ -1594,6 +1629,10 @@ cdef class Drillhole:
         ----
         The Collar and the table may be sorted.
 
+        TODO
+        ----
+         - [] Fix example section.
+
         """
 
         # the data is assumed sorted
@@ -1672,6 +1711,7 @@ cdef class Drillhole:
         >>> mydrillhole.desurvey('assay', endpoints=True, method=1)
         >>>
 
+
         Note
         ----
         `collar`, `survey` and the input table may be sorted.
@@ -1683,6 +1723,10 @@ cdef class Drillhole:
 
         Both desurvey methods (tangential and minimum curvature) use
         angles interpolated from two desurvey points at Survey table.
+
+        TODO
+        ----
+         - [] Fix example section.
 
         """
 
@@ -2025,7 +2069,9 @@ cdef class Drillhole:
         Gaps and overlaps at the end of the drillhole
         (if endhole==True) _id0 will have value -888.
 
-
+        TODO
+        ----
+         - [] Fix example section.
 
 
         """
@@ -2161,6 +2207,11 @@ cdef class Drillhole:
                      clean=True)
         >>>
         >>>
+
+
+        TODO
+        ----
+         - [] Fix example section.
 
         """
 
@@ -2313,6 +2364,10 @@ cdef class Drillhole:
                             clean=True)
         >>>
         >>>
+
+        TODO
+        ----
+         - [] Fix example section.
 
         """
 
@@ -2564,6 +2619,11 @@ cdef class Drillhole:
         This function removes zero intervals and the calls the add_gaps
         function.
 
+
+        TODO
+        ----
+         - [] Fix example section.
+
         """
 
         # check that the table is not in the database
@@ -2631,6 +2691,10 @@ cdef class Drillhole:
                                      collar_prop = ['TYPE', 'COMMENT'],
                                      overwrite = True)
         >>>
+
+        TODO
+        ----
+         - [] Fix example section.
 
         """
 
@@ -2721,6 +2785,10 @@ cdef class Drillhole:
         variables, to identify number of intervals in each composite or
         to track categorical variables (coded as number) compositing.
 
+        TODO
+        ----
+         - [] Fix example section.
+
         """
 
         # check that the table is not in the database
@@ -2800,10 +2868,14 @@ cdef class Drillhole:
 
         Example
         -------
+        >>>
 
-        Todo
+
+
+        TODO
         ----
-        Add accumulator and count variable
+         - [] Fix example section.
+         - [] Add accumulator and count variable
 
         """
 
@@ -2955,6 +3027,10 @@ cdef class Drillhole:
         >>> mydrillhole.export_core_vtk_line(table_name = 'assay',
                                             filename = 'assay_line.vtk')
         >>>
+
+        TODO
+        ----
+         - [] Fix example section
 
         """
 
