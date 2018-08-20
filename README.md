@@ -1,11 +1,11 @@
 PyGSLIB
 =======
 
-Version:  '0.0.0.3.8.4'  
-Documentation: https://opengeostat.github.io/pygslib/  
-Wiki: https://github.com/opengeostat/pygslib/wiki  
-Source code: https://github.com/opengeostat/pygslib
-Videos: https://www.youtube.com/c/opengeostat  
+Version:  '0.0.0.3.9.0'  
+Documentation: https://opengeostat.github.io/pygslib/   
+Wiki: https://github.com/opengeostat/pygslib/wiki   
+Source code: https://github.com/opengeostat/pygslib   
+Videos: https://www.youtube.com/c/opengeostat   
 
 This is an open source python module for mineral resource estimation and geostatistics. It consists:  
 
