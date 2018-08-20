@@ -7,7 +7,7 @@ Wiki: https://github.com/opengeostat/pygslib/wiki
 Source code: https://github.com/opengeostat/pygslib   
 Videos: https://www.youtube.com/c/opengeostat   
 
-This is an open source python module for mineral resource estimation and geostatistics. It consists:  
+This is an open source python module for mineral resource estimation and geostatistics. It consists of:  
 
 - ``gslib``. This is for geostatistics and interpolation. It was built with
  [GSLIB Fortran 77 code] (http://www.statios.com/Quick/gslib.html) enhanced and
@@ -21,7 +21,7 @@ This is an open source python module for mineral resource estimation and geostat
  for nonlinear geostatistics based on the Discrete Gaussian Model.
 - `sandbox` Here we put general code and testing code.
 
-Installation in Anaconda/Miniconda distribution (Linux, Window and OS)
+Installation in Anaconda/Miniconda distributions (Linux, Window and OS)
 ------------
 The easiest way to install and work with PyGSLIB is using Anaconda or Miniconda (conda) distributions. To install PyGSLIB in the root environment of your anaconda distribution simply type in a terminal:  
 
@@ -34,7 +34,7 @@ Installation from source (from github.com)
 This is the most update but unstable development version. You may manually
 install all the dependencies and make sure you have gfortran available.  
 
-Windows users may read [this wiki](https://www.youtube.com/c/opengeostat) first.
+Windows users may read [this wiki](https://github.com/opengeostat/pygslib/wiki/Before-compiling-in-Windows) first. It explains how to prepare the development environment (compilers and dependencies).
 
 ```
 $ git clone https://github.com/opengeostat/pygslib.git
@@ -45,7 +45,7 @@ $ python setup.py install
 
 Usage
 -----
-See this [tutorial] (https://opengeostat.github.io/pygslib/Tutorial.html). There is also this [video demonstration]( https://youtu.be/SEwKy6wJbLE), thet uses  
+See this [tutorial] (https://opengeostat.github.io/pygslib/Tutorial.html). There is also a [video demonstration]( https://youtu.be/SEwKy6wJbLE) that uses  
 an older version of pygslib.
 
 License
