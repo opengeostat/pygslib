@@ -1,6 +1,0 @@
-[
-  "tests/test_drillhole_ang2cart_t01.py::test_drillhole_ang2cart_t01.dummy",
-  "tests/test_drillhole_ang2cart_t02.py::test_ang2cart_01",
-  "tests/test_drillhole_ang2cart_t02.py::test_ang2cart_02",
-  "tests/test_drillhole_ang2cart_t02.py::test_ang2cart_03"
-]

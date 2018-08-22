@@ -20,6 +20,7 @@
 /cross-check-gslib
 .spyderworkspace
 .spyderproject
+.pytest_cache
 
 #Ipython check points
 /.ipynb_checkpoints
