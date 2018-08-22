@@ -5,6 +5,7 @@ Copyright 2018, Adrian Martinez Vargas.
 Licensed under MIT.
 
 """
+import setuptools  #required to build wheels
 import sys
 import os
 

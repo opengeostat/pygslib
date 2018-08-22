@@ -1,8 +1,0 @@
-{
-  "doc/source/conf.py": true,
-  "pygslib/version.py": true,
-  "tests/drillhole_ang2cart_t01.py": true,
-  "tests/drillhole_ang2cart_t01.py::drillhole_ang2cart_t01.dum": true,
-  "tests/drillhole_ang2cart_t01.py::drillhole_ang2cart_t01.lolo": true,
-  "tests/test_drillhole_ang2cart_t01.py::test_drillhole_ang2cart_t01.dum": true
-}
