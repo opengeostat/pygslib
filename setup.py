@@ -1,75 +1,28 @@
 """
 pygslib: GSLIB in python
 
-Copyright 2015, Adrian Martinez Vargas.
+Copyright 2018, Adrian Martinez Vargas.
 Licensed under MIT.
 
-Note:
-
-In windows 64 bits use MinGW 64.
-
-install dependencies:
-
-Microsoft Visual C++ Compiler for Python 2.7 at https://www.microsoft.com/en-ca/download/details.aspx?id=44266
-
-c:\>conda install MinGW
-c:\>conda install libpython
-
-c:\>python setup.py config --compiler=mingw32 build --compiler=mingw32 install
-
 """
-import warnings
 import sys
 import os
-from setuptools.command.test import test as TestCommand
 
-
-
-# check some dependencies
-
-#try:
- #import vtk
-#except ImportError, e:
- #warnings.warn('\nWarning:\n pygslib uses vtk but vtk is not installed!')
-
-
-# This is a plug-in for setuptools that will invoke py.test
-# when you run python setup.py test
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        sys.exit(pytest.main(self.test_args))
-
-# define properties for setup
-"""
- Note: using this convention for version
- major.minor[.build[.revision]]
- with development status at third position as follow:
-    0 for alpha (status)
-    1 for beta (status)
-    2 for release candidate
-    3 for (final) release
-"""
 # get version from package
 exec(open('pygslib/version.py').read())
 
 version = __version__
-description = 'Python wrap of GSLIB modified code and general geostatistical package'
+description = 'Python module for mineral resource estimation and geostatistics'
 name='pygslib'
 long_description=open("README.md").read()
 classifiers=[
             'Development Status :: 3 - Alpha',
             'Programming Language :: Python',
             'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: MIT License',
+            'License :: OSI Approved :: MIT License and GPL',
             'Topic :: Scientific/Engineering :: Mathematics',
             'Topic :: Scientific/Engineering :: GIS']
-keywords='geostatistics kriging variogram estimation simulation'
+keywords='geostatistics kriging variogram estimation simulation blockmodel drillhole wireframe'
 author='Adrian Martinez Vargas'
 author_email='adriangeologo@yahoo.es'
 url='https://github.com/opengeostat/pygslib'
@@ -82,10 +35,8 @@ if __name__ == '__main__':
     #make sure you use the setup from numpy
     from numpy.distutils.core import setup # this is numpy's setup
     from numpy.distutils.extension import Extension
-    import setuptools
     #from numpy import get_include
     from Cython.Build import cythonize
-
 
     # these are the almost intact gslib code
     gslib_kt3d = Extension(name = 'pygslib.gslib.__gslib__kt3d',
@@ -138,14 +89,6 @@ if __name__ == '__main__':
                      sources = ['for_code/dist_transf.f90'],
                      f2py_options=[ 'only:', 'backtr', 'anatbl',
                                     'nscore', 'ns_ttable', ':'] )
-    # to exclude some fortran code use this: f2py_options=['only:', 'myfoo1', 'myfoo2', ':']
-    """
-    dist_transf = Extension(name = 'pygslib.__dist_transf',
-                     sources = ['for_code/dist_transf.f90'],
-                     f2py_options=[ '--debug-capi',
-                                    'only:', 'backtr',
-                                    'nscore', 'ns_ttable', ':'] )
-    """
 
     gslib_variograms = Extension(name = 'pygslib.gslib.__variograms',
                      sources = ['for_code/variograms.f90'] ) # extra_link_args=['-fbacktrace', '-fcheck=all']
@@ -201,7 +144,6 @@ if __name__ == '__main__':
 
     extensions = cythonize(extensions)
 
-
     setup(name=name,
           version=version,
           description= description,
@@ -211,8 +153,7 @@ if __name__ == '__main__':
           author=author,
           author_email=author_email,
           url=url,
-          license='GPL/MIT',
-          include_package_data=True,
+          license='GPL and MIT',
           zip_safe=False,
           setup_requires = ['cython',
                             'numpy',
@@ -229,12 +170,12 @@ if __name__ == '__main__':
                               'scipy',
                               'pandas>=0.17'
                               ],
-          tests_require=[],
-          cmdclass={'test': PyTest},
+          tests_require=['pytest'],
           packages=['pygslib',
                     'pygslib.gslib',
                     'pygslib.plothtml',
                     'pygslib.charttable'],
+          include_package_data=True,
           package_data={'pygslib': ['data/*.*']},
           ext_modules = extensions)
 
@@ -245,5 +186,8 @@ if __name__ == '__main__':
         minor = sys.version_info[1]
         os.system('copy build\\lib.win-amd64-{}.{}\\pygslib\\.libs\\*.dll build\\lib.win-amd64-{}.{}\\pygslib\\gslib'.format(mayor,minor,mayor,minor))
         os.system('del /s /q build\\lib.win-amd64-{}.{}\\pygslib\\.libs'.format(mayor,minor))
+
+    # running tests
+    os.system('pytest --doctest-modules -v tests/') #pytest style tests
 
     print (" OPENGEOSTAT SAYS CYTHON/FORTRAN CODE COMPILED")
