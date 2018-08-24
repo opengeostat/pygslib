@@ -799,40 +799,40 @@ We do not have a function in pygslib to do that, but we can implement the second
 ![](Tutorial_files/swatplotZ.png)
 
 ## Global change of support
-The tonnage over a cutoff $c$ is related to the distribution $P[Zv<=c]$ of
-grade values $Z$ with block support $v$. The tonnage (in % of the total tonnage)
-is equal to $P[Zv>c] = 1-P[Zv<=c]$ and the grade $g$ over the
-cutoff $c$ is $g=c+\sum_i(g_i*P_i)$, where $g_i$ and $P_i$ are the grade and
-probability of discretization intervals $i$ of the distribution $P[Zv<=c]$. This
+The tonnage over a cutoff \\(c\\) is related to the distribution \\(P[Zv<=c]\\) of
+grade values \\(Z\\) with block support \\(v\\). The tonnage (in % of the total tonnage)
+is equal to \\(P[Zv>c] = 1-P[Zv<=c]\\) and the grade \\(g\\) over the
+cutoff \\(c\\) is \\(g=c+\\sum_i(g_i*P_i)\\), where \\(g_i\\) and \\(P_i\\) are the grade and
+probability of discretization intervals \\(i\\) of the distribution \\(P[Zv<=c]\\). This
 is easy to see with an image.
 
 ![](Tutorial_files/gt_prob.png)
 
 In this example we assume that we mine with a hand shovel (volume proportional
 to drillhole core) the ore (in red). Note that 20% of the samples are over the cutoff
-($P[Zp>c] = 0.2$), then our tonnage is $0.2 * T$ or 20% of the total tonnage.
+(\\(P[Zp>c] = 0.2\\)), then our tonnage is \\(0.2 * T\\) or 20% of the total tonnage.
 
-If we decide to mine large blocks with size $v$ then the shape of the CDF changes
+If we decide to mine large blocks with size \\(v\\) then the shape of the CDF changes
 and we will have a different average grade and tonnage, in this case
-$P[Zv>c] \approx 0.09$. This is known as support effect.
+\\(P[Zv>c] \\approx 0.09\\). This is known as support effect.
 
 ![](Tutorial_files/gt_prob2.png)
 
 
 The idea behind the validation with global change of support is simple.
-- calculate the distribution in point support ($P[Zp<=c]$)
+- calculate the distribution in point support (\\(P[Zp<=c]\\))
 - fit it to a special mathematical model (using hermite polynomials)
 - calculate the support effect (which is a 'reduction' in variance)
-- deduce the block distribution ($P[Zv<=c]$) and calculate grade and tonnage (G/T)
-  for different cutoff $c$
+- deduce the block distribution (\\(P[Zv<=c]\\)) and calculate grade and tonnage (G/T)
+  for different cutoff \\(c\\)
 - compare this theoretical G/T curves with G/T curves calculated with the model.
 
 Note that the global change of support is not impacted by the distance between
 samples, it will give non-smoothed and accurate G/T curves if the total tonnage
-$T$ is correct, the variance within the block is properly calculated,
+\\(T\\) is correct, the variance within the block is properly calculated,
 and the samples are representative of the mineralization.
 
-You may need to decluster the point distribution $P[Zp<=c]$ if high or low grade
+You may need to decluster the point distribution \\(P[Zp<=c]\\) if high or low grade
 areas are selectively over-drilled (cluster effect).
 
 ### Fitting the point CDF with hermite polynomials

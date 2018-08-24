@@ -13,7 +13,7 @@
 
   
   
-    <link rel="shortcut icon" href="_static/Opengeostat_fav.png"/>
+    <link rel="shortcut icon" href="_static/opengeostat_fab.png"/>
   
   
   
@@ -896,34 +896,34 @@ coordinates as the actual blocks coordinate arrays.</p>
 </div>
 <div class="section" id="global-change-of-support">
 <span id="global-change-of-support"></span><h2>Global change of support<a class="headerlink" href="#global-change-of-support" title="Permalink to this headline">¶</a></h2>
-<p>The tonnage over a cutoff $c$ is related to the distribution $P[Zv&lt;=c]$ of
-grade values $Z$ with block support $v$. The tonnage (in % of the total tonnage)
-is equal to $P[Zv&gt;c] = 1-P[Zv&lt;=c]$ and the grade $g$ over the
-cutoff $c$ is $g=c+\sum_i(g_i*P_i)$, where $g_i$ and $P_i$ are the grade and
-probability of discretization intervals $i$ of the distribution $P[Zv&lt;=c]$. This
+<p>The tonnage over a cutoff \(c\) is related to the distribution \(P[Zv&lt;=c]\) of
+grade values \(Z\) with block support \(v\). The tonnage (in % of the total tonnage)
+is equal to \(P[Zv&gt;c] = 1-P[Zv&lt;=c]\) and the grade \(g\) over the
+cutoff \(c\) is \(g=c+\sum_i(g_i*P_i)\), where \(g_i\) and \(P_i\) are the grade and
+probability of discretization intervals \(i\) of the distribution \(P[Zv&lt;=c]\). This
 is easy to see with an image.</p>
 <p><img alt="" src="_images/gt_prob.png" /></p>
 <p>In this example we assume that we mine with a hand shovel (volume proportional
 to drillhole core) the ore (in red). Note that 20% of the samples are over the cutoff
-($P[Zp&gt;c] = 0.2$), then our tonnage is $0.2 * T$ or 20% of the total tonnage.</p>
-<p>If we decide to mine large blocks with size $v$ then the shape of the CDF changes
+(\(P[Zp&gt;c] = 0.2\)), then our tonnage is \(0.2 * T\) or 20% of the total tonnage.</p>
+<p>If we decide to mine large blocks with size \(v\) then the shape of the CDF changes
 and we will have a different average grade and tonnage, in this case
-$P[Zv&gt;c] \approx 0.09$. This is known as support effect.</p>
+\(P[Zv&gt;c] \approx 0.09\). This is known as support effect.</p>
 <p><img alt="" src="_images/gt_prob2.png" /></p>
 <p>The idea behind the validation with global change of support is simple.</p>
 <ul class="simple">
-<li>calculate the distribution in point support ($P[Zp&lt;=c]$)</li>
+<li>calculate the distribution in point support (\(P[Zp&lt;=c]\))</li>
 <li>fit it to a special mathematical model (using hermite polynomials)</li>
 <li>calculate the support effect (which is a ‘reduction’ in variance)</li>
-<li>deduce the block distribution ($P[Zv&lt;=c]$) and calculate grade and tonnage (G/T)
-for different cutoff $c$</li>
+<li>deduce the block distribution (\(P[Zv&lt;=c]\)) and calculate grade and tonnage (G/T)
+for different cutoff \(c\)</li>
 <li>compare this theoretical G/T curves with G/T curves calculated with the model.</li>
 </ul>
 <p>Note that the global change of support is not impacted by the distance between
 samples, it will give non-smoothed and accurate G/T curves if the total tonnage
-$T$ is correct, the variance within the block is properly calculated,
+\(T\) is correct, the variance within the block is properly calculated,
 and the samples are representative of the mineralization.</p>
-<p>You may need to decluster the point distribution $P[Zp&lt;=c]$ if high or low grade
+<p>You may need to decluster the point distribution \(P[Zp&lt;=c]\) if high or low grade
 areas are selectively over-drilled (cluster effect).</p>
 <div class="section" id="fitting-the-point-cdf-with-hermite-polynomials">
 <span id="fitting-the-point-cdf-with-hermite-polynomials"></span><h3>Fitting the point CDF with hermite polynomials<a class="headerlink" href="#fitting-the-point-cdf-with-hermite-polynomials" title="Permalink to this headline">¶</a></h3>
@@ -1129,6 +1129,7 @@ in the function <code class="docutils literal notranslate"><span class="pre">est
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

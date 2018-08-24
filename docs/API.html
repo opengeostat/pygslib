@@ -13,7 +13,7 @@
 
   
   
-    <link rel="shortcut icon" href="_static/Opengeostat_fav.png"/>
+    <link rel="shortcut icon" href="_static/opengeostat_fab.png"/>
   
   
   
@@ -3842,7 +3842,7 @@ These arrays may have same shape and only one dimension.</li>
 <dl class="function">
 <dt id="pygslib.nonlinear.expand_anamor">
 <code class="descclassname">pygslib.nonlinear.</code><code class="descname">expand_anamor</code><span class="sig-paren">(</span><em>np.ndarray [double</em>, <em>ndim=1] PCI</em>, <em>np.ndarray [double</em>, <em>ndim=2] H</em>, <em>double r=1.</em><span class="sig-paren">)</span><a class="headerlink" href="#pygslib.nonlinear.expand_anamor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Expands the anamorphosis function, that is <span class="math">Z = \sum_p(PSI_p*r^p*Hp(Yv))</span></p>
+<dd><p>Expands the anamorphosis function, that is <span class="math notranslate nohighlight">\(Z = \sum_p(PSI_p*r^p*Hp(Yv))\)</span></p>
 <p>r is the support effect. If r = 1 Z with point support will returned.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3875,7 +3875,7 @@ These arrays may have same shape and only one dimension.</li>
 <dd><p>This is an internal function used to deduce the coefficients
 ro = covar(Yv, Yv*). This function represents the expression:</p>
 <blockquote>
-<div><span class="math">Covar (Zv,Zv^*) = \sum PCI^2 * r^n * s^n * ro^n</span></div></blockquote>
+<div><span class="math notranslate nohighlight">\(Covar (Zv,Zv^*) = \sum PCI^2 * r^n * s^n * ro^n\)</span></div></blockquote>
 <p>ro is necessary to account for the conditional bias in the
 information effect.</p>
 <p>see “The information effect and estimating recoverable reserves”
@@ -3895,14 +3895,14 @@ J. Deraisme (Geovariances), C. Roth (Geovariances) for more information</p>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p><span class="math">Covar (Zv,Zv^*) = var(Zv) - Kriging variance - LaGrange multiplier</span></p>
+<p><span class="math notranslate nohighlight">\(Covar (Zv,Zv^*) = var(Zv) - Kriging variance - LaGrange multiplier\)</span></p>
 <p>see expression 7.47, page 97 on Basic Linear Geostatistics by
 Margaret Armstrong.</p>
 <p>In case of information effect this can be calculated with a dummy
 dataset in a single block representing future information, for
 example blast holes.</p>
 <p>Note that the slop of regression is</p>
-<p class="last"><span class="math">p = Covar (Zv,Zv*) / (Covar (Zv,Zv*)  - LaGrange multiplier)</span></p>
+<p class="last"><span class="math notranslate nohighlight">\(p = Covar (Zv,Zv*) / (Covar (Zv,Zv*)  - LaGrange multiplier)\)</span></p>
 </div>
 </dd></dl>
 
@@ -3912,9 +3912,9 @@ example blast holes.</p>
 <dd><p>This is an internal function used to deduce the coefficients r
 (or s), representing the support effect. It defines the relations:</p>
 <blockquote>
-<div><p><span class="math">Var(Zv) = \sum PCI^2 * r^(n*2)</span></p>
+<div><p><span class="math notranslate nohighlight">\(Var(Zv) = \sum PCI^2 * r^(n*2)\)</span></p>
 <p>or</p>
-<p><span class="math">Var(Zv*) = \sum PCI^2 * s^(n*2)</span></p>
+<p><span class="math notranslate nohighlight">\(Var(Zv*) = \sum PCI^2 * s^(n*2)\)</span></p>
 </div></blockquote>
 <p>r is necessary to account for information effect
 s is necessary to account for smoothing in the information effect.</p>
@@ -4014,9 +4014,9 @@ fit by calculating <code class="docutils literal notranslate"><span class="pre">
 or the information effect coefficient, smoothing component, s
 defined by the equations:</p>
 <blockquote>
-<div><p><span class="math">Var(Zv) = \sum PCI^2 * r^(n*2)</span></p>
+<div><p><span class="math notranslate nohighlight">\(Var(Zv) = \sum PCI^2 * r^(n*2)\)</span></p>
 <p>and</p>
-<p><span class="math">Var(Zv*) = \sum PCI^2 * s^(n*2)</span></p>
+<p><span class="math notranslate nohighlight">\(Var(Zv*) = \sum PCI^2 * s^(n*2)\)</span></p>
 </div></blockquote>
 <p>The value of r is deduced by finding the root of the equation
 f_var_Zv, using the classic Brent method (see scipy.optimize.brentq)</p>
@@ -4059,7 +4059,7 @@ example blast holes.</p>
 <dd><p>This function deduces the information effect coefficient,
 conditional bias component, ro defined by the equations:</p>
 <blockquote>
-<div><span class="math">Covar (Zv,Zv^*) = \sum PCI^2 * r^n * s^n * ro^n</span></div></blockquote>
+<div><span class="math notranslate nohighlight">\(Covar (Zv,Zv^*) = \sum PCI^2 * r^n * s^n * ro^n\)</span></div></blockquote>
 <p>ro is necessary to account for the conditional bias in the
 information effect.</p>
 <p>The value of ro is deduced by finding the root of the equation
@@ -4080,14 +4080,14 @@ scipy.optimize.brentq)</p>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p><span class="math">Covar (Zv,Zv*) = var(Zv) - Kriging variance - LaGrange multiplier</span></p>
+<p><span class="math notranslate nohighlight">\(Covar (Zv,Zv*) = var(Zv) - Kriging variance - LaGrange multiplier\)</span></p>
 <p>see expression 7.47, page 97 on Basic Linear Geostatistics by
 Margaret Armstrong.</p>
 <p>In case of information effect this can be calculated with a dummy
 dataset in a single block representing future information, for
 example blast holes.</p>
 <p>Note that the slop of regression is</p>
-<p class="last"><span class="math">p = Covar (Zv,Zv^*) / (Covar (Zv,Zv^*)  - LaGrange multiplier)</span></p>
+<p class="last"><span class="math notranslate nohighlight">\(p = Covar (Zv,Zv^*) / (Covar (Zv,Zv^*)  - LaGrange multiplier)\)</span></p>
 </div>
 </dd></dl>
 
@@ -4502,6 +4502,7 @@ arbitrary array</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
