@@ -175,7 +175,7 @@ def read_gslib_file(fname, maxnvar=500):
 
 #read datamine table to csv
 def dm2csv_ep(fname, outfile, format='F15.4'):
-    """ Convert extended precision datamine file to *.CSV
+    """ Convert extended precision datamine file to .CSV
 
     This is an experimental function an may work only if
     the datamine file is in extended precision format.
@@ -213,7 +213,7 @@ def dm2csv_ep(fname, outfile, format='F15.4'):
     __dm2csv.dm2csv_ep(fname, outfile, format)
 
 def dm2csv_sp(fname, outfile, format='F15.4'):
-    """ Convert a single precision datamine file to *.CSV
+    """ Convert a single precision datamine file to .CSV
 
     This is an experimental function an may work only if
     the datamine file is in single precision format.

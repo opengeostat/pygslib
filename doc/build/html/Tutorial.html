@@ -84,7 +84,8 @@
               
             
             
-              <ul class="current">
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial: Resource estimation with PyGSLIB</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#loading-python-packages">Loading python packages</a></li>
@@ -348,7 +349,7 @@ compositing algorithm.</p>
 <span class="go">The Length Mode is: 10.0</span>
 </pre></div>
 </div>
-<p><img alt="" src="_images/Tutorial_25_1.png" /></p>
+<p><img alt="" src="_images/tutorial_25_1.png" /></p>
 <p>Most samples (the mode) are 10 ft length. This value or any of its
 multiples are good options of composite length, they minimize the
 over-splitting of sample intervals.</p>
@@ -436,7 +437,7 @@ add a <code class="docutils literal notranslate"><span class="pre">tube</span></
 </pre></div>
 </div>
 <p>This is how it looks in Paraview</p>
-<p><img alt="" src="_images/Figure1.JPG" /></p>
+<p><img alt="" src="_images/figure1.jpg" /></p>
 <p>Interval tables are stored as a python dictionary of <code class="docutils literal notranslate"><span class="pre">{'Table</span> <span class="pre">Name'</span> <span class="pre">:</span> <span class="pre">Pandas.Dataframes}</span></code>. To export data to *.csv format use the Pandas
 function <code class="docutils literal notranslate"><span class="pre">Dataframe.to_csv</span></code>. You can also export to any other format
 supported by Pandas, <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/io.html">this is the list of formats
@@ -493,7 +494,7 @@ use a file format converter, my favorite is
 </pre></div>
 </div>
 <p>A section of the wireframe and the drillholes may look as follows</p>
-<p><img alt="" src="_images/Figure2.JPG" /></p>
+<p><img alt="" src="_images/figure2.jpg" /></p>
 </div>
 <div class="section" id="block-modeling">
 <span id="block-modeling"></span><h2>Block modeling<a class="headerlink" href="#block-modeling" title="Permalink to this headline">¶</a></h2>
@@ -503,11 +504,7 @@ create those blocks you may:</p>
 <li>create a block model object <code class="docutils literal notranslate"><span class="pre">pygslib.blockmodel.Blockmodel</span></code></li>
 <li>fill the mineralized domain with blocks</li>
 </ul>
-<p>In PyGSLIB we use percent blocks, similar to GEMS <p>®</p>
-. In the future we
-will implement subcell style, similar to Surpac <p>®</p>
-, using Adaptive Mesh
-Refinement (AMR).</p>
+<p>In PyGSLIB we use percent blocks. Our plan is implementing subcell style using Adaptive Mesh Refinement (AMR).</p>
 <p>Blocks are stored in the class member <code class="docutils literal notranslate"><span class="pre">bmtable</span></code>, this is a Pandas
 DataFrame with especial field index <code class="docutils literal notranslate"><span class="pre">IJK</span></code> or <code class="docutils literal notranslate"><span class="pre">[IX,IY,IZ]</span></code> and
 coordinates <code class="docutils literal notranslate"><span class="pre">[XC,</span> <span class="pre">YC,</span> <span class="pre">ZC]</span></code>. We use GSLIB order, in other words,
@@ -517,8 +514,7 @@ Only one table will be available in a block model object.</p>
 <p>The block model definition is stored in the members
 <code class="docutils literal notranslate"><span class="pre">nx,</span> <span class="pre">ny,</span> <span class="pre">nz,</span> <span class="pre">xorg,</span> <span class="pre">yorg,</span> <span class="pre">zorg,</span> <span class="pre">dx,</span> <span class="pre">dy,</span> <span class="pre">dz</span></code>. The origin
 <code class="docutils literal notranslate"><span class="pre">xorg,</span> <span class="pre">yorg,</span> <span class="pre">zorg</span></code> refers to the lower left corner of the lower left
-block (not the centroid), like in Datamine Studio  <p>®</p>
-.</p>
+block (not the centroid), like in Datamine Studio.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># The model definition</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">xorg</span> <span class="o">=</span> <span class="mi">2288230</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">yorg</span> <span class="o">=</span> <span class="mi">415200</span>
@@ -554,15 +550,15 @@ is a partial model with block inside or touching the wireframe domain.</p>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">fillwireframe</span></code> works with closed surfaces only.</p>
 <p>A section view of the blocks colored by percentage inside the solid and
 the wireframe (white lines) may look as follows:</p>
-<p><img alt="" src="_images/Figure3.JPG" /></p>
+<p><img alt="" src="_images/figure3.jpg" /></p>
 </div>
 <div class="section" id="some-basic-stats">
 <span id="some-basic-stats"></span><h2>Some basic stats<a class="headerlink" href="#some-basic-stats" title="Permalink to this headline">¶</a></h2>
 <p>You may spend some time doing exploratory data analysis, looking at statistical
 plots, 3D views and 2D sections of your data. A good comersial software for this
-is <a class="reference external" href="http://opengeostat.com/software-solutions/">Supervisor <p>®</p>
-</a>, open source
-options are Pandas, <a class="reference external" href="http://statsmodels.sourceforge.net/">Statsmodels</a>, <a class="reference external" href="https://stanford.edu/~mwaskom/software/seaborn/">Seaborn</a> and
+is <a class="reference external" href="http://opengeostat.com/software-solutions/">Supervisor</a>, open source
+options are Pandas, <a class="reference external" href="http://statsmodels.sourceforge.net/">Statsmodels</a>,
+<a class="reference external" href="https://stanford.edu/~mwaskom/software/seaborn/">Seaborn</a> and
 <a class="reference external" href="http://glueviz.org/en/stable/">glueviz</a>.</p>
 <p>PyGSLIB includes some minimum functionality for statistical plots and
 calculations, with support for declustering wight. Here we demonstrate
@@ -603,9 +599,9 @@ usually required for resource estimation.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><img alt="" src="_images/Tutorial_53_0.png" />
-<img alt="" src="_images/Tutorial_53_1.png" />
-<img alt="" src="_images/Tutorial_53_2.png" /></p>
+<p><img alt="" src="_images/tutorial_53_0.png" />
+<img alt="" src="_images/tutorial_53_1.png" />
+<img alt="" src="_images/tutorial_53_2.png" /></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># parameters for declustering with the cell size selected</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">parameters_declus</span> <span class="o">=</span> <span class="p">{</span>
 <span class="gp">... </span>       <span class="s1">&#39;x&#39;</span>      <span class="p">:</span>  <span class="n">mydholedb</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;CMP&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mydholedb</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;CMP&#39;</span><span class="p">][</span><span class="s1">&#39;Domain&#39;</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;xm&#39;</span><span class="p">],</span>
@@ -806,7 +802,7 @@ output will be correct but the running time may be longer.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">estimate</span><span class="p">,</span> <span class="n">debug</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">pygslib</span><span class="o">.</span><span class="n">gslib</span><span class="o">.</span><span class="n">kt3d</span><span class="p">(</span><span class="n">kt3d_Parameters</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><img alt="" src="_images/Tutorial_58_0.png" /></p>
+<p><img alt="" src="_images/tutorial_58_0.png" /></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># saving debug to a csv file using Pandas</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="n">debug</span><span class="p">[</span><span class="s1">&#39;dbgxdat&#39;</span><span class="p">],</span>
 <span class="go">                  &#39;y&#39;:debug[&#39;dbgydat&#39;],</span>
@@ -818,7 +814,7 @@ output will be correct but the running time may be longer.</p>
 </pre></div>
 </div>
 <p>The results may look like this in Paraview.</p>
-<p><img alt="" src="_images/Figure4.JPG" /></p>
+<p><img alt="" src="_images/figure4.jpg" /></p>
 </div>
 <div class="section" id="estimating-in-all-blocks">
 <span id="estimating-in-all-blocks"></span><h2>Estimating in all blocks<a class="headerlink" href="#estimating-in-all-blocks" title="Permalink to this headline">¶</a></h2>
@@ -863,7 +859,7 @@ coordinates as the actual blocks coordinate arrays.</p>
 <li>global change of support (GCOS)</li>
 </ul>
 <p>Swath plots and GCOS are not implemented in PyGSLIB. For visual validations you can use Paraview, for example:
-<img alt="" src="_images/Figure5.JPG" /></p>
+<img alt="" src="_images/figure5.jpg" /></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="p">(</span><span class="s2">&quot;Mean in model OK   :&quot;</span><span class="p">,</span>  <span class="n">mymodel</span><span class="o">.</span><span class="n">bmtable</span><span class="p">[</span><span class="s1">&#39;CU_OK&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="p">(</span><span class="s2">&quot;Mean in model ID2   :&quot;</span><span class="p">,</span>  <span class="n">mymodel</span><span class="o">.</span><span class="n">bmtable</span><span class="p">[</span><span class="s1">&#39;CU_ID2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="p">(</span><span class="s2">&quot;Mean in model NN   :&quot;</span><span class="p">,</span>  <span class="n">mymodel</span><span class="o">.</span><span class="n">bmtable</span><span class="p">[</span><span class="s1">&#39;CU_NN&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
@@ -906,14 +902,14 @@ is equal to $P[Zv&gt;c] = 1-P[Zv&lt;=c]$ and the grade $g$ over the
 cutoff $c$ is $g=c+\sum_i(g_i*P_i)$, where $g_i$ and $P_i$ are the grade and
 probability of discretization intervals $i$ of the distribution $P[Zv&lt;=c]$. This
 is easy to see with an image.</p>
-<p><img alt="" src="_images/GT_PROB.png" /></p>
+<p><img alt="" src="_images/gt_prob.png" /></p>
 <p>In this example we assume that we mine with a hand shovel (volume proportional
 to drillhole core) the ore (in red). Note that 20% of the samples are over the cutoff
 ($P[Zp&gt;c] = 0.2$), then our tonnage is $0.2 * T$ or 20% of the total tonnage.</p>
 <p>If we decide to mine large blocks with size $v$ then the shape of the CDF changes
 and we will have a different average grade and tonnage, in this case
 $P[Zv&gt;c] \approx 0.09$. This is known as support effect.</p>
-<p><img alt="" src="_images/GT_PROB2.png" /></p>
+<p><img alt="" src="_images/gt_prob2.png" /></p>
 <p>The idea behind the validation with global change of support is simple.</p>
 <ul class="simple">
 <li>calculate the distribution in point support ($P[Zp&lt;=c]$)</li>
@@ -1043,7 +1039,7 @@ in the function <code class="docutils literal notranslate"><span class="pre">est
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">pygslib</span><span class="o">.</span><span class="n">nonlinear</span><span class="o">.</span><span class="n">plotgt</span><span class="p">(</span><span class="n">cutoff</span> <span class="o">=</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">tt</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">gg</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><img alt="" src="_images/GT_All.png" /></p>
+<p><img alt="" src="_images/gt_all.png" /></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># we can plot diferences (relative error in grade)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span> <span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">gg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">gg</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;DGM - OK&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span> <span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">gg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">gg</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;DGM - ID2&#39;</span><span class="p">)</span>
@@ -1052,7 +1048,7 @@ in the function <code class="docutils literal notranslate"><span class="pre">est
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><img alt="" src="_images/GT_Allb.png" /></p>
+<p><img alt="" src="_images/gt_allb.png" /></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># we can plot diferences (relative error in tonnage)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span> <span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">tt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">tt</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;DGM - OK&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span> <span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">tt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">tt</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;DGM - ID2&#39;</span><span class="p">)</span>
@@ -1061,7 +1057,7 @@ in the function <code class="docutils literal notranslate"><span class="pre">est
 <span class="o">&gt;&gt;&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;relative error in tonnage&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><img alt="" src="_images/GT_Allc.png" /></p>
+<p><img alt="" src="_images/gt_allc.png" /></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># To get tonnes right just multiply per total tonnes</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># calcullate tottal tonnage (million tonnes)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ttonnes</span> <span class="o">=</span> <span class="n">mymodel</span><span class="o">.</span><span class="n">bmtable</span><span class="p">[</span><span class="s1">&#39;D1&#39;</span><span class="p">][</span><span class="n">mymodel</span><span class="o">.</span><span class="n">bmtable</span><span class="p">[</span><span class="s1">&#39;CU_OK&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="o">*</span><span class="mi">100</span><span class="o">*</span><span class="mi">30</span><span class="o">*</span> <span class="mf">0.0283168</span> <span class="o">*</span>  <span class="mf">2.7</span> <span class="o">/</span><span class="mi">1000000</span>
@@ -1075,7 +1071,7 @@ in the function <code class="docutils literal notranslate"><span class="pre">est
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Cutoff&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><img alt="" src="_images/GT_Alld.png" /></p>
+<p><img alt="" src="_images/gt_alld.png" /></p>
 </div>
 </div>
 </div>
@@ -1133,7 +1129,6 @@ in the function <code class="docutils literal notranslate"><span class="pre">est
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -197,7 +197,7 @@ compositing algorithm.
 >>> print ('The Length Mode is:', mydholedb.table['assay']['Length'].mode()[0])
 The Length Mode is: 10.0
 ```    
-![](/Tutorial_files/Tutorial_25_1.png)
+![](/Tutorial_files/tutorial_25_1.png)
 
 Most samples (the mode) are 10 ft length. This value or any of its
 multiples are good options of composite length, they minimize the
@@ -296,7 +296,7 @@ add a `tube` filter and update the color scale.
 
 This is how it looks in Paraview
 
-![](Tutorial_files/Figure1.JPG)
+![](Tutorial_files/figure1.jpg)
 
 Interval tables are stored as a python dictionary of `{'Table Name' :
 Pandas.Dataframes}`. To export data to \*.csv format use the Pandas
@@ -361,7 +361,7 @@ use a file format converter, my favorite is
 
 A section of the wireframe and the drillholes may look as follows
 
-![](Tutorial_files/Figure2.JPG)
+![](Tutorial_files/figure2.jpg)
 
 ## Block modeling
 Cu grades will be estimated on blocks inside the mineralized domain. To
@@ -370,9 +370,7 @@ create those blocks you may:
 -  create a block model object `pygslib.blockmodel.Blockmodel`
 -  fill the mineralized domain with blocks
 
-In PyGSLIB we use percent blocks, similar to GEMS &reg;. In the future we
-will implement subcell style, similar to Surpac &reg;, using Adaptive Mesh
-Refinement (AMR).
+In PyGSLIB we use percent blocks. Our plan is implementing subcell style using Adaptive Mesh Refinement (AMR).
 
 Blocks are stored in the class member `bmtable`, this is a Pandas
 DataFrame with especial field index `IJK` or `[IX,IY,IZ]` and
@@ -385,7 +383,7 @@ Only one table will be available in a block model object.
 The block model definition is stored in the members
 `nx, ny, nz, xorg, yorg, zorg, dx, dy, dz`. The origin
 `xorg, yorg, zorg` refers to the lower left corner of the lower left
-block (not the centroid), like in Datamine Studio  &reg;.
+block (not the centroid), like in Datamine Studio.
 
 ``` python
 >>> # The model definition
@@ -429,14 +427,15 @@ Note that `fillwireframe` works with closed surfaces only.
 A section view of the blocks colored by percentage inside the solid and
 the wireframe (white lines) may look as follows:
 
-![](Tutorial_files/Figure3.JPG)
+![](Tutorial_files/figure3.jpg)
 
 
 ## Some basic stats
 You may spend some time doing exploratory data analysis, looking at statistical
 plots, 3D views and 2D sections of your data. A good comersial software for this
-is [Supervisor &reg;](http://opengeostat.com/software-solutions/), open source
-options are Pandas, [Statsmodels](http://statsmodels.sourceforge.net/), [Seaborn](https://stanford.edu/~mwaskom/software/seaborn/) and
+is [Supervisor](http://opengeostat.com/software-solutions/), open source
+options are Pandas, [Statsmodels](http://statsmodels.sourceforge.net/),
+[Seaborn](https://stanford.edu/~mwaskom/software/seaborn/) and
 [glueviz](http://glueviz.org/en/stable/).
 
 PyGSLIB includes some minimum functionality for statistical plots and
@@ -481,9 +480,9 @@ usually required for resource estimation.
 >>> plt.show()
 ```
 
-![](Tutorial_files/Tutorial_53_0.png)
-![](Tutorial_files/Tutorial_53_1.png)
-![](Tutorial_files/Tutorial_53_2.png)
+![](Tutorial_files/tutorial_53_0.png)
+![](Tutorial_files/tutorial_53_1.png)
+![](Tutorial_files/tutorial_53_2.png)
 
 ``` python
 >>> # parameters for declustering with the cell size selected
@@ -698,7 +697,7 @@ Only the block with index `IJK` equal to `1149229` was used this time and `'idbg
 >>> # estimating in one block
 >>> estimate, debug, summary = pygslib.gslib.kt3d(kt3d_Parameters)
 ```
-![](Tutorial_files/Tutorial_58_0.png)
+![](Tutorial_files/tutorial_58_0.png)
 
 ``` python
 >>> # saving debug to a csv file using Pandas
@@ -713,7 +712,7 @@ Only the block with index `IJK` equal to `1149229` was used this time and `'idbg
 
 The results may look like this in Paraview.
 
-![](Tutorial_files/Figure4.JPG)
+![](Tutorial_files/figure4.jpg)
 
 ## Estimating in all blocks
 
@@ -762,7 +761,7 @@ There are few validations you may do:
  - global change of support (GCOS)
 
 Swath plots and GCOS are not implemented in PyGSLIB. For visual validations you can use Paraview, for example:
-![](Tutorial_files/Figure5.JPG)
+![](Tutorial_files/figure5.jpg)
 
 ``` python
 >>> print ("Mean in model OK   :",  mymodel.bmtable['CU_OK'].mean())
@@ -807,7 +806,7 @@ cutoff $c$ is $g=c+\sum_i(g_i*P_i)$, where $g_i$ and $P_i$ are the grade and
 probability of discretization intervals $i$ of the distribution $P[Zv<=c]$. This
 is easy to see with an image.
 
-![](Tutorial_files/GT_PROB.png)
+![](Tutorial_files/gt_prob.png)
 
 In this example we assume that we mine with a hand shovel (volume proportional
 to drillhole core) the ore (in red). Note that 20% of the samples are over the cutoff
@@ -817,7 +816,7 @@ If we decide to mine large blocks with size $v$ then the shape of the CDF change
 and we will have a different average grade and tonnage, in this case
 $P[Zv>c] \approx 0.09$. This is known as support effect.
 
-![](Tutorial_files/GT_PROB2.png)
+![](Tutorial_files/gt_prob2.png)
 
 
 The idea behind the validation with global change of support is simple.
@@ -953,7 +952,7 @@ And calculate G/T curves of blocks
 >>>
 >>> fig = pygslib.nonlinear.plotgt(cutoff = cutoff, t = tt, g = gg, label = label)
 ```
-![](Tutorial_files/GT_All.png)
+![](Tutorial_files/gt_all.png)
 
 ``` python
 >>> # we can plot diferences (relative error in grade)
@@ -963,7 +962,7 @@ And calculate G/T curves of blocks
 >>> plt.title('relative error in grade')
 >>> plt.legend()
 ```
-![](Tutorial_files/GT_Allb.png)
+![](Tutorial_files/gt_allb.png)
 ``` python
 # we can plot diferences (relative error in tonnage)
 >>> plt.plot (cutoff, tt[0]-tt[1], label = 'DGM - OK')
@@ -972,7 +971,7 @@ And calculate G/T curves of blocks
 >>> plt.legend()
 >>> plt.title('relative error in tonnage')
 ```
-![](Tutorial_files/GT_Allc.png)
+![](Tutorial_files/gt_allc.png)
 
  ``` python
 >>> # To get tonnes right just multiply per total tonnes
@@ -989,4 +988,4 @@ And calculate G/T curves of blocks
  >>> plt.xlabel('Cutoff')
  ```
 
- ![](Tutorial_files/GT_Alld.png)
+ ![](Tutorial_files/gt_alld.png)
