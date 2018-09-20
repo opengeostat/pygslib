@@ -864,7 +864,7 @@ cdef class Blockmodel:
         Examples
         --------
         >>>
-        >>> blocks2vtkRectilinearGrid('myfile')
+        >>> blocks2vtkImageData('myfile')
         >>>
 
         Note
