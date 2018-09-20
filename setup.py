@@ -165,7 +165,6 @@ if __name__ == '__main__':
                               'jupyter',
                               'vtk>=7.1',
                               'bokeh',
-                              'pyevtk',
                               'colour',
                               'numpy',
                               'scipy',
