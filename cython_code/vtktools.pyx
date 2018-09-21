@@ -1101,4 +1101,4 @@ cpdef dxf2PolyData(str path):
     cleanPolyData.SetInputData(mesh)
     cleanPolyData.Update()
 
-    return cleanPolyData
+    return cleanPolyData.GetOutput()
