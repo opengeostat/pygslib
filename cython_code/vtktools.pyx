@@ -33,76 +33,6 @@ from scipy.interpolate import griddata
 
 
 
-cpdef loadVTP(str filenameVTP):
-    """loadVTP(str filenameVTP)
-
-    Load an XML VTK Polydata file
-
-    Parameters
-    ----------
-    filenameVTP : file path
-
-    Returns
-    -------
-    polydata : VTK Polydata object
-
-
-
-    """
-
-    # check file exists
-    assert os.path.isfile(filenameVTP), 'Error: file path'
-
-    readerVTP = vtk.vtkXMLPolyDataReader()
-    readerVTP.SetFileName(filenameVTP)
-    # 'update' the reader i.e. read the .VTP file
-    readerVTP.Update()
-
-    polydata = readerVTP.GetOutput()
-
-    # If there are no points in 'vtkPolyData' something went wrong
-    if polydata.GetNumberOfPoints() == 0:
-        raise ValueError(
-            "No point data could be loaded from '" + filenameVTP)
-        return None
-
-    return polydata
-
-
-cpdef loadSTL(str filenameSTL):
-    """loadSTL(str filenameSTL)
-
-    Load a STL wireframe file
-
-    Parameters
-    ----------
-    filenameSTL : file path
-
-    Returns
-    -------
-    polydata : VTK Polydata object
-
-    """
-
-    # check file exists
-    assert os.path.isfile(filenameSTL), 'Error: file path'
-
-    readerSTL = vtk.vtkSTLReader()
-    readerSTL.SetFileName(filenameSTL)
-    # 'update' the reader i.e. read the .stl file
-    readerSTL.Update()
-
-    polydata = readerSTL.GetOutput()
-
-    # If there are no points in 'vtkPolyData' something went wrong
-    if polydata.GetNumberOfPoints() == 0:
-        raise ValueError(
-            "No point data could be loaded from '" + filenameSTL)
-        return None
-
-    return polydata
-
-
 
 cpdef vtk_raycasting(object surface, object pSource, object pTarget):
     """vtk_raycasting(object surface, object pSource, object pTarget)
@@ -427,136 +357,6 @@ cpdef pointinsolid(object surface,
 
 
 
-
-# ----------------------------------------------------------------------
-#   Inport triangles into wireframe
-# ----------------------------------------------------------------------
-cpdef dmtable2wireframe(
-                   x,
-                   y,
-                   z,
-                   pid1,
-                   pid2,
-                   pid3,
-                   bint indexone = False,
-                   str filename = None):
-    """dmtable2wireframe(np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, np.ndarray [long, ndim=1] pid1, np.ndarray [long, ndim=1] pid2, np.ndarray [long, ndim=1] pid3, bint indexone = False, str filename = None)
-
-    Takes a wireframe defined by two tables and creates a VTK polydata wireframe object.
-
-    The input tables are as follow:
-
-    - x, y, z : This is the points table
-    - pid1,pid2,pid3: This is another table defining triangles with
-      three point IDs.
-
-    Parameters
-    ----------
-    x,y,z          : 1D array of floats
-        coordinates of the points to be tested
-    pid1,pid2,pid3 : 1D array of integers
-        triangles defined by three existing point IDs
-    indexone:  boolean (Default False)
-        If false pid index start at zero, otherwise pid index
-        start at one
-    filename   : Str (Default None)
-        file name and path. If provided the file wireframe is saved to
-        this file.
-
-    Returns
-    -------
-    surface : VTK polydata
-           wireframe imported
-
-    TODO
-    ----
-    Add variables to triangles (vtk cell) and to points (vtk points)
-
-
-    Note
-    ----
-    ``pid1,pid2,pid3`` are the row number in the point table of the
-    three points that form a triangle.
-
-    ``pid`` indices start at zero of indexone == False,
-    otherwise ``pid`` indices start at one
-
-    For example:
-
-    a point table
-
-    +----+----+----+
-    | x  | y  | z  |
-    +====+====+====+
-    | .0 | .0 | .0 |
-    +----+----+----+
-    | 1. | .0 | .0 |
-    +----+----+----+
-    | 0. | 1. | .0 |
-    +----+----+----+
-
-    a triangle table
-
-    +----+----+----+
-    |pid1|pid2|pid3|
-    +====+====+====+
-    | 0  | 1  | 2  |
-    +----+----+----+
-
-    """
-
-
-    cdef int i
-
-    assert x.shape[0]==y.shape[0]==z.shape[0],          'Error: x, y, z or pid with different dimension'
-    assert pid1.shape[0]==pid1.shape[0]==pid1.shape[0], 'Error: pid1,pid2 or pid3 with different dimension'
-
-    # reset index to start from zero if they start at one
-    if indexone == True:
-        pid1 = pid1 - 1
-        pid2 = pid2 - 1
-        pid3 = pid3 - 1
-
-    points = vtk.vtkPoints();
-
-
-    for i in range(x.shape[0]):
-        points.InsertNextPoint(x[i],y[i],z[i]);
-
-
-    #create triangles
-    triangle = vtk.vtkTriangle()
-    triangles = vtk.vtkCellArray()
-
-    for i in range(pid1.shape[0]):
-        triangle.GetPointIds().InsertId ( 0, int(pid1[i]));
-        triangle.GetPointIds().InsertId ( 1, int(pid2[i]));
-        triangle.GetPointIds().InsertId ( 2, int(pid3[i]));
-
-        triangles.InsertNextCell ( triangle )
-
-    # Create a polydata object
-    trianglePolyData = vtk.vtkPolyData()
-    # Add the geometry and topology to the polydata
-    trianglePolyData.SetPoints(points)
-    trianglePolyData.SetPolys(triangles)
-
-    # if required save the file
-    if filename!=None:
-        # check extension
-        if not filename.endswith('.mp3'):
-            filename = filename + '.vtp'
-
-        writer =  vtk.vtkXMLPolyDataWriter()
-        writer.SetFileName(filename)
-        writer.SetInputData(trianglePolyData)
-        writer.SetDataModeToBinary()
-        writer.Write();
-
-
-    return trianglePolyData
-
-
 cpdef GetPointsInPolydata(object polydata):
     """GetPointsInPolydata(object polydata)
 
@@ -623,57 +423,6 @@ cpdef SetPointsInPolydata(object polydata, object points):
         p.InsertPoint(i,(points[i,0],points[i,1],points[i,2]))
 
     polydata.SetPoints(p)
-
-
-cpdef SavePolydata(object polydata, str path):
-    """SavePolydata(object polydata, str path)
-
-    Saves polydata into a VTK XML polydata file ('*.vtp')
-
-
-    Parameters
-    ----------
-    polydata : VTK polydata
-        vtk object with data, ej. wireframe
-    path : str
-        Extension (*.vtp) will be added if not provided
-
-
-    """
-
-    # add extension to path
-    if not path.lower().endswith('.vtp'):
-        path = path + '.vtp'
-
-    writer = vtk.vtkXMLPolyDataWriter()
-    writer.SetFileName(path)
-    writer.SetInputData(polydata)
-    writer.Write()
-
-cpdef SaveImageData(object image, str path):
-    """SaveImageData(object image, str path)
-
-    Saves a vtkImageData into a VTK XML image file ('*.vti')
-
-    Parameters
-    ----------
-    image : vtkImageData
-        vtk object with image (regular) grid
-    path : str
-        Extension (*.vti) will be added if not provided
-
-
-    """
-
-    # add extension to path
-    if not path.lower().endswith('.vti'):
-        path = path + '.vti'
-
-    writer = vtk.vtkXMLImageDataWriter()
-    writer.SetFileName(path)
-    writer.SetDataModeToBinary()
-    writer.SetInputData(image)
-    writer.Write()
 
 
 cpdef getbounds(object polydata):
@@ -995,3 +744,361 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
     delaunay.Update()
 
     return delaunay.GetOutput()
+
+
+# ----------------------------------------------------------------------
+#   Functions to read write vtk and other formats
+# ----------------------------------------------------------------------
+cpdef loadVTP(str filenameVTP):
+    """loadVTP(str filenameVTP)
+
+    Load an XML VTK Polydata file
+
+    Parameters
+    ----------
+    filenameVTP : file path
+
+    Returns
+    -------
+    polydata : VTK Polydata object
+
+
+
+    """
+
+    # check file exists
+    assert os.path.isfile(filenameVTP), 'Error: file path'
+
+    readerVTP = vtk.vtkXMLPolyDataReader()
+    readerVTP.SetFileName(filenameVTP)
+    # 'update' the reader i.e. read the .VTP file
+    readerVTP.Update()
+
+    polydata = readerVTP.GetOutput()
+
+    # If there are no points in 'vtkPolyData' something went wrong
+    if polydata.GetNumberOfPoints() == 0:
+        raise ValueError(
+            "No point data could be loaded from '" + filenameVTP)
+        return None
+
+    return polydata
+
+
+cpdef loadSTL(str filenameSTL):
+    """loadSTL(str filenameSTL)
+
+    Load a STL wireframe file
+
+    Parameters
+    ----------
+    filenameSTL : file path
+
+    Returns
+    -------
+    polydata : VTK Polydata object
+
+    """
+
+    # check file exists
+    assert os.path.isfile(filenameSTL), 'Error: file path'
+
+    readerSTL = vtk.vtkSTLReader()
+    readerSTL.SetFileName(filenameSTL)
+    # 'update' the reader i.e. read the .stl file
+    readerSTL.Update()
+
+    polydata = readerSTL.GetOutput()
+
+    # If there are no points in 'vtkPolyData' something went wrong
+    if polydata.GetNumberOfPoints() == 0:
+        raise ValueError(
+            "No point data could be loaded from '" + filenameSTL)
+        return None
+
+    return polydata
+
+cpdef dmtable2wireframe(
+                   x,
+                   y,
+                   z,
+                   pid1,
+                   pid2,
+                   pid3,
+                   bint indexone = False,
+                   str filename = None):
+    """dmtable2wireframe(np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, np.ndarray [long, ndim=1] pid1, np.ndarray [long, ndim=1] pid2, np.ndarray [long, ndim=1] pid3, bint indexone = False, str filename = None)
+
+    Takes a wireframe defined by two tables and creates a VTK polydata wireframe object.
+
+    The input tables are as follow:
+
+    - x, y, z : This is the points table
+    - pid1,pid2,pid3: This is another table defining triangles with
+      three point IDs.
+
+    Parameters
+    ----------
+    x,y,z          : 1D array of floats
+        coordinates of the points to be tested
+    pid1,pid2,pid3 : 1D array of integers
+        triangles defined by three existing point IDs
+    indexone:  boolean (Default False)
+        If false pid index start at zero, otherwise pid index
+        start at one
+    filename   : Str (Default None)
+        file name and path. If provided the file wireframe is saved to
+        this file.
+
+    Returns
+    -------
+    surface : VTK polydata
+           wireframe imported
+
+    TODO
+    ----
+    Add variables to triangles (vtk cell) and to points (vtk points)
+
+
+    Note
+    ----
+    ``pid1,pid2,pid3`` are the row number in the point table of the
+    three points that form a triangle.
+
+    ``pid`` indices start at zero of indexone == False,
+    otherwise ``pid`` indices start at one
+
+    For example:
+
+    a point table
+
+    +----+----+----+
+    | x  | y  | z  |
+    +====+====+====+
+    | .0 | .0 | .0 |
+    +----+----+----+
+    | 1. | .0 | .0 |
+    +----+----+----+
+    | 0. | 1. | .0 |
+    +----+----+----+
+
+    a triangle table
+
+    +----+----+----+
+    |pid1|pid2|pid3|
+    +====+====+====+
+    | 0  | 1  | 2  |
+    +----+----+----+
+
+    """
+
+
+    cdef int i
+
+    assert x.shape[0]==y.shape[0]==z.shape[0],          'Error: x, y, z or pid with different dimension'
+    assert pid1.shape[0]==pid1.shape[0]==pid1.shape[0], 'Error: pid1,pid2 or pid3 with different dimension'
+
+    # reset index to start from zero if they start at one
+    if indexone == True:
+        pid1 = pid1 - 1
+        pid2 = pid2 - 1
+        pid3 = pid3 - 1
+
+    points = vtk.vtkPoints();
+
+
+    for i in range(x.shape[0]):
+        points.InsertNextPoint(x[i],y[i],z[i]);
+
+
+    #create triangles
+    triangle = vtk.vtkTriangle()
+    triangles = vtk.vtkCellArray()
+
+    for i in range(pid1.shape[0]):
+        triangle.GetPointIds().InsertId ( 0, int(pid1[i]));
+        triangle.GetPointIds().InsertId ( 1, int(pid2[i]));
+        triangle.GetPointIds().InsertId ( 2, int(pid3[i]));
+
+        triangles.InsertNextCell ( triangle )
+
+    # Create a polydata object
+    trianglePolyData = vtk.vtkPolyData()
+    # Add the geometry and topology to the polydata
+    trianglePolyData.SetPoints(points)
+    trianglePolyData.SetPolys(triangles)
+
+    # if required save the file
+    if filename!=None:
+        # check extension
+        if not filename.endswith('.mp3'):
+            filename = filename + '.vtp'
+
+        writer =  vtk.vtkXMLPolyDataWriter()
+        writer.SetFileName(filename)
+        writer.SetInputData(trianglePolyData)
+        writer.SetDataModeToBinary()
+        writer.Write();
+
+
+    return trianglePolyData
+
+
+cpdef SavePolydata(object polydata, str path):
+    """SavePolydata(object polydata, str path)
+
+    Saves polydata into a VTK XML polydata file ('*.vtp')
+
+
+    Parameters
+    ----------
+    polydata : VTK polydata
+        vtk object with data, ej. wireframe
+    path : str
+        Extension (*.vtp) will be added if not provided
+
+
+    """
+
+    # add extension to path
+    if not path.lower().endswith('.vtp'):
+        path = path + '.vtp'
+
+    writer = vtk.vtkXMLPolyDataWriter()
+    writer.SetFileName(path)
+    writer.SetInputData(polydata)
+    writer.Write()
+
+
+cpdef SaveImageData(object image, str path):
+    """SaveImageData(object image, str path)
+
+    Saves a vtkImageData into a VTK XML image file ('*.vti')
+
+    Parameters
+    ----------
+    image : vtkImageData
+        vtk object with image (regular) grid
+    path : str
+        Extension (*.vti) will be added if not provided
+
+
+    """
+
+    # add extension to path
+    if not path.lower().endswith('.vti'):
+        path = path + '.vti'
+
+    writer = vtk.vtkXMLImageDataWriter()
+    writer.SetFileName(path)
+    writer.SetDataModeToBinary()
+    writer.SetInputData(image)
+    writer.Write()
+
+
+
+cpdef PolyData2dxf(object mesh, str path):
+    """PolyData2dxf(object mesh, str path)
+
+    Saves a mesh vtkPolydataData into a dxf file ('*.dxf')
+    Only vtkTriangle cells will be exported.
+
+    Parameters
+    ----------
+    mesh : vtkPolyData
+        vtk object with vtkTriangle cells
+    path : str
+        File name and path. Extension (*.dxf) will be added if not provided
+
+    Note
+    -----
+    Requires the python modele ezdxf
+
+    """
+    try:
+      import ezdxf
+    except:
+      print("This function requires the python module ezdxf")
+      raise
+
+    # add extension to path
+    if not path.lower().endswith('.dxf'):
+        path = path + '.dxf'
+
+        dxfdw = ezdxf.new()
+        dxfmd = dxfdw.modelspace()
+
+    for i in range(mesh.GetNumberOfCells()):
+        #check the type is 5 (a tringle)
+        if mesh.GetCellType(i)==5:
+            dxfmd.add_3dface((mesh.GetCell(i).GetPoints().GetPoint(0),
+                              mesh.GetCell(i).GetPoints().GetPoint(1),
+                              mesh.GetCell(i).GetPoints().GetPoint(2)))
+
+    dxfdw.saveas(path)
+
+
+cpdef dxf2PolyData(str path):
+    """dxf2PolyData(path)
+
+    Reads a mesh in dxf format ('*.dxf') and returns a Polydata Mesh
+    Only 3DFACE from dxf will be imported.
+
+    Parameters
+    ----------
+    path : str
+        File name and path of dxf file.
+
+    Returns
+    -------
+    vtkPolyData with vtkTriangle cells
+
+    Note
+    -----
+    Requires the python modele ezdxf
+
+    """
+    try:
+      import ezdxf
+    except:
+      print("This function requires the python module ezdxf")
+      raise
+
+    # read the dxf
+    dwg = ezdxf.readfile(path)
+
+    # get the dxf model space
+    msp = dwg.modelspace()
+
+    # extract all the triangles
+    triangles = []
+    for e in msp.query('3DFACE'):
+        # get point coordinates of the triangle (one per row)
+        triangles.append([e.dxf.vtx0, e.dxf.vtx1, e.dxf.vtx3])
+
+    # Put trisngles in vtkPolydata
+    meshpoints = vtk.vtkPoints()
+    meshtriangle = vtk.vtkTriangle()
+    meshtriangles = vtk.vtkCellArray()
+    id = 0
+    for i in triangles:
+        meshpoints.InsertNextPoint(i[0])
+        meshpoints.InsertNextPoint(i[1])
+        meshpoints.InsertNextPoint(i[2])
+        meshtriangle = vtk.vtkTriangle()
+        meshtriangle.GetPointIds().InsertId(0,id)
+        meshtriangle.GetPointIds().InsertId(1,id+1)
+        meshtriangle.GetPointIds().InsertId(2,id+2)
+        meshtriangles.InsertNextCell(meshtriangle)
+        id = id+3
+
+    mesh = vtk.vtkPolyData()
+    mesh.SetPoints(meshpoints)
+    mesh.SetPolys(meshtriangles)
+
+    # doing a bit of cleanup (remove duplicated points)
+    cleanPolyData = vtk.vtkCleanPolyData()
+    cleanPolyData.SetInputData(mesh)
+    cleanPolyData.Update()
+
+    return cleanPolyData
