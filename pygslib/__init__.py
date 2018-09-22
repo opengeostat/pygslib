@@ -23,7 +23,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # import pygslib modules (compatible with python 3x)
-from . import drillhole, blockmodel, vtktools, nonlinear, sandbox, gslib, plothtml, charttable
+from . import drillhole, blockmodel, vtktools, nonlinear, sandbox, gslib, plothtml, charttable, progress
 
 from . import version
 

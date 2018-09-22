@@ -119,6 +119,9 @@ if __name__ == '__main__':
     nonlinear= Extension(name ='pygslib.nonlinear',sources =['cython_code/nonlinear.pyx'])
     sandbox= Extension(name ='pygslib.sandbox',sources =['cython_code/sandbox.pyx'])
 
+    #pure python
+    progress= Extension(name ='pygslib.progress',sources =['pygslib/progress.py'])
+
 	# All extensions Fortran + Cython
 
     extensions =[gslib_variograms,
@@ -141,7 +144,8 @@ if __name__ == '__main__':
 				 blockmodel,
 				 vtktools,
 				 nonlinear,
-				 sandbox]
+				 sandbox,
+                 progress]
 
     extensions = cythonize(extensions)
 

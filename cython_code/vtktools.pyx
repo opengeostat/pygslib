@@ -30,10 +30,13 @@ from vtk.numpy_interface import dataset_adapter as vtkdsa
 from scipy.interpolate import Rbf
 import scipy.spatial.distance as scipy_dist
 from scipy.interpolate import griddata
+from scipy.spatial import KDTree
 
 
 
-
+# ----------------------------------------------------------------------
+#   Functions for point querying
+# ----------------------------------------------------------------------
 cpdef vtk_raycasting(object surface, object pSource, object pTarget):
     """vtk_raycasting(object surface, object pSource, object pTarget)
 
@@ -102,10 +105,6 @@ cpdef vtk_raycasting(object surface, object pSource, object pTarget):
     return intersect, pointsIntersection, pointsVTKIntersectionData
 
 
-
-# ----------------------------------------------------------------------
-#   Functions for point querying
-# ----------------------------------------------------------------------
 cpdef pointquering(object surface,
                    double azm,
                    double dip,
@@ -283,9 +282,6 @@ cpdef pointquering(object surface,
 
 
 
-# ----------------------------------------------------------------------
-#   Functions for point querying
-# ----------------------------------------------------------------------
 cpdef pointinsolid(object surface,
                    np.ndarray [double, ndim=1] x,
                    np.ndarray [double, ndim=1] y,
@@ -356,7 +352,9 @@ cpdef pointinsolid(object surface,
     return inside
 
 
-
+# ----------------------------------------------------------------------
+#   Functions to modify polydata
+# ----------------------------------------------------------------------
 cpdef GetPointsInPolydata(object polydata):
     """GetPointsInPolydata(object polydata)
 
@@ -446,7 +444,9 @@ cpdef getbounds(object polydata):
 
     return polydata.GetBounds()
 
-
+# ----------------------------------------------------------------------
+#   Functions to generate vtk 3D grids
+# ----------------------------------------------------------------------
 cpdef grid2vtkImageData(
                int nx, int ny, int nz,
                double xorg, double yorg, double zorg,
@@ -685,8 +685,6 @@ cpdef partialgrid2vtkfile_p(str path,
 def delaunay2D (   np.ndarray [double, ndim=1] x,
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
-                   Alpha = 0.0,
-                   Tolerance = 0.001,
                    constraints = None):
     """
     Creates a triangulated Surface
@@ -696,14 +694,6 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
     ----------
     x,y,z : np.ndarray [double, ndim=1]
         Coordinates of the input points
-    Alpha: double, default(0.0)
-        For a non-zero alpha value, only edges or triangles contained
-        within a sphere centered at mesh vertices will be output.
-        Otherwise, only triangles will be output.
-    Tolerance : double, default(0.001)
-        Specify a tolerance to control discarding of closely spaced points.
-        This tolerance is specified as a fraction of the diagonal length of
-        the bounding box of the points.
     constraints: vtkPolydata or None
         constraint polygons, lines or polylines
 
@@ -744,6 +734,45 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
     delaunay.Update()
 
     return delaunay.GetOutput()
+
+# ----------------------------------------------------------------------
+#   Functions to interpolate surfaces
+# ----------------------------------------------------------------------
+cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
+                 np.ndarray [double, ndim=1] y,
+                 np.ndarray [double, ndim=1] z,
+                 np.ndarray [double, ndim=1] xg,
+                 np.ndarray [double, ndim=1] yg,
+                 double tol=0.01,
+                 str method = 'linear',
+                 double epsilon=100,
+                 constraints = None,
+                 bint snap = True):
+    """
+    """
+
+    assert method in ['multiquadric', 'inverse', 'gaussian', 'linear', 'cubic', 'quintic', 'thin_plate']
+    #Check for duplicates around m metres for computational stability
+    ktree = KDTree([x, y])
+    duplicates = ktree.query_pairs(r=tol)
+    if len(duplicates)>0:
+      print (duplicates)
+      raise ValueError('There are points duplicated within tolerance distance {}'.format(tol))
+
+    # generate rbf and interpolate in grid
+    rbfi = Rbf(x, y, z, epsilon=epsilon, function = method)
+    zg = rbfi(xg, yg)
+
+    # merge data
+    if snap:
+      xa = np.concatenate((x,xg))
+      ya = np.concatenate((y,yg))
+      za = np.concatenate((z,zg))
+      # triangulate
+      return delaunay2D (xa, ya, za, constraints = constraints)
+    else:
+      return delaunay2D (xg, yg, zg, constraints = constraints)
+
 
 
 # ----------------------------------------------------------------------
