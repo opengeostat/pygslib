@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 import os
 import sys
 import vtk
+import warnings
 from IPython.display import Image
 from libc.math cimport sin
 from libc.math cimport cos
@@ -747,7 +748,8 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
                  str method = 'linear',
                  double epsilon=100,
                  constraints = None,
-                 bint snap = True):
+                 bint snap = True,
+                 bint remove_duplicates = True):
     """
     Creates a grid surface interpolated with rbf. Optionaly will include (snap)
     input points.
@@ -760,7 +762,7 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
     xg,yg : np.ndarray [double, ndim=1]
         Coordinates of the grid (or irregular) target points
     tol: double (default 0.01)
-        an error will be raised if any pair of input points is within `tol` distance
+        an error/warn will be raised if any pair of input points is within `tol` distance
     method: str (default 'linear')
         any of ['multiquadric', 'inverse', 'gaussian', 'linear', 'cubic', 'quintic', 'thin_plate']
     epsilon: double (default 100)
@@ -770,30 +772,39 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
         constraint polygons, lines or polylines
     snap: boolean (default True)
         if True input points [x,y,z] will be append to target points [xg,yg,zg]
+    remove_duplicates: boolean (default True)
+        remove the second duplicated points located within distance = tol
 
     Returns
     -------
     vtkPolyData with wireframe
-   
+
     """
 
     assert method in ['multiquadric', 'inverse', 'gaussian', 'linear', 'cubic', 'quintic', 'thin_plate']
     #Check for duplicates around m metres for computational stability
-    ktree = KDTree([x, y])
+
+    f = np.ones(shape=(len(x)), dtype=bool)
+
+    ktree = KDTree(np.stack((x, y), axis=-1))
     duplicates = ktree.query_pairs(r=tol)
-    if len(duplicates)>0:
-      print (duplicates)
+    if len(duplicates)>0 and not remove_duplicates:
+      print ('points duplicated\n', duplicates)
       raise ValueError('There are points duplicated within tolerance distance {}'.format(tol))
 
+    if len(duplicates)>0:
+      warnings.warn("There are {} duplicated points and second set of points was removed:\n {}".format(len(duplicates)>0,duplicates))
+      f[np.array(tuple(duplicates))[:,1]]=False
+
     # generate rbf and interpolate in grid
-    rbfi = Rbf(x, y, z, epsilon=epsilon, function = method)
+    rbfi = Rbf(x[f], y[f], z[f], epsilon=epsilon, function = method)
     zg = rbfi(xg, yg)
 
     # merge data
     if snap:
-      xa = np.concatenate((x,xg))
-      ya = np.concatenate((y,yg))
-      za = np.concatenate((z,zg))
+      xa = np.concatenate((x[f],xg))
+      ya = np.concatenate((y[f],yg))
+      za = np.concatenate((z[f],zg))
       # triangulate
       return delaunay2D (xa, ya, za, constraints = constraints)
     else:
@@ -1015,6 +1026,9 @@ cpdef SavePolydata(object polydata, str path):
 
     """
 
+    assert polydata.GetClassName()=='vtkPolyData', 'error input vtk object is of type {}, a vtkPolyData was expected'.format(polydata.GetClassName())
+
+
     # add extension to path
     if not path.lower().endswith('.vtp'):
         path = path + '.vtp'
@@ -1025,20 +1039,20 @@ cpdef SavePolydata(object polydata, str path):
     writer.Write()
 
 
-cpdef SaveImageData(object image, str path):
-    """SaveImageData(object image, str path)
+cpdef SaveImageData(object grid, str path):
+    """SaveImageData(object grid, str path)
 
-    Saves a vtkImageData into a VTK XML image file ('*.vti')
+    Saves a vtkImageData into a VTK XML grid file ('*.vti')
 
     Parameters
     ----------
-    image : vtkImageData
+    grid : vtkImageData
         vtk object with image (regular) grid
     path : str
         Extension (*.vti) will be added if not provided
-
-
     """
+
+    assert grid.GetClassName()=='vtkImageData', 'error input vtk object is of type {}, a vtkImageData was expected'.format(grid.GetClassName())
 
     # add extension to path
     if not path.lower().endswith('.vti'):
@@ -1047,9 +1061,59 @@ cpdef SaveImageData(object image, str path):
     writer = vtk.vtkXMLImageDataWriter()
     writer.SetFileName(path)
     writer.SetDataModeToBinary()
-    writer.SetInputData(image)
+    writer.SetInputData(grid)
     writer.Write()
 
+cpdef SaveRectilinearGrid(object grid, str path):
+    """SaveRectilinearGrid(object grid, str path)
+
+    Saves a vtkRectilinearGrid into a VTK XML file ('*.vtr')
+
+    Parameters
+    ----------
+    grid : vtkRectilinearGrid
+        vtk object with grid (rectilinear) grid
+    path : str
+        Extension (*.vtr) will be added if not provided
+
+    """
+
+    assert grid.GetClassName()=='vtkRectilinearGrid', 'error input vtk object is of type {}, a vtkRectilinearGrid was expected'.format(grid.GetClassName())
+
+    # add extension to path
+    if not path.lower().endswith('.vtr'):
+        path = path + '.vtr'
+
+    writer = vtk.vtkXMLRectilinearGridWriter()
+    writer.SetFileName(path)
+    writer.SetDataModeToBinary()
+    writer.SetInputData(grid)
+    writer.Write()
+
+cpdef SaveUnstructuredGrid(object grid, str path):
+    """SaveUnstructuredGrid(object grid, str path)
+
+    Saves a vtkUnstructuredGrid into a VTK XML file ('*.vtu')
+
+    Parameters
+    ----------
+    grid : vtkUnstructuredGrid
+        vtk object with grid (rectilinear) grid
+    path : str
+        Extension (*.vtu) will be added if not provided
+
+    """
+    assert grid.GetClassName()=='vtkUnstructuredGrid', 'error input vtk object is of type {}, a vtkUnstructuredGrid was expected'.format(grid.GetClassName())
+
+    # add extension to path
+    if not path.lower().endswith('.vtu'):
+        path = path + '.vtu'
+
+    writer = vtk.vtkXMLUnstructuredGridWriter()
+    writer.SetFileName(path)
+    writer.SetDataModeToBinary()
+    writer.SetInputData(grid)
+    writer.Write()
 
 
 cpdef PolyData2dxf(object mesh, str path):
