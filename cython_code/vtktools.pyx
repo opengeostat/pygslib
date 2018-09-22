@@ -749,6 +749,32 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
                  constraints = None,
                  bint snap = True):
     """
+    Creates a grid surface interpolated with rbf. Optionaly will include (snap)
+    input points.
+
+
+    Parameters
+    ----------
+    x,y,z : np.ndarray [double, ndim=1]
+        Coordinates of the input points
+    xg,yg : np.ndarray [double, ndim=1]
+        Coordinates of the grid (or irregular) target points
+    tol: double (default 0.01)
+        an error will be raised if any pair of input points is within `tol` distance
+    method: str (default 'linear')
+        any of ['multiquadric', 'inverse', 'gaussian', 'linear', 'cubic', 'quintic', 'thin_plate']
+    epsilon: double (default 100)
+        Adjustable constant for gaussian or multiquadrics functions - defaults
+        to approximate average distance between nodes (which is a good start).
+    constraints: vtkPolydata or None
+        constraint polygons, lines or polylines
+    snap: boolean (default True)
+        if True input points [x,y,z] will be append to target points [xg,yg,zg]
+
+    Returns
+    -------
+    vtkPolyData with wireframe
+   
     """
 
     assert method in ['multiquadric', 'inverse', 'gaussian', 'linear', 'cubic', 'quintic', 'thin_plate']
