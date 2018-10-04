@@ -175,13 +175,10 @@ cpdef cart2ang( float x,
     RAD2DEG=180.0/3.141592654
     pi = 3.141592654
 
-    if x!=0. and y!= 0.:
-        azm= atan2(x,y)
-        if azm<0.:
-            azm= azm + pi*2
-        azm = azm * RAD2DEG
-    else:
-        azm = 0.
+    azm= atan2(x,y)
+    if azm<0.:
+        azm= azm + pi*2
+    azm = azm * RAD2DEG
 
 
     dip = -asin(z) * RAD2DEG
