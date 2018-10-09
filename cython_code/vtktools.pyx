@@ -446,14 +446,15 @@ cpdef getbounds(object polydata):
     return polydata.GetBounds()
 
 # ----------------------------------------------------------------------
-#   Functions to generate vtk 3D grids
+#   Functions to generate vtk 3D block
 # ----------------------------------------------------------------------
 cpdef grid2vtkImageData(
                int nx, int ny, int nz,
                double xorg, double yorg, double zorg,
                double dx, double dy, double dz,
-               object data):
-    """grid2vtkImageData(int nx, int ny, int nz, double xorg, double yorg, double zorg, double dx, double dy, double dz, np.ndarray [double, ndim=1] data)
+               object cell_data={},
+               object point_data={}):
+    """grid2vtkImageData(nx, ny, nz, xorg, yorg, zorg, dx, dy, dz, cell_data, point_data)
 
     Utility function to creates a vtkImageData object from full grid dataself.
     It is designed to be used from `Blockmodel.blocks2vtkImageData`
@@ -469,8 +470,10 @@ cpdef grid2vtkImageData(
         origing of coordinates of the grid
     dx,dy,dz : double
         block dimensions
-    data : dictionary
-        dictionary with {'dataname':datavalues}
+    cell_data : dictionary
+        dictionary with {'dataname':datavalues} with righ size for cell
+    point_data: dictionary
+        dictionary with {'dataname':datavalues} with righ size for points
 
     See also
     --------
@@ -482,8 +485,11 @@ cpdef grid2vtkImageData(
     ufgrid.SetSpacing(dx,dy,dz)
     ufgrid.SetDimensions(nx+1,ny+1,nz+1)
 
-    for i in data:
-      ufgrid.GetCellData().AddArray(vtkdsa.numpyTovtkDataArray(data[i], name=i, array_type=None))
+    for i in cell_data:
+      ufgrid.GetCellData().AddArray(vtkdsa.numpyTovtkDataArray(cell_data[i], name=i, array_type=None))
+
+    for i in point_data:
+      ufgrid.GetPointData().AddArray(vtkdsa.numpyTovtkDataArray(point_data[i], name=i, array_type=None))
 
     return ufgrid
 
@@ -742,8 +748,14 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
 cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
                  np.ndarray [double, ndim=1] y,
                  np.ndarray [double, ndim=1] z,
-                 np.ndarray [double, ndim=1] xg,
-                 np.ndarray [double, ndim=1] yg,
+                 object xg = None,
+                 object yg = None,
+                 object xorg = None,
+                 object yorg = None,
+                 object dx = None,
+                 object dy = None,
+                 object nx = None,
+                 object ny = None,
                  double tol=0.01,
                  str method = 'linear',
                  double epsilon=100,
@@ -761,6 +773,10 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
         Coordinates of the input points
     xg,yg : np.ndarray [double, ndim=1]
         Coordinates of the grid (or irregular) target points
+    xorg, yorg, dx, dy: floats
+        coordinates of the lower left point in the 2D grid and grid spacing
+    nx, ny: int
+        number of rows and cols of the 2D grid
     tol: double (default 0.01)
         an error/warn will be raised if any pair of input points is within `tol` distance
     method: str (default 'linear')
@@ -782,8 +798,14 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
     """
 
     assert method in ['multiquadric', 'inverse', 'gaussian', 'linear', 'cubic', 'quintic', 'thin_plate']
-    #Check for duplicates around m metres for computational stability
+    assert (xg is None)==(yg is None)
 
+    if xg is None:
+      xg,yg = np.meshgrid(np.arange(xorg,xorg+dx*(nx+1),dx),np.arange(yorg,yorg+dy*(ny+1),dy))
+      xg =xg.ravel()
+      yg =yg.ravel()
+
+    #Check for duplicates around m metres for computational stability
     f = np.ones(shape=(len(x)), dtype=bool)
 
     ktree = KDTree(np.stack((x, y), axis=-1))
@@ -805,11 +827,12 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
       xa = np.concatenate((x[f],xg))
       ya = np.concatenate((y[f],yg))
       za = np.concatenate((z[f],zg))
-      # triangulate
-      return delaunay2D (xa, ya, za, constraints = constraints)
+      # triangulate and calculate normals
+      mesh = delaunay2D (xa, ya, za, constraints = constraints)
+      return calculate_normals(mesh),xa, ya, za
     else:
-      return delaunay2D (xg, yg, zg, constraints = constraints)
-
+      mesh = delaunay2D (xg, yg, zg, constraints = constraints)
+      return calculate_normals(mesh),xg, yg, zg
 
 
 # ----------------------------------------------------------------------
@@ -1221,3 +1244,353 @@ cpdef dxf2PolyData(str path):
     cleanPolyData.Update()
 
     return cleanPolyData.GetOutput()
+
+# ----------------------------------------------------------------------
+#   Functions for imlicit modeling
+# ----------------------------------------------------------------------
+cdef calculate_normals(object mesh, bint flip_normals=False):
+    """calculate_normals(mesh)
+
+    Takes a vtkPolydata Mesh and calculate its normal vectors.
+
+    Implicit functions use vtkPolydata normals to define the sign of
+    the implicit distances. The results may be spurios if normals are not
+    calculated or inconsistent (for example pointing downward in a topografic
+    surface). In this case you may use this fuction to calculate normals.
+
+    Parameters
+    ----------
+    mesh : vtkPolyData
+        mesh surface (not tested with polylines...)
+
+    Returns
+    -------
+    vvtkPolyData with normals
+
+    """
+    normals = vtk.vtkPolyDataNormals()
+    normals.SetInputData(mesh)
+    normals.ConsistencyOn()
+    normals.AutoOrientNormalsOn()
+    normals.ComputePointNormalsOn()
+    if flip_normals:
+      normals.FlipNormalsOn()
+    normals.Update()
+    return normals.GetOutput()
+
+
+cpdef implicit_surface(object mesh, bint update_normals=True):
+    """implicit_surface(mesh)
+
+    Takes a vtkPolydata Mesh (a surface or a solid) and generates an implicit
+    vtk function that can be used to evaluate the signed distance d to the
+    nearest point in the mesh.
+    The sign of the distance d can be used to evaluate if a point x is
+    inside - outside a solid, or above - below a surface, or in the surface.
+    The distance d will be zero for points in a surface, negative for interior
+    points and positive for exterior points.
+
+    The vtkImplicitPolyDataDistance objects generated by this functions can
+    be used as imput of vtkImplicitBoolean.
+
+    Parameters
+    ----------
+    mesh : vtkPolyData
+        mesh surface (not tested with polylines...)
+    update_normals: boolean (defaul True)
+        if true normal vectors will be recalculated
+
+    Returns
+    -------
+    vtkImplicitPolyDataDistance (this is an implicit function that can be evaluated)
+
+    See Also
+    ------
+    evaluate_implicit_function, boolean_implicit
+
+    """
+    # generate instance of tkImplicitPolyDataDistance and set input
+    if update_normals:
+      mesh = calculate_normals(mesh)
+    implicitPolyDataDistance = vtk.vtkImplicitPolyDataDistance()
+    implicitPolyDataDistance.SetInput(mesh)
+
+    return implicitPolyDataDistance
+
+
+cpdef evaluate_implicit_points( object implicit_mesh,
+                                np.ndarray [double, ndim=1] x,
+                                np.ndarray [double, ndim=1] y,
+                                np.ndarray [double, ndim=1] z,
+                                cap_dist=None,
+                                bint normalize=False):
+    """evaluate_implicit_points(implicit_mesh, x, y, z, cap_dist=None, normalize=False)
+
+    Calculates the signed distances d between input points,
+    with corrdinates x,y,z, and the nearest point in a vtkImplicitPolyDataDistance
+    object (usually generated with the function implicit_surface)
+    Optionally, the distance d will be truncated to a treshold `cap_dist` and
+    normalized to a value between [-1 and 1] if `normalize==True`
+
+    The sign of the distance d can be used to evaluate if a point x is
+    inside - outside a solid, or above - below a surface, or in the surface.
+    The distance d will be zero for points in a surface, negative for interior
+    points and positive for exterior points.
+
+    Parameters
+    ----------
+    implicit_mesh : vtkImplicitPolyDataDistance
+        implicit mesh surface (not tested with polylines...)
+    x, y, z: array of floats
+        coordinates of the points
+    cap_dist : unsigned float expected (default None)
+        thresuld to truncate istance d to cap_dist if d is positive or to
+        -cap_dist if d is negative. No truncation will be applied if cap_dist is
+        None
+    normalize: boolean (default False)
+        If normalize is True and cap_dist is not None the distance will be
+        normalize with a vaue in the interval [-1, 1] by applying the
+        fuction d = d/cap_dist
+
+    Returns
+    -------
+    float with distances d
+
+    See Also
+    ------
+    evaluate_implicit_grid, implicit_surface
+
+    """
+    assert x.shape[0]==y.shape[0]==z.shape[0]
+    d = np.empty([x.shape[0]])
+    # loop on each point # TODO: optimize sending vtk array with coordinates: see virtual void 	EvaluateFunction (vtkDataArray *input, vtkDataArray *output)
+    for i in range(x.shape[0]):
+      d[i] = implicit_mesh.EvaluateFunction(x[i],y[i],z[i])
+
+    if cap_dist is not None:
+      cap_dist = abs(cap_dist)
+      d[d>cap_dist] = cap_dist
+      d[d<-cap_dist] = -cap_dist
+    if cap_dist is not None and normalize:
+      d = d/cap_dist
+    if cap_dist is None and normalize:
+      warnings.warn("Normalization was not applied because cap_dist is None")
+
+    return d
+
+
+cpdef define_region_grid( float xorg, float yorg, float zorg,
+                          float dx, float dy, float dz,
+                          int nx, int ny, int nz):
+    """define_region_grid(xorg, yorg, zorg, dx, dy,  dz, nx, ny, nz)
+
+    The region grid is a regular grid of points (a vtk.vtkImageData) that limits
+    the extension of the working area or project. This grid is required as input
+    to generate closed wireframes from open and closed surfaces and could
+    be used to define a working block model.
+    Note that a grid define corner points of a standar block model, if your
+    block mode has 2 block along direction x the grid has nx+1 == 3 points.
+    This fuction internally redefine nx=nx+1 to match block model definitions
+
+    Parameters
+    ----------
+    xorg, yorg, zorg, dx, dy,  dz: floats
+        coordinates of the lower left point in the grid and grid spacing
+    nx, ny, nz: int
+        number of rows, cols and levels in the grid
+
+    Returns
+    -------
+    (array, vtkImageData) array of floats and vtk grid with distances `d`
+
+    See Also
+    ------
+    evaluate_implicit_points, implicit_surface, blockmodel.Blockmodel.fillwireframe
+
+    """
+    cdef int ijk
+
+    nx=  nx + 1
+    ny = ny + 1
+    nz = nz + 1
+
+    ufgrid = vtk.vtkImageData()
+    ufgrid.SetOrigin(xorg,yorg,zorg)
+    ufgrid.SetSpacing(dx,dy,dz)
+    ufgrid.SetDimensions(nx,ny,nz)
+
+
+
+    return ufgrid
+
+cpdef evaluate_implicit_grid( object implicit_mesh,
+                              float xorg, float yorg, float zorg,
+                              float dx, float dy, float dz,
+                              int nx, int ny, int nz,
+                              x=None,y=None,z=None,
+                              cap_dist=None,
+                              bint normalize=False,
+                              bint closed = False,
+                              str name = ''):
+    """evaluate_implicit_grid(mplicit_mesh, xorg, yorg, zorg, dx, dy,  dz, nx, ny, nz,x = None,y = None,z = None, cap_dist=None, normalize=False, closed = False, name = '')
+
+    Calculates the signed distances `d` between points in a regular 3Dgrid and
+    the nearest point in a vtkImplicitPolyDataDistance
+    object (usually generated with the function implicit_surface)
+    Optionally, the distance d will be truncated to a treshold `cap_dist` and
+    normalized to a value between [-1 and 1] if `normalize==True`. The
+    outer points of the grid will be set to cap_dist if `closed` is True,
+    that ensure that any implicit surface generated with the grid is closed.
+    The points in the grid are calculated internally if x,y, or z are None.
+    Note that a grid define corner points of a standar block model, if your
+    block mode has 2 block along direction x the grid has nx+1 == 3 points.
+
+    The sign of the distance d can be used to evaluate if a point x is
+    inside - outside a solid, or above - below a surface, or in the surface.
+    Evaluating the four points defining a block may allow identify blocks
+    cut by a surface. This may fail for closed surfaces thinner than the
+    block sizes, such as narrow gold veins, this issue can be resolved using
+    two separated sufaces to define a vein.
+
+    Parameters
+    ----------
+    implicit_mesh : vtkImplicitPolyDataDistance
+        implicit mesh surface (not tested with polylines...)
+    xorg, yorg, zorg, dx, dy,  dz: floats
+        coordinates of the lower left point in the grid and grid spacing
+    nx, ny, nz: int
+        number of rows, cols and levels in the grid
+    x, y, z: numpy arrays or None
+        (optional) coordinates of grid poins, if None coordinates are calculated
+    cap_dist : unsigned float expected (default None)
+        thresuld to truncate istance d to cap_dist if d is positive or to
+        -cap_dist if d is negative. No truncation will be applied if cap_dist is
+        None
+    normalize: boolean (default False)
+        If normalize is True and cap_dist is not None the distance will be
+        normalize with a vaue in the interval [-1, 1] by applying the
+        fuction d = d/cap_dist
+    closed: boolean (defaul False)
+        If closed is True and cap_dist is not None then points in the outer
+        wall will be set to cap_dist. The sign of cap_dist will depermine
+        if the surface closes above or below the surface, or inside vs outside
+        the solid.
+    name: string (default '')
+        name subfix to be applied to the distance d array in vtk file,
+        for example, if name is 'topo', the output array will be 'dist_topo'
+
+    Returns
+    -------
+    (array, vtkImageData) array of floats and vtk grid with distances `d`
+
+    See Also
+    ------
+    evaluate_implicit_points, implicit_surface, blockmodel.Blockmodel.fillwireframe
+
+    """
+    cdef int ijk
+    assert (x is None)==(y is None)==(z is None)
+
+    nx=  nx + 1
+    ny = ny + 1
+    nz = nz + 1
+
+    mask = np.empty(nx*ny*nz, dtype=bool)
+    mask[:] = False
+
+    if x is not None:
+      assert x.shape[0]==y.shape[0]==z.shape[0]
+      assert x.shape[0] == nx*ny*nz
+      ijk = -1
+      for i in range(nz):
+        for j in range(ny):
+          for k in range(nx):
+            ijk = ijk+1
+            if i==0 or j==0 or k == 0 or i==nz-1 or j==ny-1 or k == nx-1:
+              mask[ijk] = True
+
+    else:
+      # calculate x,y,z coordinates
+      x = np.empty(nx*ny*nz, dtype=float)
+      y = np.empty(nx*ny*nz, dtype=float)
+      z = np.empty(nx*ny*nz, dtype=float)
+
+      ijk = -1
+      for i in range(nz):
+        for j in range(ny):
+          for k in range(nx):
+            ijk = ijk+1
+            if i==0 or j==0 or k == 0 or i==nz-1 or j==ny-1 or k == nx-1:
+              mask[ijk] = True
+
+            x[ijk]= k*dx+xorg
+            y[ijk]= j*dy+yorg
+            z[ijk]= i*dz+zorg
+
+    # apply evaluation
+    d=evaluate_implicit_points(implicit_mesh, x, y, z, cap_dist, normalize)
+
+    if closed and cap_dist is not None:
+      d[mask] = -cap_dist
+
+    ufgrid = vtk.vtkImageData()
+    ufgrid.SetOrigin(xorg,yorg,zorg)
+    ufgrid.SetSpacing(dx,dy,dz)
+    ufgrid.SetDimensions(nx,ny,nz)
+    ufgrid.GetPointData().AddArray(vtkdsa.numpyTovtkDataArray(d, name='dist_{}'.format(name), array_type=None))
+
+
+    return d, ufgrid
+
+
+cpdef clip_with_surface( object region, object implicit_surface, str how= 'inside'):
+    """clip_with_surface(region, surface, how= 'inside')
+
+    Clip a region defined as a regular grid (a vtkImageData) or an irregular
+    grid (a vtkUnstructuredGrid) with a surface. The clipped mode
+    `inside` or `outside` the implicit_surface is defined by surface normals.
+    For example, clipping a region with a topografic surface with normals
+    pointing upward, using `how == inside` will remove the air (above topo)
+    portion of the region.
+
+    You can model individual lithology units defined by a set of open surfaces
+    by using as input the output vtkUnstructuredGrid resulting from previous
+    clipping operations.
+
+
+    Parameters
+    ----------
+    region: a vtkImageData or vtkUnstructuredGrid
+        3D vtk object defining a region to be clipped
+    implicit_surface: a vtkImplicitPolyDataDistance
+        implicit surface with consitent normals. Can be obtained with the
+        function implicit_surface()
+
+    Returns
+    -------
+    (vtkUnstructuredGrid, vtkPolydata) 3D object and outer surface of the region clipped
+
+    See Also
+    ------
+    evaluate_implicit_points, implicit_surface, blockmodel.Blockmodel.fillwireframe
+
+    """
+    # clip region
+    clip = vtk.vtkClipDataSet()
+    clip.SetInputData(region)
+    clip.SetClipFunction(implicit_surface)
+    clip.InsideOutOn()
+    if how=='outside':
+      clip.InsideOutOff()
+    clip.Update()
+    clip_region = clip.GetOutput()
+
+    # get outer surface
+    # extract surface
+    gfilter=vtk.vtkGeometryFilter()
+    gfilter.SetInputData(clip_region)
+    gfilter.Update()
+    # Calc Normals
+    clip_surf=calculate_normals(gfilter.GetOutput())
+
+    return clip_region,clip_surf

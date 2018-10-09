@@ -895,7 +895,7 @@ cdef class Blockmodel:
                                                      dx=self.dx,
                                                      dy=self.dy,
                                                      dz=self.dz,
-                                                     data=data)
+                                                     cell_data=data)
 
         if path!='':
           pygslib.vtktools.SaveImageData(vtkgrid, path)
