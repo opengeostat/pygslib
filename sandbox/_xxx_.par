@@ -1,0 +1,13 @@
+                  Parameters for DECLUS
+                  *********************
+
+START OF PARAMETERS:
+_xxx_.in                          -file with data
+1 2 3 4                   -columns for X, Y, Z and variable
+-1e+21 1e+21               -  trimming limits
+_xxs_.out                     -file for summary output
+_xxx_.out                     -file for output with data & weights
+1.0 1.0             -Y and Z cell anisotropy (Ysize=size*Yanis)
+0                    -0=look for minimum declustered mean (1=max)
+24 1.0 25.0       -number of cell sizes, min size, max size
+5                      -number of origin offsets

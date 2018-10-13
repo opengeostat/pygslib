@@ -7,6 +7,7 @@ import copy
 import pandas as pd
 import pygslib
 import numpy as np
+import os
 
 __addcoord_par = \
 """                  Parameters for ADDCOORD
@@ -21,23 +22,28 @@ START OF PARAMETERS:
 {nz}  {zmn}  {zsiz}               -nz,zmn,zsiz
 """
 
-def xstr(s):
-    return s or ''
+def addcoord(parameters, gslib_path = None, silent = False):
+    """addcoord(parameters, gslib_path = None)
 
-def addcoord(parameters, gslib_path = None):
-    """
-    Addcoord object.
-
-    Todo: write desc
+    Funtion to add coordinates to a pygslib grid using addcoord.exe external
+    gslib program.
 
     Parameters
     ----------
-    parameters : dict
-        dictionary with parameters
+    parameters : dict or pygslib.blockmodel.Blockmodel
+        dictionary with parameters or Blockmodel object with full model and IJK sorted
     gslib_path : string (default None)
         absolute or relative path to gslib excecutable programs
-    tmp_path : string (default '')
-        Path to a temporarty working dir
+    silent: boolean
+        if true external GSLIB stdout text is printed
+
+    Returns
+    ------
+    pandas.DataFrame with ADDCOORD output
+
+    Example
+    --------
+    TODO:
 
     Notes
     ------
@@ -45,23 +51,18 @@ def addcoord(parameters, gslib_path = None):
 
 
         parameters = {
-            'datafl': str,      # path to the input grid file or panda array (full model sorted on IJK required)
-            'outfl' : str,      # path to the output grid file or None
-            'ireal' : int,      # realization number
-            'nx'    : int,      # number of rows, cols and levels
+            'datafl': str or None,      # path to the input grid file or None, to use default '_xxx_.in'
+            'outfl' : str or None,      # path to the output grid file or None, to use default '_xxx_.out'
+            'ireal' : int,              # realization number
+            'nx'    : int,              # number of rows, cols and levels
             'ny'    : int,
             'nz'    : int,
-            'xmn'   : float,    # coordinates of the centroid of first/corner block
+            'xmn'   : float,            # coordinates of the centroid of first/corner block
             'ymn'   : float,
             'zmn'   : float,
-            'xsiz'  : float,    # grid node separation
+            'xsiz'  : float,            # grid node separation
             'ysiz'  : float,
             'zsiz'  : float}
-
-    or
-
-            parameters = {
-                'datafl': Blockmodel}      # a pygslib Blockmodel
 
 
     see http://www.gslib.com/gslib_help/addcoord.html for more information
@@ -72,7 +73,7 @@ def addcoord(parameters, gslib_path = None):
         if os.name == "posix":
             gslib_path = '~/gslib/addcoord'
         else:
-            gslib_path = 'c:/gslib/addcoord.exe'
+            gslib_path = 'c:\\gslib\\addcoord.exe'
 
     # chek if we use internal files or external and generate files
     if isinstance(parameters, pygslib.blockmodel.Blockmodel):
@@ -131,9 +132,10 @@ def addcoord(parameters, gslib_path = None):
     p.wait()
 
     if p.returncode!=0:
-        raise NameError('HiThere' + str(stderr.decode('utf-8')))
+        raise NameError('gslib addcoord NameError' + str(stderr.decode('utf-8')))
 
-    print (stdout.decode('utf-8'))
+    if ~silent:
+        print (stdout.decode('utf-8'))
 
     # return results as panndas array
     return  pygslib.gslib.read_gslib_file(mypar['outfl'])
