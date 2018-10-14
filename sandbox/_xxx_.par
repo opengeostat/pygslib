@@ -1,13 +1,34 @@
-                  Parameters for DECLUS
+                  Parameters for VARMAP
                   *********************
 
 START OF PARAMETERS:
 _xxx_.in                          -file with data
-1 2 3 4                   -columns for X, Y, Z and variable
--1e+21 1e+21               -  trimming limits
-_xxs_.out                     -file for summary output
-_xxx_.out                     -file for output with data & weights
-1.0 1.0             -Y and Z cell anisotropy (Ysize=size*Yanis)
-0                    -0=look for minimum declustered mean (1=max)
-24 1.0 25.0       -number of cell sizes, min size, max size
-5                      -number of origin offsets
+1 1               - number of variables: column numbers
+-1000 1000               - trimming limits
+1                     - 1=regular grid, 0=scattered values
+50 50 1              - if igrid=1: nx, ny, nz
+1 1 1        -  xsiz, ysiz, zsiz
+0 0 0     - if igrid=0: columns for x, y, z coordinates
+_xxx2_.out                     -file for variogram grid output
+30 30 0     -nxlag, nylag, nzlag
+1 1 1     -dxlag, dylag, dzlag
+5                  -minimum number of pairs
+1               -standardize sill? (0=no, 1=yes)
+2                     -number of variograms (max 9)
+1  1  1  None
+1  1  4  None              -tail, head, variogram type (array with shape [nvarg,4])
+
+
+ivtype   1 = traditional semivariogram
+         2 = traditional cross semivariogram
+         3 = covariance
+         4 = correlogram
+         5 = general relative semivariogram
+         6 = pairwise relative semivariogram
+         7 = semivariogram of logarithms
+         8 = semimadogram
+         9 = indicator semivariogram - continuous
+         10= indicator semivariogram - categorical
+
+cut[i] is only required if ivtype[i] == 9 or == 10
+
