@@ -26,11 +26,11 @@ START OF PARAMETERS:
 {dxlag} {dylag} {dzlag}     -dxlag, dylag, dzlag
 {minpairs}                  -minimum number of pairs
 {standardize}               -standardize sill? (0=no, 1=yes)
-{nvarg}                     -number of variograms (max 9)
-{ivpar_}              -tail, head, variogram type (array with shape [nvarg,4])
+{nvarg}                     -number of variograms
+{ivpar_}                    -tail, head, variogram type (array with shape [nvarg,4])
 
 
-ivtype   1 = traditional semivariogram
+ vg type 1 = traditional semivariogram
          2 = traditional cross semivariogram
          3 = covariance
          4 = correlogram
@@ -45,7 +45,7 @@ cut[i] is only required if ivtype[i] == 9 or == 10
 
 """
 
-def varmap(parameters, gslib_path = None, silent = False, xorg=0, yorg=0, zorg=0):
+def varmap(parameters, gslib_path = None, silent = False, xorg=0., yorg=0., zorg=0.):
     """varmap(parameters, gslib_path = None)
 
     Funtion to calculate variogram maps (grid) using varmap.exe external
@@ -59,7 +59,8 @@ def varmap(parameters, gslib_path = None, silent = False, xorg=0, yorg=0, zorg=0
         absolute or relative path to gslib excecutable programs
     silent: boolean
         if true external GSLIB stdout text is printed
-
+    xorg, yorg, zorg: floats (default 0.)
+        origin of coordinated of the variogram map in the vtkImageData output
     Returns
     ------
     (pandas.DataFrame, vtkImageData) with variogram map results
@@ -128,8 +129,8 @@ def varmap(parameters, gslib_path = None, silent = False, xorg=0, yorg=0, zorg=0
                     	f.write('v{}\n'.format(i+1))
             else:
                 f.write('x\ny\nz\n')
-                for i in range(2,parameters['datafl'].shape[1]):
-                    	f.write('v{}\n'.format(i+1))
+                for i in range(3,parameters['datafl'].shape[1]):
+                    	f.write('v{}\n'.format(i-2))
             np.savetxt(f,parameters['datafl'])
     elif parameters['datafl'] is None:
         mypar['datafl']='_xxx_.in'
@@ -169,7 +170,7 @@ def varmap(parameters, gslib_path = None, silent = False, xorg=0, yorg=0, zorg=0
 
     # prepare parameter file and save it
     mypar['nvar'] = len(mypar['ivar'])
-    mypar['ivar_'] = pd.DataFrame.to_string(pd.DataFrame(mypar['ivar']),index= False, header=False) # array to string
+    mypar['ivar_'] = ' '.join(map(str, mypar['ivar'])) # array to string
     mypar['nvarg'] = ivpar.shape[0]
     mypar['ivpar_'] = pd.DataFrame.to_string(pd.DataFrame(ivpar),index= False, header=False) # array to string
 

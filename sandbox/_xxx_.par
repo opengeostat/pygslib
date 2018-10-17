@@ -1,34 +1,14 @@
-                  Parameters for VARMAP
+                  Parameters for VMODEL
                   *********************
 
 START OF PARAMETERS:
-_xxx_.in                          -file with data
-1 1               - number of variables: column numbers
--1000 1000               - trimming limits
-1                     - 1=regular grid, 0=scattered values
-50 50 1              - if igrid=1: nx, ny, nz
-1 1 1        -  xsiz, ysiz, zsiz
-0 0 0     - if igrid=0: columns for x, y, z coordinates
-_xxx2_.out                     -file for variogram grid output
-30 30 0     -nxlag, nylag, nzlag
-1 1 1     -dxlag, dylag, dzlag
-5                  -minimum number of pairs
-1               -standardize sill? (0=no, 1=yes)
-2                     -number of variograms (max 9)
-1  1  1  None
-1  1  4  None              -tail, head, variogram type (array with shape [nvarg,4])
-
-
-ivtype   1 = traditional semivariogram
-         2 = traditional cross semivariogram
-         3 = covariance
-         4 = correlogram
-         5 = general relative semivariogram
-         6 = pairwise relative semivariogram
-         7 = semivariogram of logarithms
-         8 = semimadogram
-         9 = indicator semivariogram - continuous
-         10= indicator semivariogram - categorical
-
-cut[i] is only required if ivtype[i] == 9 or == 10
+_xxx_.out                           - file for variogram output
+2 40                     - number of directions and lags
+0.0  0.0  0.5
+90.0  0.0  0.5                          - azm, dip, lag distance (array with shape [ndir,3])
+2 0.2                        - nst, nugget effect
+1  0.4  0  0  0                         - it,cc,ang1,ang2,ang3 
+  10  5  0                         - a_hmax, a_hmin, a_vert 
+1  0.4  0  0  0                         - it,cc,ang1,ang2,ang3 
+  10  5  0                         - a_hmax, a_hmin, a_vert 
 
