@@ -131,7 +131,10 @@ def declus(parameters, gslib_path = None, silent = False):
         raise NameError('gslib declus NameError' + str(stderr.decode('utf-8')))
 
     if ~silent:
-        print (stdout.decode('utf-8'))
+        try:
+            print (stdout.decode('utf-8'))
+        except:
+            print (stdout)
 
     # return results as panndas array
     return  pygslib.gslib.read_gslib_file(mypar['outfl']), pygslib.gslib.read_gslib_file(mypar['sumfl'])

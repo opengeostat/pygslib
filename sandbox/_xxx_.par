@@ -1,14 +1,26 @@
-                  Parameters for VMODEL
-                  *********************
+                  Parameters for GAM
+                  *******************
 
 START OF PARAMETERS:
-_xxx_.out                           - file for variogram output
-2 40                     - number of directions and lags
-0.0  0.0  0.5
-90.0  0.0  0.5                          - azm, dip, lag distance (array with shape [ndir,3])
-2 0.2                        - nst, nugget effect
-1  0.4  0  0  0                         - it,cc,ang1,ang2,ang3 
-  10  5  0                         - a_hmax, a_hmin, a_vert 
-1  0.4  0  0  0                         - it,cc,ang1,ang2,ang3 
-  10  5  0                         - a_hmax, a_hmin, a_vert 
+_xxx_.in                          -file with data
+2 1 2                    - number of variables: column numbers
+-1e+21 1e+21                     - trimming limits
+_xxx_.out                           -file for variogram output
+1                           -realization number
+50  0.5  1.0               -nx,xmn,xsiz
+50  0.5  1.0               -ny,ymn,ysiz
+1  0.5  1.0               -nz,zmn,zsiz
+2 10                     -number of direction and number of lags
+1  0  0
+0  1  0                          -directions along the grid (unit offsets) (array with shape [ndir,3])
+1                     -standardize sill? (0=no, 1=yes)
+5                           -number of variograms
+1  1  1  None
+1  1  3  None
+2  2  1  None
+2  2  3  None
+1  1  9   2.5                          -tail, head, variogram type, cut (array with shape [nvarg,4])
+
+
+cut[i] is only required if ivtype[i] == 9 or == 10
 

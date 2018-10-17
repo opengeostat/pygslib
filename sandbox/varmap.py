@@ -195,7 +195,10 @@ def varmap(parameters, gslib_path = None, silent = False, xorg=0., yorg=0., zorg
         raise NameError('gslib declus NameError' + str(stderr.decode('utf-8')))
 
     if ~silent:
-        print (stdout.decode('utf-8'))
+        try:
+            print (stdout.decode('utf-8'))
+        except:
+            print (stdout)
 
     # return results as panndas array
     nxg=mypar['nxlag']*2+1

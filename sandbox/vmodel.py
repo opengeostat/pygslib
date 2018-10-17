@@ -138,7 +138,10 @@ def vmodel(parameters, gslib_path = None, silent = False):
         raise NameError('gslib declus NameError' + str(stderr.decode('utf-8')))
 
     if ~silent:
-        print (stdout.decode('utf-8'))
+        try:
+            print (stdout.decode('utf-8'))
+        except:
+            print (stdout)
 
     # put results in pandas
     nvarg = 1
@@ -160,10 +163,10 @@ def vmodel(parameters, gslib_path = None, silent = False):
     # b) add extra variables from headers
     vg['Variogram'] = np.repeat(range(nvarg), ndir*nlag) # variogram number = row index on parameter['ivpar']
     vg['Direction'] = np.tile(np.repeat(range(ndir), nlag),nvarg)
-    vg['tail'] = None
-    vg['head'] = None
-    vg['type'] = None
-    vg['cut'] = None
+    vg['tail'] = np.nan
+    vg['head'] = np.nan
+    vg['type'] = np.nan
+    vg['cut'] = np.nan
 
     # clean a bit zeros and variogram at distance zero
     vg.loc[vg['correlation']==1,'var funct']=None

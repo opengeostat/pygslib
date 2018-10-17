@@ -10,21 +10,21 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-__gamv_par = \
-"""                  Parameters for GAMV
+__gam_par = \
+"""                  Parameters for GAM
                   *******************
 
 START OF PARAMETERS:
 {datafl}                          -file with data
-{icolx} {icoly} {icolz}           -   columns for X, Y, Z coordinates
 {nvar} {ivar_}                    - number of variables: column numbers
 {tmin} {tmax}                     - trimming limits
 {outfl}                           -file for variogram output
-{nlag}                            -number of lags
-{xlag}                            -lag separation distance
-{xltol}                           -lag tolerance
-{ndir}                            -number of directions
-{ivdir_}                          -azm,atol,bandh,dip,dtol,bandv (array with shape [ndir,6])
+{igrid}                           -realization number
+{nx}  {xmn}  {xsiz}               -nx,xmn,xsiz
+{ny}  {ymn}  {ysiz}               -ny,ymn,ysiz
+{nz}  {zmn}  {zsiz}               -nz,zmn,zsiz
+{ndir} {nlag}                     -number of direction and number of lags
+{igdir_}                          -directions along the grid (unit offsets) (array with shape [ndir,3])
 {standardize}                     -standardize sill? (0=no, 1=yes)
 {nvarg}                           -number of variograms
 {ivpar_}                          -tail, head, variogram type, cut (array with shape [nvarg,4])
@@ -34,11 +34,11 @@ cut[i] is only required if ivtype[i] == 9 or == 10
 
 """
 
-def gamv(parameters, gslib_path = None, silent = False):
-    """gamv(parameters, gslib_path = None)
+def gam(parameters, gslib_path = None, silent = False):
+    """gam(parameters, gslib_path = None)
 
-    Funtion to calculate experimental variogram with scattered data using
-    the gamv.exe external gslib program.
+    Funtion to calculate experimental variogram with gridded data using
+    the gam.exe external gslib program.
 
     Parameters
     ----------
@@ -64,19 +64,24 @@ def gamv(parameters, gslib_path = None, silent = False):
 
         parameters = {
             'datafl' : str or, None, or numpy,     # path to file, or none (to use '_xxx_.in') or numpy array (with columns [x,y])
-            'icolx'  : int,                        # columns for X, Y, Z coordinates
-            'icoly'  : int,
-            'icolz'  : int,
             'ivar'   : 1D array of int,            # variables column numbers to be used in ivtail and ivhead,
             'tmin'   : float,                      # trimming limits min and max (raws out of this range will be ignored)
             'tmax'   : float,
             'outfl': str or None,                   # path to the output file or None (to use '_xxx_.out')
+            'igrid'  : int,                         # grid realization number
+            'nx'    : int,                          # number of rows, cols and levels
+            'ny'    : int,
+            'nz'    : int,
+            'xmn'   : float,                        # coordinates of the centroid of first/corner block
+            'ymn'   : float,
+            'zmn'   : float,
+            'xsiz'  : float,                        # grid node separation
+            'ysiz'  : float,
+            'zsiz'  : float,
             'nlag'   : int,                         # number of lags
-            'xlag'   : float,                       # lag separation distance
-            'xltol'  : float,                       # lag tolerance
-            'ivdir'  : 2D array of floats           # azm,atol,bandh,dip,dtol,bandv (array with shape [ndir,6])
+            'igdir'  : 2D array of int,             # [[ixd1,iyd1,izd1],...] directions along the grid (unit offsets) (array with shape [ndir,3])
             'standardize': int,                     # standardize sill? (0=no, 1=yes)
-            'ivpar': 2D array of int}               # tail, head, variogram type, and cut (with shape [nvarg,4])
+            'ivpar': 2D array of int}               # [[tail, head, variogram type, cut],...] (with shape [nvarg,4])
 
             vg type  1 = traditional semivariogram
                      2 = traditional cross semivariogram
@@ -89,36 +94,29 @@ def gamv(parameters, gslib_path = None, silent = False):
                      9 = indicator semivariogram - continuous
                      10= indicator semivariogram - categorical
 
+
     see http://www.gslib.com/gslib_help/gamv.html for more information
 
     """
 
     if gslib_path is None:
         if os.name == "posix":
-            gslib_path = '~/gslib/gamv'
+            gslib_path = '~/gslib/gam'
         else:
-            gslib_path = 'c:\\gslib\\gamv.exe'
+            gslib_path = 'c:\\gslib\\gam.exe'
 
     mypar = copy.deepcopy(parameters)
 
     # handle the case where input is an array an not a file
     if isinstance(parameters['datafl'], np.ndarray):
         assert (parameters['datafl'].ndim==2)
-
         mypar['datafl']='_xxx_.in'
-        mypar['icolx']= 1
-        mypar['icoly']= 2
-        mypar['icolz']= 3
-        mypar['ivar'] = np.arange(4,parameters['datafl'].shape[1]+1,dtype=int)
-
+        mypar['ivar'] = np.arange(1,parameters['datafl'].shape[1]+1,dtype=int)
         with open('_xxx_.in',"w") as f:
             f.write('temp file '+'\n')
             f.write('{}'.format(parameters['datafl'].shape[1])+'\n')
-            f.write('x\n')
-            f.write('y\n')
-            f.write('z\n')
-            for i in range(3,parameters['datafl'].shape[1]):
-                f.write('v{}\n'.format(i-2))
+            for i in range(parameters['datafl'].shape[1]):
+                f.write('v{}\n'.format(i+1))
             np.savetxt(f,parameters['datafl'])
     elif parameters['datafl'] is None:
         mypar['datafl']='_xxx_.in'
@@ -128,10 +126,10 @@ def gamv(parameters, gslib_path = None, silent = False):
 
     # handle parameter arrays
     ivpar = np.array (mypar['ivpar'])
-    ivdir = np.array (mypar['ivdir'])
+    igdir = np.array (mypar['igdir'])
 
     assert (ivpar.shape[1]==4)
-    assert (ivdir.shape[1]==6)
+    assert (igdir.shape[1]==3)
 
     assert (all([i<=len(mypar['ivar']) for i in ivpar[:,0]]))  # head variable
     assert (all([i<=len(mypar['ivar']) for i in ivpar[:,1]]))  # tail variable
@@ -143,7 +141,6 @@ def gamv(parameters, gslib_path = None, silent = False):
             if ivpar[i,3]==None:
                 raise NameError('gslib varmap Error inparameter file: cut[{}]=None'.format(i))
 
-
     # prepare parameter file and save it
     mypar['nvar'] = len(mypar['ivar'])
     mypar['ivar_'] = ' '.join(map(str, mypar['ivar'])) # array to string
@@ -151,10 +148,10 @@ def gamv(parameters, gslib_path = None, silent = False):
     mypar['nvarg'] = ivpar.shape[0]
     mypar['ivpar_'] = pd.DataFrame.to_string(pd.DataFrame(ivpar),index= False, header=False) # array to string
 
-    mypar['ndir'] = ivdir.shape[0]
-    mypar['ivdir_'] = pd.DataFrame.to_string(pd.DataFrame(ivdir),index= False, header=False) # array to string
+    mypar['ndir'] = igdir.shape[0]
+    mypar['igdir_'] = pd.DataFrame.to_string(pd.DataFrame(igdir),index= False, header=False) # array to string
 
-    par = __gamv_par.format(**mypar)
+    par = __gam_par.format(**mypar)
     print (par)
     fpar ='_xxx_.par'
     with open(fpar,"w") as f:
@@ -181,7 +178,7 @@ def gamv(parameters, gslib_path = None, silent = False):
     # put results in pandas
     nvarg = mypar['nvarg']
     ndir = mypar['ndir']
-    nlag = mypar['nlag'] + 2
+    nlag = mypar['nlag']
 
     ignore = np.arange(0,nvarg*ndir*nlag+ndir*nvarg,nlag+1) # list to ignore variogram headers
     # a) read resulting file
