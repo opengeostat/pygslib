@@ -824,9 +824,13 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
 
     # merge data
     if snap:
-      xa = np.concatenate((x[f],xg))
-      ya = np.concatenate((y[f],yg))
-      za = np.concatenate((z[f],zg))
+      # get max to ignore points out of the grid limits
+      xmax = xorg+dx*nx
+      ymax = yorg+dy*ny
+      ff = (x>=xorg) & (x<=xmax) & (y>=yorg ) & (y<=ymax) & (f)
+      xa = np.concatenate((x[ff],xg))
+      ya = np.concatenate((y[ff],yg))
+      za = np.concatenate((z[ff],zg))
       # triangulate and calculate normals
       mesh = delaunay2D (xa, ya, za, constraints = constraints)
       return calculate_normals(mesh),xa, ya, za
@@ -1248,7 +1252,7 @@ cpdef dxf2PolyData(str path):
 # ----------------------------------------------------------------------
 #   Functions for imlicit modeling
 # ----------------------------------------------------------------------
-cdef calculate_normals(object mesh, bint flip_normals=False):
+cpdef calculate_normals(object mesh, bint flip_normals=False):
     """calculate_normals(mesh)
 
     Takes a vtkPolydata Mesh and calculate its normal vectors.
@@ -1365,7 +1369,7 @@ cpdef evaluate_implicit_points( object implicit_mesh,
     d = np.empty([x.shape[0]])
     # loop on each point # TODO: optimize sending vtk array with coordinates: see virtual void 	EvaluateFunction (vtkDataArray *input, vtkDataArray *output)
     for i in range(x.shape[0]):
-      d[i] = implicit_mesh.EvaluateFunction(x[i],y[i],z[i])
+      d[i] = implicit_mesh.FunctionValue(x[i],y[i],z[i])
 
     if cap_dist is not None:
       cap_dist = abs(cap_dist)
@@ -1381,16 +1385,24 @@ cpdef evaluate_implicit_points( object implicit_mesh,
 
 cpdef define_region_grid( float xorg, float yorg, float zorg,
                           float dx, float dy, float dz,
-                          int nx, int ny, int nz):
-    """define_region_grid(xorg, yorg, zorg, dx, dy,  dz, nx, ny, nz)
+                          int nx, int ny, int nz,
+                          snapping_points = None,
+                          float tol= 0.01):
+    """define_region_grid(xorg, yorg, zorg, dx, dy,  dz, nx, ny, nz, snapping_points = None, tol= 0.01)
 
-    The region grid is a regular grid of points (a vtk.vtkImageData) that limits
-    the extension of the working area or project. This grid is required as input
-    to generate closed wireframes from open and closed surfaces and could
-    be used to define a working block model.
-    Note that a grid define corner points of a standar block model, if your
-    block mode has 2 block along direction x the grid has nx+1 == 3 points.
-    This fuction internally redefine nx=nx+1 to match block model definitions
+    The region grid is an irregular grid of tetras (a vtk.vtkUnstructuredGrid)
+    within the limits of the working area or project, generated with vtkDelaunay3D
+    of regularly spaced points. Alternativelly you can append points, defined as
+    vtk geometries, to ensure snapping of implicit functions.
+
+    The region grid is required as input to generate closed wireframes from open
+    and closed surfaces. Note that a grid define corner points of a standar
+    block model, if your block model has 2 block along direction x the grid has
+    nx+1 == 3 points. This fuction internally redefine nx=nx+1 to match block
+    model definitions. However, you may define region grid with at least one
+    block wider because boundary points are set to an arbitrary negative float
+    number to ensure that surfaces are closed.
+
 
     Parameters
     ----------
@@ -1398,17 +1410,19 @@ cpdef define_region_grid( float xorg, float yorg, float zorg,
         coordinates of the lower left point in the grid and grid spacing
     nx, ny, nz: int
         number of rows, cols and levels in the grid
+    snapping_points: array like of vtk geometries
+        each element may contain snapping points, for example unit surfaces
+        or contact points
 
     Returns
     -------
-    (array, vtkImageData) array of floats and vtk grid with distances `d`
+    (array, vtkUnstructuredGrid) array of floats and vtk grid with distances `d`
 
     See Also
     ------
     evaluate_implicit_points, implicit_surface, blockmodel.Blockmodel.fillwireframe
 
     """
-    cdef int ijk
 
     nx=  nx + 1
     ny = ny + 1
@@ -1419,9 +1433,172 @@ cpdef define_region_grid( float xorg, float yorg, float zorg,
     ufgrid.SetSpacing(dx,dy,dz)
     ufgrid.SetDimensions(nx,ny,nz)
 
+    if snapping_points is not None:
+        appfil = vtk.vtkAppendFilter()
+        appfil.AddInputData(ufgrid)
+        for i in snapping_points:
+          appfil.AddInputData(i)
+        appfil.Update()
+
+        ufgrid2=appfil.GetOutput()
+    else:
+        geomfilt = vtk.vtkImageDataGeometryFilter()
+        geomfilt.SetInputData(ufgrid)
+        geomfilt.Update()
+        ufgrid2=geomfilt.GetOutput()
+
+    delny = vtk.vtkDelaunay3D()
+    delny.SetInputData(ufgrid2)
+    delny.SetTolerance(tol)
+    delny.SetAlpha(max(dx*2,dy*2,dz*2))
+    delny.BoundingTriangulationOff()
+    delny.Update()
+
+    result = vtk.vtkUnstructuredGrid()
+    result.DeepCopy(delny.GetOutput())
+
+    return result
+
+cpdef evaluate_region(object region,
+                      object implicit_func,
+                      str func_name,
+                      bint invert=False,
+                      float capt = -1000000,
+                      bint closed=True):
+    """evaluate_region(region, implicit_func, func_name, invert=False, capt = -1000000, closed = True)
+
+    Evaluate an implicit function within a region.
+
+    The results is a distance scalar with name func_name. The sign of distances
+    are defined by geometry normals. Positive distances are within the object,
+    the sign can be inverted by setting invert=True. Cells in the outer surface
+    are set to capt to ensure closed surfaces are retrieved from contour
+    functions.
 
 
-    return ufgrid
+    Parameters
+    ----------
+    region : vtkUnstructuredGrid
+        region to evaluate
+    implicit_func : vtkImplicitFuntion or vtkImplicitPolyDataDistance
+        implicit function to evaluate
+    func_name: str
+        name of the scalar asigned to points in the region
+    invert: boolean (default False)
+        if True the sign of the distance to the implicit function will be inverted
+    cap: float (default -1000000)
+        any distance over this value will be set equal to this value.
+        points in the outer surface of the region will be set to this value
+
+    Returns
+    -------
+    (vtkUnstructuredGrid, ndarray)
+        vtk object with the region and numpy array with distances
+
+    See Also
+    ------
+    evaluate_implicit_points, implicit_surface, define_region_grid
+
+    """
+
+    xmin,xmax, ymin,ymax, zmin,zmax = region.GetBounds()
+    n = region.GetNumberOfPoints()
+
+    # make sure we get the sign right
+    capt = -np.abs(capt)
+
+    # generate points and scalar
+    x = np.zeros(n)
+    y = np.zeros(n)
+    z = np.zeros(n)
+    d = np.zeros(n)
+
+    for i in range(n):
+      x[i] ,y[i] , z[i] = region.GetPoint(i)
+      d[i] = implicit_func.FunctionValue(x[i],y[i],z[i])
+      if invert:
+        d[i] = -d[i]
+
+    # make outer surface equal to capt
+    if capt is not None:
+      d[d<capt]= capt
+      d[d>-capt]= -capt
+    if closed:
+      d[x<=xmin] = capt
+      d[y<=ymin] = capt
+      d[z<=zmin] = capt
+      d[x>=xmax] = capt
+      d[y>=ymax] = capt
+      d[z>=zmax] = capt
+
+    # pudate implisit function value
+    tmp = vtk.vtkUnstructuredGrid()
+    tmp.DeepCopy(region)
+    tmp.GetPointData().AddArray(vtkdsa.numpyTovtkDataArray(d, name=func_name, array_type=None))
+
+    return tmp, d
+
+cpdef set_region_field(object region, d, str func_name):
+        """set_region_field(region, d, func_name)
+
+        Set region value.
+
+        This function is usefull to asign values to a region (a vtkUnstructuredGrid).
+
+        You can uses it to define externally defined implisit functions. For example,
+        Given n implicit distances d1, d2, ..., dn the intersection is
+        d_intersect = min (d1, d2, ..., dn)
+
+        Parameters
+        ----------
+        region : vtkUnstructuredGrid
+            region to evaluate
+        d : expects a numpy array
+            field value
+        func_name: str
+            name asigned to d in the vtk object
+
+        Returns
+        -------
+        vtk Object
+
+        """
+
+        assert (region.GetNumberOfPoints()==d.shape[0])
+
+        tmp = vtk.vtkUnstructuredGrid()
+        tmp.DeepCopy(region)
+        tmp.GetPointData().AddArray(vtkdsa.numpyTovtkDataArray(d, name=func_name, array_type=None))
+
+        return tmp
+
+cpdef extract_surface(object region, str func_name, float threshold = 0.0):
+        """extract_surface(object region, str func_name, float threshold = 0.0)
+
+        Extract surface defined by an implisit function evaluated in the region
+
+        Parameters
+        ----------
+        region : vtkUnstructuredGrid
+            region with implicit function evaluated
+        func_name: str
+            name of the implicit function
+        threshold: float (default 0.0)
+            value to contour the implisit surface
+
+        Returns
+        -------
+        vtkPolydata with surface
+
+        """
+
+        surface = vtk.vtkContourGrid()
+        surface.SetInputData(region)
+        surface.SetInputArrayToProcess(0, 0, 0, vtk.vtkAssignAttribute.POINT_DATA, func_name)
+        surface.SetValue(0,threshold)
+        surface.Update()
+
+        return surface.GetOutput()
 
 cpdef evaluate_implicit_grid( object implicit_mesh,
                               float xorg, float yorg, float zorg,
@@ -1590,7 +1767,13 @@ cpdef clip_with_surface( object region, object implicit_surface, str how= 'insid
     gfilter=vtk.vtkGeometryFilter()
     gfilter.SetInputData(clip_region)
     gfilter.Update()
+
+    # Triangle filter to remove quads and ensure only triangles are retrived
+    cutTriangles = vtk.vtkTriangleFilter()
+    cutTriangles.SetInputData(gfilter.GetOutput())
+    cutTriangles.Update()
+
     # Calc Normals
-    clip_surf=calculate_normals(gfilter.GetOutput())
+    clip_surf=calculate_normals(cutTriangles.GetOutput())
 
     return clip_region,clip_surf

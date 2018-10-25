@@ -403,7 +403,7 @@ cdef class Blockmodel:
     cpdef set_rcl(self, int nx,int ny, int nz):
         """set_rcl(int nx,int ny, int nz)
 
-        Set number of blocks at row, call, level
+        Set number of blocks at row, column, level
 
         Two conditions apply
 
