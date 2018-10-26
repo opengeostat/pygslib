@@ -2,4 +2,4 @@
 
 conda config --add channels https://conda.anaconda.org/opengeostat
 
-pip install --no-deps /home/adrian/pygslib/dist/pygslib-0.0.0.3.9-cp27-cp27mu-linux_x86_64.whl
+pip install --no-deps ~/pygslib/pygslib_conda/wheels/pygslib-0.0.0.4.0.0-cp27-cp27mu-linux_x86_64.whl

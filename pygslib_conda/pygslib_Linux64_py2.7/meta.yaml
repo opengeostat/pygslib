@@ -25,6 +25,7 @@ requirements:
     - libgfortran
     - colour
     - bokeh
+    - ezdxf
 
 about:
   home: https://github.com/opengeostat/pygslib
