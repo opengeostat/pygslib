@@ -120,7 +120,13 @@ def varmap(parameters, gslib_path = None, silent = False, xorg=0., yorg=0., zorg
         mypar['datafl']='_xxx_.in'
         if parameters['datafl'].ndim<2:
             parameters['datafl']= parameters['datafl'].reshape([parameters['datafl'].shape[0],1])
-        mypar['ivar'] = np.arange(parameters['datafl'].shape[1])+1
+        if mypar['igrid']== 1:
+            mypar['ivar'] = np.arange(parameters['datafl'].shape[1])+1
+        else:
+            mypar['ivar'] = np.arange(parameters['datafl'].shape[1]-3)+1
+            mypar['icolx']=1
+            mypar['icoly']=2
+            mypar['icolz']=3
         with open('_xxx_.in',"w") as f:
             f.write('temp file '+'\n')
             f.write('{}'.format(parameters['datafl'].shape[1])+'\n')
@@ -132,6 +138,7 @@ def varmap(parameters, gslib_path = None, silent = False, xorg=0., yorg=0., zorg
                 for i in range(3,parameters['datafl'].shape[1]):
                     	f.write('v{}\n'.format(i-2))
             np.savetxt(f,parameters['datafl'])
+
     elif parameters['datafl'] is None:
         mypar['datafl']='_xxx_.in'
 
@@ -144,6 +151,7 @@ def varmap(parameters, gslib_path = None, silent = False, xorg=0., yorg=0., zorg
         mypar['xsiz']= 0
         mypar['ysiz']= 0
         mypar['zsiz']= 0
+
     if mypar['igrid']==1:
         mypar['icolx']= 0
         mypar['icoly']= 0
@@ -151,9 +159,6 @@ def varmap(parameters, gslib_path = None, silent = False, xorg=0., yorg=0., zorg
 
     if mypar['outfl'] is None:
         mypar['outfl'] = '_xxx_.out'
-
-
-
 
     ivpar = np.array (mypar['ivpar'])
     assert (ivpar.shape[1]==4)
