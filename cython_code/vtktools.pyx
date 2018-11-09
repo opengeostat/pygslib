@@ -1447,6 +1447,7 @@ cpdef define_region_grid( float xorg, float yorg, float zorg,
         geomfilt.Update()
         ufgrid2=geomfilt.GetOutput()
 
+    # TODO: this is not necesary if not snapping and it is slow... fix this
     delny = vtk.vtkDelaunay3D()
     delny.SetInputData(ufgrid2)
     delny.SetTolerance(tol)
