@@ -1065,6 +1065,31 @@ cpdef SavePolydata(object polydata, str path):
     writer.SetInputData(polydata)
     writer.Write()
 
+cpdef LoadImageData(str path):
+    """ReadImageData(object grid, str path)
+
+    Read a vtkImageData ('*.vti')
+
+    Parameters
+    ----------
+    path : str
+        Extension (*.vti) will be added if not provided
+
+    Returns
+    -------
+    object : vtkImageData
+    """
+
+    # add extension to path
+    if not path.lower().endswith('.vti'):
+        path = path + '.vti'
+
+    reader = vtk.vtkXMLImageDataReader()
+    reader.SetFileName(path)
+    reader.Update()
+
+    return reader.GetOutput()
+
 
 cpdef SaveImageData(object grid, str path):
     """SaveImageData(object grid, str path)
@@ -1441,24 +1466,29 @@ cpdef define_region_grid( float xorg, float yorg, float zorg,
         appfil.Update()
 
         ufgrid2=appfil.GetOutput()
+
+        delny = vtk.vtkDelaunay3D()
+        delny.SetInputData(ufgrid2)
+        delny.SetTolerance(tol)
+        delny.SetAlpha(max(dx*2,dy*2,dz*2))
+        delny.BoundingTriangulationOff()
+        delny.Update()
+
+        result = vtk.vtkUnstructuredGrid()
+        result.DeepCopy(delny.GetOutput())
+
+        return result
+
     else:
-        geomfilt = vtk.vtkImageDataGeometryFilter()
-        geomfilt.SetInputData(ufgrid)
-        geomfilt.Update()
-        ufgrid2=geomfilt.GetOutput()
+        ufgrid.AllocateScalars(vtk.VTK_INT, 1)
+        ufgrid.GetPointData().GetAttribute(0).Fill(0)
+        thresh = vtk.vtkThreshold()
+        thresh.SetInputData(ufgrid)
+        thresh.ThresholdByUpper(-1)
+        thresh.Update()
+        return thresh.GetOutput()
 
-    # TODO: this is not necesary if not snapping and it is slow... fix this
-    delny = vtk.vtkDelaunay3D()
-    delny.SetInputData(ufgrid2)
-    delny.SetTolerance(tol)
-    delny.SetAlpha(max(dx*2,dy*2,dz*2))
-    delny.BoundingTriangulationOff()
-    delny.Update()
 
-    result = vtk.vtkUnstructuredGrid()
-    result.DeepCopy(delny.GetOutput())
-
-    return result
 
 cpdef evaluate_region(object region,
                       object implicit_func,
