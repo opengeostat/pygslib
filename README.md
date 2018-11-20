@@ -1,7 +1,7 @@
 PyGSLIB
 =======
 
-Version:  '0.0.0.3.9.0'  
+Version:  '0.0.0.4.0.0'  
 Documentation: https://opengeostat.github.io/pygslib/   
 Wiki: https://github.com/opengeostat/pygslib/wiki   
 Source code: https://github.com/opengeostat/pygslib   
@@ -26,7 +26,7 @@ Installation in Anaconda/Miniconda distributions (Linux, Window and OS)
 The easiest way to install and work with PyGSLIB is using Anaconda or Miniconda (conda) distributions. To install PyGSLIB in the root environment of your anaconda distribution simply type in a terminal:  
 
 ```
-$ conda install -c opengeostat pygslib
+$ conda install pygslib -c opengeostat -c conda-forge
 ```
 
 Installation from source (from github.com)
