@@ -32,14 +32,15 @@ from scipy.interpolate import Rbf
 import scipy.spatial.distance as scipy_dist
 from scipy.interpolate import griddata
 from scipy.spatial import KDTree
+import ezdxf
 
 
 
 # ----------------------------------------------------------------------
 #   Functions for point querying
 # ----------------------------------------------------------------------
-cpdef vtk_raycasting(object surface, object pSource, object pTarget):
-    """vtk_raycasting(object surface, object pSource, object pTarget)
+cpdef vtk_raycasting(object surface, object pSource, object pTarget, object obbTree = None):
+    """vtk_raycasting(object surface, object pSource, object pTarget, object obbTree)
 
     Intersects a line defined by two points with a polydata vtk object,
     for example a closed surface.
@@ -54,6 +55,9 @@ cpdef vtk_raycasting(object surface, object pSource, object pTarget):
            this may work with any 3D object..., no necessarily triangles
     pSource, pTarget: tuples with 3 float
            point location defining a ray
+    obbTree: vtk.vtkOBBTree()
+           tree generated in previous test
+
 
     Returns
     -------
@@ -68,6 +72,8 @@ cpdef vtk_raycasting(object surface, object pSource, object pTarget):
     pointsVTKIntersectionData : an Vtk polydata object
         similar to pointsIntersection but in Vtk polydata format
 
+    obbTree : a vtk.vtkOBBTree object
+
 
     See Also
     --------
@@ -81,9 +87,11 @@ cpdef vtk_raycasting(object surface, object pSource, object pTarget):
     """
     cdef int intersect, idx
 
-    obbTree = vtk.vtkOBBTree()
-    obbTree.SetDataSet(surface)
-    obbTree.BuildLocator()
+    if obbTree is None:
+      obbTree = vtk.vtkOBBTree()
+      obbTree.SetDataSet(surface)
+      obbTree.BuildLocator()
+
     pointsVTKintersection = vtk.vtkPoints()
 
     #Perform the ray-casting. The IntersectWithLine method returns an int
@@ -103,7 +111,7 @@ cpdef vtk_raycasting(object surface, object pSource, object pTarget):
         _tup = pointsVTKIntersectionData.GetTuple3(idx)
         pointsIntersection.append(_tup)
 
-    return intersect, pointsIntersection, pointsVTKIntersectionData
+    return intersect, pointsIntersection, pointsVTKIntersectionData, obbTree
 
 
 cpdef pointquering(object surface,
@@ -757,11 +765,13 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
                  object nx = None,
                  object ny = None,
                  double tol=0.01,
+                 double tolg = 0.1,
                  str method = 'linear',
                  double epsilon=100,
                  constraints = None,
                  bint snap = True,
-                 bint remove_duplicates = True):
+                 bint remove_duplicates = True,
+                 bint triangulate = True):
     """
     Creates a grid surface interpolated with rbf. Optionaly will include (snap)
     input points.
@@ -779,6 +789,8 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
         number of rows and cols of the 2D grid
     tol: double (default 0.01)
         an error/warn will be raised if any pair of input points is within `tol` distance
+    tolg: double (default 0.1)
+        points xg,yg will be removed if distance from closes x,y point is within `tolg` distance
     method: str (default 'linear')
         any of ['multiquadric', 'inverse', 'gaussian', 'linear', 'cubic', 'quintic', 'thin_plate']
     epsilon: double (default 100)
@@ -808,19 +820,31 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
     #Check for duplicates around m metres for computational stability
     f = np.ones(shape=(len(x)), dtype=bool)
 
-    ktree = KDTree(np.stack((x, y), axis=-1))
-    duplicates = ktree.query_pairs(r=tol)
-    if len(duplicates)>0 and not remove_duplicates:
-      print ('points duplicated\n', duplicates)
-      raise ValueError('There are points duplicated within tolerance distance {}'.format(tol))
+    if remove_duplicates:
+      ktree = KDTree(np.stack((x, y), axis=-1))
+      duplicates = ktree.query_pairs(r=tol)
 
-    if len(duplicates)>0:
-      warnings.warn("There are {} duplicated points and second set of points was removed:\n {}".format(len(duplicates)>0,duplicates))
-      f[np.array(tuple(duplicates))[:,1]]=False
+      if len(duplicates)>0:
+        warnings.warn("There are {} duplicated points and second set of points was removed:\n {}".format(len(duplicates)>0,duplicates))
+        f[np.array(tuple(duplicates))[:,1]]=False
+
 
     # generate rbf and interpolate in grid
     rbfi = Rbf(x[f], y[f], z[f], epsilon=epsilon, function = method)
     zg = rbfi(xg, yg)
+
+    # Remove points from grid close to data
+    if remove_duplicates and snap:
+      mask = np.ones(xg.shape[0], dtype = bool)
+      if tolg is None:
+        tolg = dx/2.2
+      for i in range(xg.shape[0]):
+        if ktree.query([xg[i],yg[i]])[0]<tolg:
+          mask[i] = False
+
+      xg = xg[mask]
+      yg = yg[mask]
+      zg = zg[mask]
 
     # merge data
     if snap:
@@ -832,11 +856,17 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
       ya = np.concatenate((y[ff],yg))
       za = np.concatenate((z[ff],zg))
       # triangulate and calculate normals
-      mesh = delaunay2D (xa, ya, za, constraints = constraints)
-      return calculate_normals(mesh),xa, ya, za
+      if triangulate:
+        mesh = delaunay2D (xa, ya, za, constraints = constraints)
+        return calculate_normals(mesh),xa, ya, za
+      else:
+        return None,xa, ya, za
     else:
-      mesh = delaunay2D (xg, yg, zg, constraints = constraints)
-      return calculate_normals(mesh),xg, yg, zg
+      if triangulate:
+        mesh = delaunay2D (xg, yg, zg, constraints = constraints)
+        return calculate_normals(mesh),xg, yg, zg
+      else:
+        return None,xg, yg, zg
 
 
 # ----------------------------------------------------------------------
@@ -1229,11 +1259,6 @@ cpdef dxf2PolyData(str path):
     Requires the python modele ezdxf
 
     """
-    try:
-      import ezdxf
-    except:
-      print("This function requires the python module ezdxf")
-      raise
 
     # read the dxf
     dwg = ezdxf.readfile(path)
@@ -1274,11 +1299,98 @@ cpdef dxf2PolyData(str path):
 
     return cleanPolyData.GetOutput()
 
+
+
+
+def surpac_TRI2polydata(triangles):
+    """surpac_TRI2polydata(triangles)
+
+    Creates vtk polydata from triangled with coordinates:
+
+        ['x1','y1','z1','x2','y2','z2','x3','y3','z3']
+
+    Parameters
+    ----------
+    triangles : numpy 2d array
+        array of triangles with shape [n,9]
+
+    Returns
+    -------
+    vtkPolyData with vtkTriangle cells
+
+    """
+
+    assert triangles.shape[1]==9
+
+    n = triangles.shape[0]
+
+    # Put trisngles in vtkPolydata
+    meshpoints = vtk.vtkPoints()
+    meshtriangle = vtk.vtkTriangle()
+    meshtriangles = vtk.vtkCellArray()
+
+    id = 0
+    for i in range(n):
+        meshpoints.InsertNextPoint(triangles[i,0:3])
+        meshpoints.InsertNextPoint(triangles[i,3:6])
+        meshpoints.InsertNextPoint(triangles[i,6:9])
+        meshtriangle = vtk.vtkTriangle()
+        meshtriangle.GetPointIds().InsertId(0,id)
+        meshtriangle.GetPointIds().InsertId(1,id+1)
+        meshtriangle.GetPointIds().InsertId(2,id+2)
+        meshtriangles.InsertNextCell(meshtriangle)
+        id = id+3
+
+    mesh = vtk.vtkPolyData()
+    mesh.SetPoints(meshpoints)
+    mesh.SetPolys(meshtriangles)
+
+    # doing a bit of cleanup (remove duplicated points)
+    cleanPolyData = vtk.vtkCleanPolyData()
+    cleanPolyData.SetInputData(mesh)
+    cleanPolyData.Update()
+
+    return cleanPolyData.GetOutput()
+
+def line2polydata(line):
+    """line2polydata(line)
+
+    Creates vtk polydata from lines with coordinates:
+
+        ['x1','x2','...','xn']
+
+    Parameters
+    ----------
+    line : numpy 2d array
+        array of points with shape [n,3]
+
+    Returns
+    -------
+    vtkPolyData with vtkLine cells
+
+    """
+
+    points= vtk.vtkPoints()
+    vline = vtk.vtkLine()
+    lines = vtk.vtkCellArray()
+
+    for l in range(line.shape[0]):
+        points.InsertNextPoint(line[l][0], line[l][1], line[l][2])
+        vline.GetPointIds().InsertId(l,l)
+
+    lines.InsertNextCell(vline)
+
+    linesPolyData = vtk.vtkPolyData()
+    linesPolyData.SetPoints(points)
+    linesPolyData.SetLines(lines)
+
+    return linesPolyData
+
 # ----------------------------------------------------------------------
 #   Functions for imlicit modeling
 # ----------------------------------------------------------------------
 cpdef calculate_normals(object mesh, bint flip_normals=False):
-    """calculate_normals(mesh)
+    """calculate_normals(mesh, flip_normals=False)
 
     Takes a vtkPolydata Mesh and calculate its normal vectors.
 

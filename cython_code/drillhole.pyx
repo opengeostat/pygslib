@@ -1068,11 +1068,11 @@ def txt2int(text):
     """
 
     # create array of unique vales
-    a= pd.Series.unique(text) # this is a numpy array
+    a= pd.unique(text) # this is a numpy array
     b= np.arange(len(a))
     c= pd.Series(b, index=a)
 
-    return pd.Series(text).map(c), c
+    return pd.Series(text).map(c)+1, c
 
 
 

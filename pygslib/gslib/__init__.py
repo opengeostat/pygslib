@@ -1230,10 +1230,13 @@ def kt3d(parameters):
     if 'nbhid' in parameters:
         if parameters['nbhid']> 0 :
             # make sure exists
-            assert parameters['bhid'] is not None, 'Error: BHID required if nbhid > 0'
+            assert parameters['bhidint'] is not None, 'Error: BHID required if nbhid > 0'
 
             # make sure there is no drillhole number equal to zero
-            assert 0 not in parameters['bhid'], 'Error: BHID == 0 detected, BHIDs may be > 0 '
+            assert 0 not in parameters['bhidint'], 'Error: BHID == 0 detected, BHIDs may be > 0 '
+
+            # make sure the is bhid are correct
+            assert max(parameters['bhidint'])<=len(parameters['bhidint']), 'Error: bhidint > ndata detected, bhidint must be in interval [1,ndata] '
 
 
         # check not using octants and min
@@ -1249,29 +1252,34 @@ def kt3d(parameters):
     debug  = {}
     estimate={}
 
-    (output['outest'],
-    output['outkvar'],
-    output['outcdf'],
-    output['cbb'],
-    output['neq'],
-    output['na'],
-    output['dbgxdat'],
-    output['dbgydat'],
-    output['dbgzdat'],
-    output['dbgvrdat'],
-    output['dbgwt'],
-    output['dbgxtg'],
-    output['dbgytg'],
-    output['dbgztg'],
-    output['dbgkvector'],
-    output['dbgkmatrix'],
-    error,
-    fwarnings,
-    output['outidpower'],
-    output['outnn'],
-    output['outlagr'],
-    output['outwmean']) =__gslib__kt3d.pykt3d(**parameters)
+    try:
 
+        (output['outest'],
+        output['outkvar'],
+        output['outcdf'],
+        output['cbb'],
+        output['neq'],
+        output['na'],
+        output['dbgxdat'],
+        output['dbgydat'],
+        output['dbgzdat'],
+        output['dbgvrdat'],
+        output['dbgwt'],
+        output['dbgxtg'],
+        output['dbgytg'],
+        output['dbgztg'],
+        output['dbgkvector'],
+        output['dbgkmatrix'],
+        error,
+        fwarnings,
+        output['outidpower'],
+        output['outnn'],
+        output['outlagr'],
+        output['outwmean']) =__gslib__kt3d.pykt3d(**parameters)
+
+    except:
+
+        raise NameError('unexpected error in FORTRAN kt3d code')
 
 
     if len(error.strip())>0:

@@ -1,26 +1,26 @@
 !  kt3d.f90
-!  
+!
 !  Copyright 2016 Adrian Martinez Vargas <adrian.martinez@opengeostat.com>
-!  
+!
 !  This program is free software; you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
 !  the Free Software Foundation; either version 2 of the License, or
 !  (at your option) any later version.
-!  
+!
 !  This program is distributed in the hope that it will be useful,
 !  but WITHOUT ANY WARRANTY; without even the implied warranty of
 !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 !  GNU General Public License for more details.
-!  
+!
 !  You should have received a copy of the GNU General Public License
 !  along with this program; if not, write to the Free Software
 !  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 !  MA 02110-1301, USA.
-!  
-!  
+!
+!
 ! Version ### 5
 
-! compile with 
+! compile with
 ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !  gfortran -W -g -fbacktrace -ffpe-trap=zero,overflow,underflow kt3d.f90 gslib/*.f90 -o kt3d
 ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -36,7 +36,7 @@
 ! Note:  linked automatically to python but do not write it directly,
 !        use set_varname instead
 !
-! ====================================================================== 
+! ======================================================================
 Module Commons
 
     ! User Adjustable Parameters:
@@ -55,15 +55,15 @@ Module Commons
     VERSION=2.000)
 
 
-End Module Commons          
+End Module Commons
 
 ! ======================================================================
 !
-! Functions to set Global "System" variable values 
+! Functions to set Global "System" variable values
 !
 ! Note:  link these functions manually in setup.py
 !
-! ====================================================================== 
+! ======================================================================
 subroutine set_unest(unest_)
 
     use Commons
@@ -77,24 +77,24 @@ end subroutine set_unest
 
 ! ======================================================================
 !
-! Python wrapper, this is what we link to python 
+! Python wrapper, this is what we link to python
 !
 ! Note:  link these functions manually in setup.py
 !
-! ====================================================================== 
-subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! input data 
+! ======================================================================
+subroutine pykt3d( nd, x,y,z,vr,ve, bhidint, &                                   ! input data
            nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,&    ! block model definition (including  discretization)
            radius,radius1,radius2, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3, & ! search parameters
            idrif,&                                                      ! drift terms
            itrend,ktype,skmean,koption, iktype,ncut,cut, &              ! kriging options
-           nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,  &                   ! variogram parameters                                                       
-           nout, outx, outy, outz, outextve, outest, outkvar, &         ! output variable  
+           nst,c0,it,cc,aa,aa1,aa2,ang1,ang2,ang3,  &                   ! variogram parameters
+           nout, outx, outy, outz, outextve, outest, outkvar, &         ! output variable
            outcdf, &                                                    ! output in case of cdf
            idbg, cbb, neq, na, dbgxdat,dbgydat,dbgzdat, &                         ! debug level and data
-           dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg, dbgkvector, dbgkmatrix, & 
+           dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg, dbgkvector, dbgkmatrix, &
            errors, warns, &                                             ! Error output for python
            id2power, outid2, &                                          ! ID2power of the distance estimate and power
-           outnn, &                                                     ! nearest neighbor 
+           outnn, &                                                     ! nearest neighbor
            outlagr,outwmean)                                            ! lagrange multiplier  (mean drift only) and weight of the mean
 
 
@@ -104,110 +104,110 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
 
     ! ================
     ! input variables
-    ! ================       
+    ! ================
     integer, intent (in) :: nd
-    real, intent(in), dimension(nd) :: x                                ! only x is compulsory, if y,z,vr, ve not provided will be initialized to zero                      
-    real, intent(in), dimension(nd), optional :: y,z,vr,ve 
-    integer, intent(in), dimension(nd), optional :: bhid
-    
-    
+    real, intent(in), dimension(nd) :: x                                ! only x is compulsory, if y,z,vr, ve not provided will be initialized to zero
+    real, intent(in), dimension(nd), optional :: y,z,vr,ve
+    integer, intent(in), dimension(nd), optional :: bhidint
+
+
     integer, intent(in) :: nx,ny,nz                                     ! block model definition \nx,xmn,xsiz ...
-    real, intent(in) ::    xmn,ymn,zmn, xsiz,ysiz,zsiz 
+    real, intent(in) ::    xmn,ymn,zmn, xsiz,ysiz,zsiz
     integer, intent(in) :: nxdis,nydis,nzdis                            ! block discretization
 
     real, intent(in) :: radius,radius1,radius2                          ! search parameters
-    real, intent(in), optional  :: sang1,sang2,sang3       
+    real, intent(in), optional  :: sang1,sang2,sang3
     integer, intent(in) :: ndmax,ndmin
     integer, intent(in), optional ::noct,nbhid
 
     integer, intent(in), dimension (MAXDT), optional  :: idrif          ! drift terms (external)
-     
+
     integer, intent(in), optional :: itrend,ktype,koption               ! kriging options
     real, intent(in), optional :: skmean
 
-    integer, intent(in), optional ::  iktype                       ! especial parameters for indicator krigimg  iktype =1       
+    integer, intent(in), optional ::  iktype                       ! especial parameters for indicator krigimg  iktype =1
     integer, intent(in) :: ncut
     real, intent(in), dimension(ncut) ::cut
-    
+
     integer, intent(in) :: nst                                          ! Variogram parameters
     real, intent(in) :: c0
     integer, intent(in), dimension(nst):: it
     real, intent(in), dimension(nst):: cc,aa,aa1,aa2
     real, intent(in), dimension(nst), optional:: ang1,ang2,ang3
-    
-    integer, intent(in), optional :: idbg     
-    
-    
+
+    integer, intent(in), optional :: idbg
+
+
     real, intent(in) :: id2power
-                               
-    
+
+
     ! ==================
     ! output variables
     ! ==================
     integer, intent (in) :: nout
-    real, intent(in), dimension(nout), optional :: outy, outz, outextve 
-    real, intent(in), dimension(nout) :: outx    
+    real, intent(in), dimension(nout), optional :: outy, outz, outextve
+    real, intent(in), dimension(nout) :: outx
     real, intent(out), dimension(nout) :: outest, outkvar,outlagr,outwmean, outid2, outnn ! output variables
     real, intent(out), dimension(nout,ncut) :: outcdf
-    
+
     ! debug
     real*8, intent(out) :: cbb
     integer, intent(out) ::neq ,na
      real, intent(out), dimension(ndmax):: dbgxdat,dbgydat,dbgzdat,dbgvrdat
     real, intent(out), dimension(ndmax+MAXDT+2):: dbgwt,dbgkvector
     real, intent(out), dimension((ndmax+MAXDT+2),(ndmax+MAXDT+2)):: dbgkmatrix
- 
-    real, intent (out) :: dbgxtg,dbgytg,dbgztg
- 
-    character(LEN=250), intent(out)  :: errors, warns
-                
 
-               
-    
+    real, intent (out) :: dbgxtg,dbgytg,dbgztg
+
+    character(LEN=250), intent(out)  :: errors, warns
+
+
+
+
     ! ==================
     ! internal variables
     ! ==================
     real, dimension(nst):: anis1,anis2     ! anisotropy in variogram structures
-    real                   :: sanis1, sanis2  ! anisotropy in the search ellipse 
+    real                   :: sanis1, sanis2  ! anisotropy in the search ellipse
     integer,  dimension (MAXDT) :: idrif_                 ! drift terms (local)
     real :: skmean_
     real, dimension(nd) :: tmpbhid
-    
+
     do i=1, nd
-        tmpbhid(i) =  bhid(i) 
-    end do 
+        tmpbhid(i) =  bhidint(i)
+    end do
 
 
     ! create a local copy of the array
-    
+
     idrif_ = idrif
     skmean_ = skmean
 
     ! some of the check before in read parameter
-    
+
     if(nxdis < 1) stop 'Error in parameters nxdis,nxdis,nydis < 1'
-    
+
     if(nst <= 0) then
         write(*,9997) nst
         9997 format(' nst must be at least 1, it has been set to ',i4,/, &
         ' The c or a values can be set to zero')
         errors = 'Error in parameters: nst < 1'
         return
-    endif   
+    endif
 
 
-    ! compute anisotropy on search ellipse 
-    
-    if(radius < EPSLON) then 
+    ! compute anisotropy on search ellipse
+
+    if(radius < EPSLON) then
         errors = 'Error in parameters: radius < 0'
         return
-    end if 
+    end if
     sanis1 = radius1 / radius
-    sanis2 = radius2 / radius  
+    sanis2 = radius2 / radius
 
-    
 
-    !compute anis1 and anis2 and check the variogram 
+
+    !compute anis1 and anis2 and check the variogram
 
     do i=1,nst
         anis1(i) = aa1(i) / max(aa(i),EPSLON)
@@ -215,14 +215,14 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
         if(it(i) == 4) then
             if(aa(i) < 0.0) then
                  errors = 'Error in parameters: aa(i) < 0.0 invalid power variogram'
-                 return 
+                 return
             end if
             if(aa(i) > 2.0) then
                  errors = 'Error in parameters: aa(i) > 2.0 invalid power variogram'
-                 return 
+                 return
             end if
         end if
-    end do    
+    end do
 
 
 
@@ -242,7 +242,7 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
     write(*,*) '  Number   = ',nd
     write(*,*) '  Average  = ',av
     write(*,*) '  Variance = ',ss
-    
+
     ! report the input
 
     write(*,*) ' kriging option = ',koption
@@ -275,26 +275,26 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhid, &                                   ! 
         write(*,*) ' a1 a2 a3 anis1 anis2: ',aa(i),aa1(i),aa2(i), anis1(i), anis2(i)
     end do
 
-    write (*,*) '       ** anis computed as a2/a1  **' 
+    write (*,*) '       ** anis computed as a2/a1  **'
 
 
     ! call kriging
 
-    call   kt3d(   nd, x,y,z,vr,ve, tmpbhid, &                                        ! input data 
+    call   kt3d(   nd, x,y,z,vr,ve, tmpbhid, &                                        ! input data
                    nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,& ! block model definition (including  discretization)
                    radius, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
                    idrif,&                                                   ! drift terms
                    itrend,ktype,skmean,koption, iktype,ncut,cut, &           ! kriging options
                    nst,it,c0,cc,aa,ang1,ang2,ang3, anis1,anis2, &            ! variogram parameters
                    idbg, &
-                   nout, outx, outy, outz, outextve, outest, outkvar, &      ! output variable with the estimate, kvar and an indicator of success for a given block             
-                   outcdf, & 
+                   nout, outx, outy, outz, outextve, outest, outkvar, &      ! output variable with the estimate, kvar and an indicator of success for a given block
+                   outcdf, &
                    cbb,neq, na, dbgxdat,dbgydat,dbgzdat, &
                    dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg,dbgkvector, dbgkmatrix, &                  ! debug
                    errors, warns, &                                           ! Error output for python
                    id2power, outid2, &                                        ! ID2power of the distance estimate and power
-                   outnn, &                                                     ! nearest neighbor 
-                   outlagr,outwmean)                                            ! lagrange multiplier  (mean drift only) and weight of the mean 
+                   outnn, &                                                     ! nearest neighbor
+                   outlagr,outwmean)                                            ! lagrange multiplier  (mean drift only) and weight of the mean
 
 
 
@@ -307,26 +307,26 @@ end subroutine pykt3d
 
 ! ======================================================================
 !
-! Modified GSLIB Kriging functions   
+! Modified GSLIB Kriging functions
 !
 ! Note:  Do not link these to python, use wraper (pykt3d) instead
 !
 ! ======================================================================
-subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                        ! input data 
+subroutine kt3d(   nd, x,y,z,vr,ve, bhidint,&                                        ! input data
                    nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,& ! block model definition (including  discretization)
                    radius, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
                    idrif,&                                                   ! drift terms
                    itrend,ktype,skmean,koption, iktype,ncut,cut, &           ! kriging options
                    nst_,it,c0_,cc,aa,ang1,ang2,ang3, anis1,anis2, &          ! variogram parameters
                    idbg, &
-                   nout, outx, outy, outz, outextve, outest, outkvar,&       ! output variable with the estimate, kvar and an indicator of success for a given block  
-                   outcdf, & 
+                   nout, outx, outy, outz, outextve, outest, outkvar,&       ! output variable with the estimate, kvar and an indicator of success for a given block
+                   outcdf, &
                    cbb,neq, na, dbgxdat,dbgydat,dbgzdat, &
                    dbgvrdat,dbgwt,dbgxtg,dbgytg,dbgztg,dbgkvector, dbgkmatrix, &                  ! debug
                    errors, warns, &                                           ! Error output for python
                    id2power, outid2, &                                        ! ID2power of the distance estimate and power
-                   outnn, &                                                     ! nearest neighbor 
-                   outlagr,outwmean)                                            ! lagrange multiplier  (mean drift only) and weight of the mean 
+                   outnn, &                                                     ! nearest neighbor
+                   outlagr,outwmean)                                            ! lagrange multiplier  (mean drift only) and weight of the mean
     !-----------------------------------------------------------------------
 
     !                Krige a 3-D Grid of Rectangular Blocks
@@ -338,40 +338,40 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     ! This is a modified version, adapted to be linked to python
     ! all the output is trough variables (file output removed)
-    
+
     !
     ! Modified by : Adrian Martinez Vargas                             2016
     !
-    
+
 
     ! Original:  A.G. Journel and C. Lemmer                             1981
     ! Revisions: A.G. Journel and C. Kostov                             1984
-    !-----------------------------------------------------------------------               
-    
+    !-----------------------------------------------------------------------
+
     use commons
-    
-           
+
+
     ! ==================
     ! input variables
-    ! ==================              
-           
-    integer, intent (in) :: nd                               
-    real, intent(in), dimension(nd) :: x,y,z,vr,ve, bhid                  ! input data
-     
-    
+    ! ==================
+
+    integer, intent (in) :: nd
+    real, intent(in), dimension(nd) :: x,y,z,vr,ve, bhidint                  ! input data
+
+
     integer, intent(in) :: nx,ny,nz                                 ! block model definition \nx,xmn,xsiz ...
-    real, intent(in) ::    xmn,ymn,zmn, xsiz,ysiz,zsiz 
+    real, intent(in) ::    xmn,ymn,zmn, xsiz,ysiz,zsiz
     integer, intent(in) :: nxdis,nydis,nzdis                     ! block discretization
-    
+
     real, intent(in) :: radius, sang1,sang2,sang3,sanis1,sanis2                   ! search radius
     integer, intent(in) :: ndmax,ndmin,noct,nbhid
 
-    integer, intent(inout), dimension (MAXDT) :: idrif              ! drift terms 
+    integer, intent(inout), dimension (MAXDT) :: idrif              ! drift terms
 
     integer, intent(in) :: itrend,ktype,koption                     ! kriging options
     real, intent(inout) :: skmean
-    
-    integer, intent(in) ::  iktype,ncut                             ! especial parameters for indicator krigimg  iktype =1       
+
+    integer, intent(in) ::  iktype,ncut                             ! especial parameters for indicator krigimg  iktype =1
     real, intent(in), dimension(ncut)::cut
 
 
@@ -380,70 +380,70 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     integer, intent(in), dimension(nst_):: it
     real, intent(in), dimension(nst_):: cc,aa,ang1,ang2,ang3, &
                                           anis1,anis2
-    
-    integer, intent(in) :: idbg  ! TODO: >>>>> remove this    
+
+    integer, intent(in) :: idbg  ! TODO: >>>>> remove this
 
     real, intent(in) :: id2power
-    
-    
+
+
     ! ==================
     ! output variables
     ! ==================
     real, intent(in), dimension(nout) :: outx, outy, outz           ! centroid of the block where we want the estimation
-                                                                     ! block size is parent  
-                                                          
-    real, intent(in), dimension(nout) :: outextve                   ! external drift                                  
-                                                                    
-    
+                                                                     ! block size is parent
+
+    real, intent(in), dimension(nout) :: outextve                   ! external drift
+
+
     ! block covariance
-    real*8, intent (out) ::     cbb                                                               
-                                                                     
-    
+    real*8, intent (out) ::     cbb
+
+
     integer, intent (in) :: nout
-    real, intent(out), dimension(nout) :: outest, outkvar,outlagr,outwmean, outid2, outnn    ! output variable with the estimate, kvar and an indicator of success for a given block 
+    real, intent(out), dimension(nout) :: outest, outkvar,outlagr,outwmean, outid2, outnn    ! output variable with the estimate, kvar and an indicator of success for a given block
     real, intent(out), dimension(nout,ncut) :: outcdf
-    
+
     ! debug
     integer, intent(out) ::neq , na
     real, intent(out), dimension(ndmax):: dbgxdat,dbgydat,dbgzdat,dbgvrdat
     real, intent(out), dimension(ndmax+MAXDT+2):: dbgwt,dbgkvector
     real, intent(out), dimension((ndmax+MAXDT+2),(ndmax+MAXDT+2)):: dbgkmatrix
-    
+
     real, intent (out) :: dbgxtg,dbgytg,dbgztg
-    
+
     character(LEN=250), intent(out)  :: errors, warns
 
     ! =================
     ! local variables
     ! =================
-    
+
     integer :: nst(1)                                   ! Variogram parameters
     real :: c0(1)
     integer :: maxrot
-    
-    ! array to count the number of samples per dhole. We assume that number of drillholes <= number of samples  
+
+    ! array to count the number of samples per dhole. We assume that number of drillholes <= number of samples
     integer, dimension(nd) :: nnbhid
-    
-     
-    
-    ! array of varianles to read from file >>>>>> remove 
+
+
+
+    ! array of varianles to read from file >>>>>> remove
     real ::       var(20)
     logical ::    first,fircon,accept
     data       fircon/ .TRUE. /
-    
+
     ! set of array with the same size of data
     real, dimension(:), allocatable :: tmp, close, xa,ya,za,vra,vea, vid2
     integer :: AllocateStatus
-    
+
     ! unbias and drift means
     real :: unbias, bv(MAXDT)
-    
+
     ! cdf of the actual block estimate, if iktype = 1
     real :: cdf(ncut)
-    
+
     ! kriging matrix and rotation matrix
     real*8 ::  rotmat(nst_+1,3,3)
-    
+
     ! block discretization
     real :: xdb(nxdis*nydis*nzdis), &
             ydb(nxdis*nydis*nzdis), &
@@ -459,17 +459,17 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     integer :: nloop
 
-    ! tmp estimates 
+    ! tmp estimates
     real nnest, id2est, est, estv, tmpsum, tmplagrg, tmpwgtmean
 
 
     ! alocate local arrays
-    
+
     allocate ( tmp(nd), close(nd),xa(nd),ya(nd),za(nd),vra(nd),vea(nd), vid2(nd), STAT = AllocateStatus)
-    if (AllocateStatus /= 0) then 
+    if (AllocateStatus /= 0) then
         errors = "Error Internal: There was a problem allocating arrays in memory"
-        return 
-    end if                                                                        
+        return
+    end if
 
     c0(1)=c0_
     nst(1)=nst_
@@ -479,8 +479,8 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     ! computations start here
     ! =================
 
-    
-    ! we define the array where we estimate externally (like in jackknife) 
+
+    ! we define the array where we estimate externally (like in jackknife)
     nloop = nout
 
 
@@ -503,8 +503,8 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     end do
     isrot = nst_ + 1
     call setrot(sang1,sang2,sang3,sanis1,sanis2,isrot,maxrot,rotmat)
-    
-    
+
+
     ! Finish computing the rescaling factor and stop if unacceptable:
 
     if(radsqd < 1.0) then
@@ -512,22 +512,22 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
     else
         resc =(4.0 * radsqd)/ max(covmax,0.0001)
     endif
-! >>> handle error    
+! >>> handle error
     if(resc <= 0.0) then
         write(*,*) 'ERROR KT3D: The rescaling value is wrong ',resc
         write(*,*) '            Maximum covariance: ',covmax
         write(*,*) '            search radius:      ',radius
         errors = "Error Internal: The rescaling value is wrong"
-        return 
+        return
     endif
     resc = 1.0 / resc
 
-    ! Set up for super block searching:                               ! here use kdtree 
+    ! Set up for super block searching:                               ! here use kdtree
 
     write(*,*) 'Setting up super block search strategy'
-    nsec = 2   ! the original code has 1, 2 is to sort bhid with the same order  
+    nsec = 2   ! the original code has 1, 2 is to sort bhid with the same order
     call setsupr(nx,xmn,xsiz,ny,ymn,ysiz,nz,zmn,zsiz,nd,x,y,z, &
-    vr,tmp,nsec,ve,bhid,sec3,MAXSBX,MAXSBY,MAXSBZ,nisb, &
+    vr,tmp,nsec,ve,bhidint,sec3,MAXSBX,MAXSBY,MAXSBZ,nisb, &
     nxsup,xmnsup,xsizsup,nysup,ymnsup,ysizsup,nzsup, &
     zmnsup,zsizsup)
     call picksup(nxsup,xsizsup,nysup,ysizsup,nzsup,zsizsup, &
@@ -544,7 +544,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
         if(idrif(i) < 0 .OR. idrif(i) > 1) then
             write(*,*) 'ERROR KT3D: invalid drift term',idrif(i)
             errors = "Error Internal: Invalid drift term (idrif(i) < 0 .OR. idrif(i) > 1)"
-            return 
+            return
         endif
         mdt = mdt + idrif(i)
     end do
@@ -582,9 +582,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
         end do
     end do
 
-    ! output discretization 
-    
-    if (idbg > 0) then 
+    ! output discretization
+
+    if (idbg > 0) then
         write (*,*) ' for block with coordinate at ', 0,0,0
         write (*,*) '                and side size ', xsiz,xsiz,xsiz
         write (*,*) '  The discretization coordinates are : '
@@ -606,8 +606,8 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     call cova3(xdb(1),ydb(1),zdb(1),xdb(1),ydb(1),zdb(1),1,nst,nst_, &
     c0,it,cc,aa,1,maxrot,rotmat,cmax,cov)
-    
-    if (idbg>0)  write (*,*) ' The point covariance (cov) is ', cov 
+
+    if (idbg>0)  write (*,*) ' The point covariance (cov) is ', cov
 
     ! Set the ``unbias'' variable so that the matrix solution is more stable
 
@@ -625,7 +625,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
         end do
         cbb = cbb/dble(real(ndb*ndb))
     end if
-    
+
     if (idbg>0)  write (*,*) ' The block covariance (cbb) is ', cbb
 
 
@@ -655,7 +655,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     write(*,*)
     write(*,*) 'Working on the kriging with nloop:  ', nloop
- 
+
 
     ! MAIN LOOP OVER ALL THE BLOCKS IN THE GRID:
 
@@ -663,57 +663,57 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
         if((int(index/irepo)*irepo) == index) &
            write(*,*) '   currently on estimate [ind,x,y,z]', &
            index, outx(index), outy(index), outz(index)
-            
+
         ! Where are we making an estimate?
-             
+
 
         xloc = outx(index)
         yloc = outy(index)
         zloc = outz(index)
         true = UNEST
         secj = UNEST
-        
 
-    
+
+
         ! Read in the external drift variable for this grid node if needed:
-    
+
         if(ktype == 2 .OR. ktype == 3) then
-            extest = outextve(index)                                    ! warn if doing it in sparse data 
+            extest = outextve(index)                                    ! warn if doing it in sparse data
             resce  = covmax / max(extest,0.0001)
         endif
-    
+
         ! Find the nearest samples:
-    
+
         call srchsupr(xloc,yloc,zloc,radsqd,isrot,maxrot,rotmat,nsbtosr, &
         ixsbtosr,iysbtosr,izsbtosr,noct,nd,x,y,z,tmp, &
         nisb,nxsup,xmnsup,xsizsup,nysup,ymnsup,ysizsup, &
         nzsup,zmnsup,zsizsup,nclose,close,infoct)
-    
+
         ! Load the nearest data in xa,ya,za,vra,vea:
-    
+
         ! initialize array to count number of samples per dhole
         if (nbhid > 0) nnbhid(:) = 0
-    
+
         na = 0
         do i=1,nclose
             ind    = int(close(i)+0.5)
-            accept = .TRUE. 
+            accept = .TRUE.
             if(koption /= 0 .AND. &
-            (abs(x(ind)-xloc)+abs(y(ind)-yloc)+ abs(z(ind)-zloc)) & ! this is what excludes the point in cross val and jackknife 
+            (abs(x(ind)-xloc)+abs(y(ind)-yloc)+ abs(z(ind)-zloc)) & ! this is what excludes the point in cross val and jackknife
              < EPSLON) accept = .FALSE.
             ! Check maxumum number of samples per drillhole
             if (nbhid > 0) then
-                
-                ! get drillhole number (1 to ndholes) 
-                dhnum = bhid(ind)                                       ! warning, make sure BHID are greater than zero, otherwise this BHID 0 will be ignored
+
+                ! get drillhole number (1 to ndholes)
+                dhnum = bhidint(ind)                                       ! warning, make sure BHID are greater than zero, otherwise this BHID 0 will be ignored
                 ! add and count num of samples in this dholes
-                nnbhid(dhnum) = nnbhid(dhnum) + 1 
-                ! ignore sample if exedded maximum per drillohole 
+                nnbhid(dhnum) = nnbhid(dhnum) + 1
+                ! ignore sample if exedded maximum per drillohole
                 if (nnbhid(dhnum) > nbhid) accept = .FALSE.
-                
-                
-            end if  
-              
+
+
+            end if
+
             if(accept) then
                 if(na < ndmax) then
                     na = na + 1
@@ -722,13 +722,13 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                     za(na)  = z(ind) - zloc + 0.5*zsiz
                     vra(na) = vr(ind)
                     vea(na) = ve(ind)
-                    
+
                 end if
             end if
         end do
-    
+
         ! Test number of samples found:
-    
+
         if(na < ndmin) then
             est  = UNEST
             estv = UNEST
@@ -738,13 +738,13 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             tmpwgtmean = UNEST
             go to 1
         end if
-    
+
         ! Test if there are enough samples to estimate all drift terms:
-    
+
         if(na >= 1 .AND. na <= mdt) then
             if(fircon) then
                 warns = trim(warns) // ' Encountered a location where there were too few data to estimate all of the drift terms'
-                fircon = .FALSE. 
+                fircon = .FALSE.
             end if
             est  = UNEST
             estv = UNEST
@@ -754,9 +754,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             go to 1
         end if
 
-    
+
         ! There are enough samples - proceed with estimation.
-    
+
         ! Then do inverse of the power of the distance (this is point estimate without anisotropy)
         ! a) calculate inverse power and its sum
         tmpsum=0.
@@ -765,32 +765,32 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             if (vid2(i) < EPSLON)  vid2(i) = EPSLON                      ! handle zero distance
             vid2(i) = 1./vid2(i)
             tmpsum = tmpsum + vid2(i)
-        end do 
-        
+        end do
+
         ! b) correct the power and calculate Id power output
-        
-        if (tmpsum > 0.) then 
-            id2est = 0.        
+
+        if (tmpsum > 0.) then
+            id2est = 0.
             do i=1, na
-                id2est = id2est + vra(i) * vid2(i)/tmpsum               ! compute ID power estimate 
+                id2est = id2est + vra(i) * vid2(i)/tmpsum               ! compute ID power estimate
             end do
         else
-            id2est = UNEST              
+            id2est = UNEST
         end if
-    
+
         ! This is the nearest neighbor estimate
         nnest = vra(1)
-        
-    
+
+
         if(na <= 1) then
-        
+
             ! Handle the situation of only one sample:
-        
+
             call cova3(xa(1),ya(1),za(1),xa(1),ya(1),za(1),1,nst,nst_, &
             c0,it,cc,aa,1,maxrot,rotmat,cmax,cb1)
-        
+
             ! Establish Right Hand Side Covariance:
-        
+
             if(ndb <= 1) then
                 call cova3(xa(1),ya(1),za(1),xdb(1),ydb(1),zdb(1),1, &
                 nst,MAXNST,c0,it,cc,aa,1,maxrot,rotmat,cmax,cb)                  ! TODO fix this: MAXNST not ok use nst_
@@ -815,20 +815,20 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             vk   = vk + vra(1)*vra(1)
             go to 1
         end if
-    
+
         ! Go ahead and set up the OK portion of the kriging matrix:
-    
+
         neq = mdt+na
-    
+
         ! Initialize the main kriging matrix:
-    
-        first = .FALSE. 
+
+        first = .FALSE.
         do i=1,neq*neq
             a(i) = 0.0
         end do
-    
+
         ! Fill in the kriging matrix:
-    
+
         do i=1,na
             do j=i,na
                 call cova3(xa(i),ya(i),za(i),xa(j),ya(j),za(j),1,nst,nst_, &
@@ -837,18 +837,18 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                 a(neq*(j-1)+i) = dble(cov)
             end do
         end do
-    
+
         ! Fill in the OK unbiasedness portion of the matrix (if not doing SK):
-    
+
         if(neq > na) then
             do i=1,na
                 a(neq*(i-1)+na+1) = dble(unbias)
                 a(neq*na+i)       = dble(unbias)
             end do
         endif
-    
+
         ! Set up the right hand side:
-    
+
         do i=1,na
             if(ndb <= 1) then
                 call cova3(xa(i),ya(i),za(i),xdb(1),ydb(1),zdb(1),1, &
@@ -870,13 +870,13 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             r(i) = dble(cb)
         end do
         if(neq > na) r(na+1) = dble(unbias)
-    
+
         ! Add the additional unbiasedness constraints:
-    
+
         im = na + 1
-    
+
         ! First drift term (linear in "x"):
-    
+
         if(idrif(1) == 1) then
             im=im+1
             do k=1,na
@@ -885,9 +885,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(1))
         endif
-    
+
         ! Second drift term (linear in "y"):
-    
+
         if(idrif(2) == 1) then
             im=im+1
             do k=1,na
@@ -896,9 +896,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(2))
         endif
-    
+
         ! Third drift term (linear in "z"):
-    
+
         if(idrif(3) == 1) then
             im=im+1
             do k=1,na
@@ -907,9 +907,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(3))
         endif
-    
+
         ! Fourth drift term (quadratic in "x"):
-    
+
         if(idrif(4) == 1) then
             im=im+1
             do k=1,na
@@ -918,9 +918,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(4))
         endif
-    
+
         ! Fifth drift term (quadratic in "y"):
-    
+
         if(idrif(5) == 1) then
             im=im+1
             do k=1,na
@@ -929,9 +929,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(5))
         endif
-    
+
         ! Sixth drift term (quadratic in "z"):
-    
+
         if(idrif(6) == 1) then
             im=im+1
             do k=1,na
@@ -940,9 +940,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(6))
         endif
-    
+
         ! Seventh drift term (quadratic in "xy"):
-    
+
         if(idrif(7) == 1) then
             im=im+1
             do k=1,na
@@ -951,9 +951,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(7))
         endif
-    
+
         ! Eighth drift term (quadratic in "xz"):
-    
+
         if(idrif(8) == 1) then
             im=im+1
             do k=1,na
@@ -962,9 +962,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(8))
         endif
-    
+
         ! Ninth drift term (quadratic in "yz"):
-    
+
         if(idrif(9) == 1) then
             im=im+1
             do k=1,na
@@ -973,9 +973,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(bv(9))
         endif
-    
+
         ! External drift term (specified by external variable):
-    
+
         if(ktype == 3) then
             im=im+1
             do k=1,na
@@ -984,9 +984,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             end do
             r(im) = dble(extest*resce)
         endif
-    
+
         ! Copy the right hand side to compute the kriging variance later:
-    
+
         do k=1,neq
             rr(k) = r(k)
         end do
@@ -994,18 +994,18 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
         ksdim = neq
         nrhs  = 1
         nv    = 1
-    
+
         ! If estimating the trend then reset all the right hand side terms=0.0:
-    
+
         if(itrend >= 1) then
             do i=1,na
                 r(i)  = 0.0
                 rr(i) = 0.0
             end do
         endif
-    
+
         ! Write out the kriging Matrix if Seriously Debugging:
-    
+
         if(idbg>0) then
             write(*,*) 'Estimating node index : ', index
             is = 1 - neq
@@ -1014,20 +1014,20 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                 ie = is + neq - 1
                 write(*,100) i,r(i),(a(j),j=is,ie)
                 100 format('    r(',i2,') =',f7.4,'  a= ',9(10f7.4))
-                
+
                 ! output kriging matrix of the las estimate
                 dbgkvector(i) = r(i)
                 dbgkmatrix(i,1:neq)= a(is:ie)
-                
+
             end do
         endif
-    
+
         ! Solve the kriging system:
-    
+
         call ktsol(neq,nrhs,nv,a,r,s,ising,ndmax+MAXDT+2)
-    
+
         ! Compute the solution:
-    
+
         if(ising /= 0) then
             if(idbg >0) write(*,*) ' Singular Matrix ', index
             est  = UNEST
@@ -1054,12 +1054,12 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             nk   = nk + 1
             xk   = xk + est
             vk   = vk + est*est
-            
+
             tmplagrg = UNEST
             if(ktype == 1) tmplagrg = real(s(na+1)*unbias)
-        
+
             ! Write the kriging weights and data if debugging level is above 2:
-        
+
             if(idbg > 0) then
                 write(*,*) '       '
                 write(*,*) 'BLOCK: ',index,' at ',xloc,yloc,zloc
@@ -1071,21 +1071,21 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                     xa(i) = xa(i) + xloc - 0.5*xsiz
                     ya(i) = ya(i) + yloc - 0.5*ysiz
                     za(i) = za(i) + zloc - 0.5*zsiz
-                    
+
                     ! output sample location and wt of the last estimate
                     dbgxdat(i) = xa(i)
                     dbgydat(i) = ya(i)
                     dbgzdat(i) = za(i)
                     dbgvrdat(i) = vra(i)
                     dbgwt(i) = s(i)
-                    
-                    dbgxtg = xloc 
+
+                    dbgxtg = xloc
                     dbgytg = yloc
                     dbgztg = zloc
-                    
+
                     write(*,'(5f12.3)') xa(i),ya(i),za(i), vra(i),s(i)
                 end do
-                
+
                 do i=na+1,neq
                     dbgwt(i)=s(i)*unbias                                ! (note that here we report all lagranges, rescaled back to covariace scale)
                 end do
@@ -1093,9 +1093,9 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
             endif
         endif
 
-    
+
         ! END OF MAIN KRIGING LOOP:
-    
+
         1 continue
         if(iktype == 0) then
 
@@ -1107,10 +1107,10 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                 outnn(index) = nnest
 
         else
-        
+
             ! Work out the IK-type distribution implicit to this data configuration
             ! and kriging weights:
-        
+
             do icut=1,ncut
                 cdf(icut) = -1.0
             end do
@@ -1135,12 +1135,12 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
                     end do
                 end do
             end if
-            
+
             ! write the cdf in a 2D array
             do icut=1,ncut
                 outcdf(index,icut)=cdf(icut)
             end do
-            
+
         end if
     end do
 
@@ -1148,7 +1148,7 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     ! Write statistics of kriged values:
 
-     
+
     if(nk > 0 .AND. idbg > 0) then
         xk    = xk/real(nk)
         vk    = vk/real(nk) - xk*xk
@@ -1162,16 +1162,13 @@ subroutine kt3d(   nd, x,y,z,vr,ve, bhid,&                                      
 
     ! All finished the kriging:
 
-    ! deallocate internal arrays 
+    ! deallocate internal arrays
     deallocate ( tmp, close,xa,ya,za,vra,vea,vid2, STAT = AllocateStatus)
     if (AllocateStatus /= 0) Then
         errors = "Error Internal: There was a problem deallocating arrays from memory"
-        return 
+        return
     end if
 
     return
 
 end subroutine kt3d
-
-
-

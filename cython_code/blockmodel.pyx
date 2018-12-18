@@ -257,7 +257,7 @@ cpdef ijk2ind(np.ndarray [long, ndim=1] ijk,
     The indices ix, iy and iz start at zero
 
     """
-    cdef float fnx, fny,fnz
+    cdef double fnx, fny,fnz
 
     assert nx>0 and ny>0 and nz>0, 'Error: nx, ny and nz may be >=1 '
     assert nx*ny*nz>=ijk.shape[0], 'Error: out of range, nx*ny*nz<ijk.shape[0] '
