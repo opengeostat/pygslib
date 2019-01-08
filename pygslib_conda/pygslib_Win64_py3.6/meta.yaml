@@ -12,7 +12,7 @@ requirements:
     - cython
     - setuptools
     - numpy
-    - vc=14
+    - vc=14.1
     - vs2015_runtime
 
   run:

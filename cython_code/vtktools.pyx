@@ -1226,8 +1226,8 @@ cpdef PolyData2dxf(object mesh, str path):
     if not path.lower().endswith('.dxf'):
         path = path + '.dxf'
 
-        dxfdw = ezdxf.new()
-        dxfmd = dxfdw.modelspace()
+    dxfdw = ezdxf.new()
+    dxfmd = dxfdw.modelspace()
 
     for i in range(mesh.GetNumberOfCells()):
         #check the type is 5 (a tringle)
