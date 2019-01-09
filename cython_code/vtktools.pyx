@@ -489,7 +489,7 @@ cpdef grid2vtkImageData(
     """
 
     ufgrid = vtk.vtkImageData()
-    ufgrid.SetOrigin(xorg+dx/2,yorg+dy/2,zorg+dz/2)
+    ufgrid.SetOrigin(xorg,yorg,zorg)
     ufgrid.SetSpacing(dx,dy,dz)
     ufgrid.SetDimensions(nx+1,ny+1,nz+1)
 
