@@ -1238,6 +1238,46 @@ cpdef PolyData2dxf(object mesh, str path):
 
     dxfdw.saveas(path)
 
+cpdef PolyData2dxf_Quad(object mesh, str path):
+    """PolyData2dxf_Quad(object mesh, str path)
+
+    Saves a mesh vtkPolydataData into a dxf file ('*.dxf')
+    Only vtkQuad cells will be exported.
+
+    Parameters
+    ----------
+    mesh : vtkPolyData
+        vtk object with vtkQuad cells
+    path : str
+        File name and path. Extension (*.dxf) will be added if not provided
+
+    Note
+    -----
+    Requires the python modele ezdxf
+
+    """
+    try:
+      import ezdxf
+    except:
+      print("This function requires the python module ezdxf")
+      raise
+
+    # add extension to path
+    if not path.lower().endswith('.dxf'):
+        path = path + '.dxf'
+
+    dxfdw = ezdxf.new()
+    dxfmd = dxfdw.modelspace()
+
+    for i in range(mesh.GetNumberOfCells()):
+        #check the type is 5 (a tringle)
+        if mesh.GetCellType(i)==9:
+            dxfmd.add_3dface((mesh.GetCell(i).GetPoints().GetPoint(0),
+                              mesh.GetCell(i).GetPoints().GetPoint(1),
+                              mesh.GetCell(i).GetPoints().GetPoint(2),
+                              mesh.GetCell(i).GetPoints().GetPoint(3)))
+
+    dxfdw.saveas(path)
 
 cpdef dxf2PolyData(str path):
     """dxf2PolyData(path)
@@ -1270,7 +1310,7 @@ cpdef dxf2PolyData(str path):
     triangles = []
     for e in msp.query('3DFACE'):
         # get point coordinates of the triangle (one per row)
-        triangles.append([e.dxf.vtx0, e.dxf.vtx1, e.dxf.vtx3])
+        triangles.append([e.dxf.vtx0, e.dxf.vtx1, e.dxf.vtx2])
 
     # Put trisngles in vtkPolydata
     meshpoints = vtk.vtkPoints()
@@ -1299,7 +1339,67 @@ cpdef dxf2PolyData(str path):
 
     return cleanPolyData.GetOutput()
 
+cpdef dxf2PolyData_Quad(str path):
+    """dxf2PolyData_Quad(path)
 
+    Reads a mesh in dxf format ('*.dxf') and returns a Polydata Mesh
+    Only 3DFACE of 4 side quadrilaters will be imported.
+
+    Parameters
+    ----------
+    path : str
+        File name and path of dxf file.
+
+    Returns
+    -------
+    vtkPolyData with vtkQuad cells
+
+    Note
+    -----
+    Requires the python modele ezdxf
+
+    """
+
+    # read the dxf
+    dwg = ezdxf.readfile(path)
+
+    # get the dxf model space
+    msp = dwg.modelspace()
+
+    # extract all the triangles
+    quads = []
+    for e in msp.query('3DFACE'):
+        # get point coordinates of the triangle (one per row)
+        quads.append([e.dxf.vtx0, e.dxf.vtx1, e.dxf.vtx2,e.dxf.vtx3])
+
+    # Put quads in vtkPolydata
+    meshpoints = vtk.vtkPoints()
+    meshquad = vtk.vtkQuad()
+    meshquads = vtk.vtkCellArray()
+    id = 0
+    for i in quads:
+        meshpoints.InsertNextPoint(i[0])
+        meshpoints.InsertNextPoint(i[1])
+        meshpoints.InsertNextPoint(i[2])
+        meshpoints.InsertNextPoint(i[3])
+        meshquad= vtk.vtkQuad()
+        meshquad.GetPointIds().InsertId(0,id)
+        meshquad.GetPointIds().InsertId(1,id+1)
+        meshquad.GetPointIds().InsertId(2,id+2)
+        meshquad.GetPointIds().InsertId(3,id+3)
+        meshquads.InsertNextCell(meshquad)
+        id = id+4
+
+    mesh = vtk.vtkPolyData()
+    mesh.SetPoints(meshpoints)
+    mesh.SetPolys(meshquads)
+
+    # doing a bit of cleanup (remove duplicated points)
+    cleanPolyData = vtk.vtkCleanPolyData()
+    cleanPolyData.SetInputData(mesh)
+    cleanPolyData.Update()
+
+    return cleanPolyData.GetOutput()
 
 
 def surpac_TRI2polydata(triangles):
