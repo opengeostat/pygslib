@@ -112,5 +112,4 @@ class string_record:
             line = '{}, {} \n'.format(num, str(string))
             string_list = string_list + line
         return string_list
-SURPAC = Surpac('surpac_strings.txt')
-print(SURPAC)
+
