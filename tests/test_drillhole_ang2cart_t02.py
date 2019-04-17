@@ -3,7 +3,6 @@ import pytest
 
 from pygslib.drillhole import ang2cart
 
-
 #create dum function and assign docstring (pytest does not run directly from ang2cart)
 def test_ang2cart_01():
     # use pytest.approx to avoid precision issues
@@ -14,5 +13,3 @@ def test_ang2cart_02():
 
 def test_ang2cart_03():
     assert ang2cart( azm = 45, dip = 90) == pytest.approx((0.0, 0.0, -1.0), abs = 0.1)
-
-
