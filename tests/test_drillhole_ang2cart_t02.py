@@ -2,7 +2,7 @@
 import pytest
 
 from pygslib.drillhole import ang2cart
-from pygslib.surpac.surpac import Surpac
+
 
 #create dum function and assign docstring (pytest does not run directly from ang2cart)
 def test_ang2cart_01():
@@ -15,6 +15,4 @@ def test_ang2cart_02():
 def test_ang2cart_03():
     assert ang2cart( azm = 45, dip = 90) == pytest.approx((0.0, 0.0, -1.0), abs = 0.1)
 
-def test_surpac():    
-    SURPAC = Surpac('surpac_strings.txt')
-    str(SURPAC)
+

@@ -9,9 +9,8 @@ class Surpac:
         file = read.readlines()
         header = file[0].strip()
         header_split = header.split(",")
-        for i in enumerate(header_split):
-            k = header_split[i]
-            header_split[i] = k.strip()
+        for i, h in enumerate(header_split):
+            header_split[i] = h.strip()
         self.location = header_split[0]
         self.date = header_split[1]
         self.purpose = header_split[2]
@@ -88,7 +87,7 @@ class String:
             for n in range(0, 101):
                 self.d[n] = line_split[n+4].strip()
         except IndexError:
-            self.length_d = n-1
+            self.length_d = n
     def __str__(self):
         y = str(self.y).strip()
         x = str(self.x).strip()
@@ -112,4 +111,6 @@ class string_record:
             line = '{}, {} \n'.format(num, str(string))
             string_list = string_list + line
         return string_list
+
+
 
