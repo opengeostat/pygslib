@@ -1085,7 +1085,7 @@ def kt3d(parameters):
             'z' : ,   # (optional) rank-1 array('f') with bounds (nd)
             'vr' : ,   # (optional) rank-1 array('f') with bounds (nd)
             've' : ,   # (optional) rank-1 array('f') with bounds (nd)
-            'bhid': , #  (optional) rank-1 array('i') with bounds (nd)
+            'bhidint': , #  (optional) rank-1 array('i') with bounds (nd)
             # Output (Target)
             # ----------
             'nx' : ,   # int

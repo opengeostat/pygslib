@@ -2068,6 +2068,8 @@ cdef class Drillhole:
         Gaps and overlaps at the end of the drillhole
         (if endhole==True) _id0 will have value -888.
 
+        This function only works if there is more than one drillhole in collar
+
         TODO
         ----
          - [] Fix example section.

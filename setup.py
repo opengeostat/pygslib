@@ -147,7 +147,7 @@ if __name__ == '__main__':
 				 sandbox,
                  progress]
 
-    extensions = cythonize(extensions)
+    extensions = cythonize(extensions, gdb_debug=True)
 
     setup(name=name,
           version=version,
