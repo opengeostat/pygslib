@@ -7,6 +7,7 @@ class Surpac:
     def __init__(self, file_name):
         read = open(file_name)
         file = read.readlines()
+        read.close()
         header = file[0].strip()
         header_split = header.split(",")
         for i, h in enumerate(header_split):

@@ -121,6 +121,7 @@ if __name__ == '__main__':
 
     #pure python
     progress= Extension(name ='pygslib.progress',sources =['pygslib/progress.py'])
+    surpac= Extension(name ='pygslib.surpac',sources =['pygslib/surpac.py'])
 
 	# All extensions Fortran + Cython
 
@@ -145,7 +146,8 @@ if __name__ == '__main__':
 				 vtktools,
 				 nonlinear,
 				 sandbox,
-                 progress]
+                 progress,
+				 surpac]
 
     extensions = cythonize(extensions, gdb_debug=True)
 
