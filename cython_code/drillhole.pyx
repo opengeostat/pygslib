@@ -1679,7 +1679,7 @@ cdef class Drillhole:
 
     cpdef desurvey(self, str table_name, bint endpoints=True,
                    bint warns=True, int method=1):
-        """desurvey(str table_name, bint endpoints=False, bint warns=True)
+        """desurvey(str table_name, bint endpoints=True, bint warns=True, int method=1)
 
         Desurvey a drillhole table.
 
