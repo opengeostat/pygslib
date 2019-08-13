@@ -510,7 +510,10 @@ cpdef partialgrid2vtkfile(str path,
                    double DY,
                    double DZ,
                    object var,
-                   object varname):
+                   object varname,
+                   object dx = None,
+                   object dy = None,
+                   object dz = None ):
     """partialgrid2vtkfile(str path, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double DX, double DY, double DZ, object var, object varname)
 
     Saves data in the cells of a VTK Unstructured Grid file
@@ -524,8 +527,14 @@ cpdef partialgrid2vtkfile(str path,
         coordinates of the points
     DX,DY,DZ : float
         block sizes
-    data : array like
+    var : list of 1D arrays
         array with variable values.
+    varname : list of strings
+        variables names.
+    dx, dy, dz: None or array, default None
+        variable block size in each direction. If None DX,DY,DZ are used
+
+    # TODO: implement rotations
     """
 
     # add extension to path
@@ -536,16 +545,25 @@ cpdef partialgrid2vtkfile(str path,
     # number of cells/blocks
     nc = x.shape[0]
 
+    if dx is None:
+      dx = np.ones(nc)*DX
+
+    if dy is None:
+      dy = np.ones(nc)*DY
+
+    if dz is None:
+      dz = np.ones(nc)*DZ
+
     #number of variables
     nvar = len(var)
 
     # number of points (block vertex)
-    np = nc*8
+    npt = nc*8
 
     # Create array of the points and ID
     pcoords = vtk.vtkFloatArray()
     pcoords.SetNumberOfComponents(3)
-    pcoords.SetNumberOfTuples(np)
+    pcoords.SetNumberOfTuples(npt)
 
     points = vtk.vtkPoints()
     voxelArray = vtk.vtkCellArray()
@@ -555,14 +573,14 @@ cpdef partialgrid2vtkfile(str path,
     #for each block
     for i in range (nc):
         # for each vertex
-        pcoords.SetTuple3(id, x[i]+DX/2., y[i]-DY/2., z[i]-DZ/2.)
-        pcoords.SetTuple3(id+1, x[i]-DX/2., y[i]-DY/2., z[i]-DZ/2.)
-        pcoords.SetTuple3(id+2, x[i]+DX/2., y[i]+DY/2., z[i]-DZ/2.)
-        pcoords.SetTuple3(id+3, x[i]-DX/2., y[i]+DY/2., z[i]-DZ/2.)
-        pcoords.SetTuple3(id+4, x[i]+DX/2., y[i]-DY/2., z[i]+DZ/2.)
-        pcoords.SetTuple3(id+5, x[i]-DX/2., y[i]-DY/2., z[i]+DZ/2.)
-        pcoords.SetTuple3(id+6, x[i]+DX/2., y[i]+DY/2., z[i]+DZ/2.)
-        pcoords.SetTuple3(id+7, x[i]-DX/2., y[i]+DY/2., z[i]+DZ/2.)
+        pcoords.SetTuple3(id, x[i]+dx[i]/2., y[i]-dy[i]/2., z[i]-dz[i]/2.)
+        pcoords.SetTuple3(id+1, x[i]-dx[i]/2., y[i]-dy[i]/2., z[i]-dz[i]/2.)
+        pcoords.SetTuple3(id+2, x[i]+dx[i]/2., y[i]+dy[i]/2., z[i]-dz[i]/2.)
+        pcoords.SetTuple3(id+3, x[i]-dx[i]/2., y[i]+dy[i]/2., z[i]-dz[i]/2.)
+        pcoords.SetTuple3(id+4, x[i]+dx[i]/2., y[i]-dy[i]/2., z[i]+dz[i]/2.)
+        pcoords.SetTuple3(id+5, x[i]-dx[i]/2., y[i]-dy[i]/2., z[i]+dz[i]/2.)
+        pcoords.SetTuple3(id+6, x[i]+dx[i]/2., y[i]+dy[i]/2., z[i]+dz[i]/2.)
+        pcoords.SetTuple3(id+7, x[i]-dx[i]/2., y[i]+dy[i]/2., z[i]+dz[i]/2.)
 
         id+=8
 
