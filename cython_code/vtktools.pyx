@@ -1357,6 +1357,66 @@ cpdef dxf2PolyData(str path):
 
     return cleanPolyData.GetOutput()
 
+cpdef dxf2PolyData_line3d(str path):
+    """dxf2PolyData_line3d(path)
+
+    Reads 3D lines in dxf format ('*.dxf') and returns a Polydata.
+
+    Parameters
+    ----------
+    path : str
+        File name and path of dxf file.
+
+    Returns
+    -------
+    vtkPolyData, points : a vtkPolyData, and list of point coordinates tuples
+
+    Note
+    -----
+    Requires the python modele ezdxf
+
+    """
+
+    # read the dxf
+    dwg = ezdxf.readfile(path)
+
+    # get the dxf model space
+    msp = dwg.modelspace()
+
+    # extract lines and points and save it in a dict
+    lines = msp.query('POLYLINE')
+    lins = {}
+    lid = 0
+    pid = 0
+    pnts = []
+    for l in range(len(lines)):
+        lins[l] = []
+        for v in lines[l]:
+            pnts.append(v.dxf.location)
+            lins[l].append(pid)
+            pid = pid + 1
+
+    # create poinst
+    points = vtk.vtkPoints()
+    for p in pnts:
+        points.InsertNextPoint(p)
+
+    # create lines and cell array
+    cells = vtk.vtkCellArray()
+    for l in range(len(lines)):
+        polyLine = vtk.vtkPolyLine()
+        polyLine.GetPointIds().SetNumberOfIds(len(lins[l]))
+        for i in range(len(lins[l])):
+            polyLine.GetPointIds().SetId(i, lins[l][i])
+        cells.InsertNextCell(polyLine)
+
+    # create polydata
+    polyData = vtk.vtkPolyData()
+    polyData.SetPoints(points)
+    polyData.SetLines(cells)
+
+    return polyData, pnts
+
 cpdef dxf2PolyData_Quad(str path):
     """dxf2PolyData_Quad(path)
 
