@@ -502,7 +502,7 @@ cpdef grid2vtkImageData(
     return ufgrid
 
 
-cpdef partialgrid2vtkfile(str path,
+cpdef partialgrid2vtkfile(
                    np.ndarray [double, ndim=1] x,
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
@@ -513,7 +513,8 @@ cpdef partialgrid2vtkfile(str path,
                    object varname,
                    object dx = None,
                    object dy = None,
-                   object dz = None ):
+                   object dz = None,
+                   str path = None):
     """partialgrid2vtkfile(str path, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double DX, double DY, double DZ, object var, object varname)
 
     Saves data in the cells of a VTK Unstructured Grid file
@@ -521,8 +522,6 @@ cpdef partialgrid2vtkfile(str path,
 
     Parameters
     ----------
-    path : str
-        file path (relative or absolute) and name
     x,y,z : np.ndarray
         coordinates of the points
     DX,DY,DZ : float
@@ -533,14 +532,12 @@ cpdef partialgrid2vtkfile(str path,
         variables names.
     dx, dy, dz: None or array, default None
         variable block size in each direction. If None DX,DY,DZ are used
-
-    # TODO: implement rotations
+    path : str (optional)
+        file path (relative or absolute) and name. If None file will not be saved
+    Returns
+    ------
+    vtk unstructured grid
     """
-
-    # add extension to path
-    if not path.lower().endswith('.vtu'):
-        path = path + '.vtu'
-
 
     # number of cells/blocks
     nc = x.shape[0]
@@ -624,12 +621,142 @@ cpdef partialgrid2vtkfile(str path,
     extractGrid.SetCellMaximum(nc)
     extractGrid.Update()
 
+    if path is not None:
+      # save results
 
-    # save results
-    writer = vtk.vtkXMLUnstructuredGridWriter();
-    writer.SetFileName(path);
-    writer.SetInputData(extractGrid.GetOutput())
-    writer.Write()
+      # add extension to path
+      if not path.lower().endswith('.vtu'):
+          path = path + '.vtu'
+
+      writer = vtk.vtkXMLUnstructuredGridWriter();
+      writer.SetFileName(path);
+      writer.SetInputData(extractGrid.GetOutput())
+      writer.Write()
+
+    return extractGrid.GetOutput()
+
+
+cpdef rotate_vtk(float xorg, float yorg, float zorg, float ang1, float ang2, float ang3, object obj):
+    """rotate_vtk(float xorg, float yorg, float zorg, float ang1, float ang2, float ang3, object obj)
+
+    rotate a vtk object
+
+
+    Parameters
+    ----------
+    xorg , yorg, zorg : float
+        pivot point coordinates used for rotation
+    ang1, ang2, ang3 : float
+        angles of ZXZ rotation
+    polyData : object
+        vtk polyData object to be rotated
+
+    Returns
+    ---
+    VTK object with rotations applied
+    """
+    # translate
+    transL1 = vtk.vtkTransform()
+    transL1.Translate( -xorg, -yorg, -zorg)
+
+    tf = vtk.vtkTransformFilter()
+    tf.SetInputData(obj)
+    tf.SetTransform(transL1)
+    tf.Update()
+
+    # rotate 1
+    tmp = tf.GetOutput()
+    transL1 = vtk.vtkTransform()
+    transL1.RotateZ(ang1)
+
+    tf = vtk.vtkTransformFilter()
+    tf.SetInputData(tmp)
+    tf.SetTransform(transL1)
+    tf.Update()
+
+    # rotate 2
+    tmp = tf.GetOutput()
+    transL1 = vtk.vtkTransform()
+    transL1.RotateX(ang2)
+
+    tf = vtk.vtkTransformFilter()
+    tf.SetInputData(tmp)
+    tf.SetTransform(transL1)
+    tf.Update()
+
+    # rotate 3
+    tmp = tf.GetOutput()
+    transL1 = vtk.vtkTransform()
+    transL1.RotateX(ang3)
+
+    tf = vtk.vtkTransformFilter()
+    tf.SetInputData(tmp)
+    tf.SetTransform(transL1)
+    tf.Update()
+
+    return tf.GetOutput()
+
+
+cpdef back_rotate_vtk(float xorg, float yorg, float zorg, float ang1, float ang2, float ang3, object obj):
+    """rotate_vtk(float xorg, float yorg, float zorg, float ang1, float ang2, float ang3, object obj)
+
+    back rotate/transform a vtk object
+
+
+    Parameters
+    ----------
+    xorg , yorg, zorg : float
+        pivot point coordinates used for rotation
+    ang1, ang2, ang3 : float
+        angles of ZXZ rotation
+    polyData : object
+        vtk polyData object to be rotated
+
+    Returns
+    ---
+    VTK object with rotations applied
+    """
+
+    # rotate 3
+    transL1 = vtk.vtkTransform()
+    transL1.RotateX(-ang3)
+
+    tf = vtk.vtkTransformFilter()
+    tf.SetInputData(obj)
+    tf.SetTransform(transL1)
+    tf.Update()
+
+    # rotate 2
+    tmp = tf.GetOutput()
+    transL1 = vtk.vtkTransform()
+    transL1.RotateX(-ang2)
+
+    tf = vtk.vtkTransformFilter()
+    tf.SetInputData(tmp)
+    tf.SetTransform(transL1)
+    tf.Update()
+
+    # rotate 1
+    tmp = tf.GetOutput()
+    transL1 = vtk.vtkTransform()
+    transL1.RotateZ(-ang1)
+
+    tf = vtk.vtkTransformFilter()
+    tf.SetInputData(tmp)
+    tf.SetTransform(transL1)
+    tf.Update()
+
+    # translate
+    tmp = tf.GetOutput()
+    transL1 = vtk.vtkTransform()
+    transL1.Translate( xorg, yorg, zorg)
+
+    tf = vtk.vtkTransformFilter()
+    tf.SetInputData(tmp)
+    tf.SetTransform(transL1)
+    tf.Update()
+
+    return tf.GetOutput()
 
 
 cpdef partialgrid2vtkfile_p(str path,
@@ -1415,7 +1542,12 @@ cpdef dxf2PolyData_line3d(str path):
     polyData.SetPoints(points)
     polyData.SetLines(cells)
 
-    return polyData, pnts
+    # doing a bit of cleanup (remove duplicated points)
+    cleanPolyData = vtk.vtkCleanPolyData()
+    cleanPolyData.SetInputData(polyData)
+    cleanPolyData.Update()
+
+    return cleanPolyData.GetOutput(), pnts
 
 cpdef dxf2PolyData_Quad(str path):
     """dxf2PolyData_Quad(path)
