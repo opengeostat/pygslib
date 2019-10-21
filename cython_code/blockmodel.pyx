@@ -954,9 +954,17 @@ cdef class Blockmodel:
             var = [self.bmtable[varname]]
             prop_name = [varname]
 
-
-        pygslib.vtktools.partialgrid2vtkfile(path, x, y, z,
-                             self.dx, self.dy, self.dz, var, prop_name)
+        if ('DX' in self.bmtable.columns):
+          pygslib.vtktools.partialgrid2vtkfile(path=path, x=x, y=y, z=z,
+                               DX=self.dx, DY=self.dy, DZ=self.dz,
+                               dx=self.bmtable['DX'].values,
+                               dy=self.bmtable['DY'].values,
+                               dz=self.bmtable['DZ'].values,
+                               var=var, varname=prop_name)
+        else:
+            pygslib.vtktools.partialgrid2vtkfile(path=path, x=x, y=y, z=z,
+                                 DX=self.dx, DY=self.dy, DZ=self.dz,
+                                 var=var, varname=prop_name)
 
     cpdef blocks2vtkUnstructuredGrid_p(self, str path, str varname= None):
         """blocks2vtkUnstructuredGrid(str path, str varname = None)
