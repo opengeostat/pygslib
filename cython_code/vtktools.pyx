@@ -31,10 +31,72 @@ from vtk.numpy_interface import dataset_adapter as vtkdsa
 from scipy.interpolate import Rbf
 import scipy.spatial.distance as scipy_dist
 from scipy.interpolate import griddata
-from scipy.spatial import KDTree
+from scipy.spatial import cKDTree
 import ezdxf
 
+# ----------------------------------------------------------------------
+#   Functions for volume calculation
+# ----------------------------------------------------------------------
+cpdef calculate_volume(object mesh):
+    """calculate_volume(object mesh)
 
+    Takes a single closed vtkPolydata Mesh, composed by triangles,
+    and calculate its volume.
+
+    This function may produce wrong results if surfaces are not closed or
+    poorly defined. Use results with caution.
+
+    Parameters
+    ----------
+    mesh : vtkPolyData
+        mesh surface (not tested with polylines...)
+
+
+    Returns
+    -------
+    float with valume
+
+    Note
+    ----
+    The volume is computed three times, with input as it is and with Normals
+    recalculated in two different directions (flipped and no fliepped). Results
+    are unreliable if the volumes are different than, let say 1%.
+
+    """
+
+    # normal flip
+    normals = vtk.vtkPolyDataNormals()
+    normals.SetInputData(mesh)
+    normals.ConsistencyOn()
+    normals.AutoOrientNormalsOn()
+    normals.ComputePointNormalsOn()
+    normals.FlipNormalsOn()
+    normals.Update()
+    new_mesh= normals.GetOutput()
+
+    # normal non flip
+    normals = vtk.vtkPolyDataNormals()
+    normals.SetInputData(mesh)
+    normals.ConsistencyOn()
+    normals.AutoOrientNormalsOn()
+    normals.ComputePointNormalsOn()
+    normals.FlipNormalsOff()
+    normals.Update()
+    new_mesh2= normals.GetOutput()
+
+    vol = vtk.vtkMassProperties()
+    vol.SetInputData(mesh)
+    vol0 = vol.GetVolume()
+
+    vol = vtk.vtkMassProperties()
+    vol.SetInputData(new_mesh)
+    vol1 = vol.GetVolume()
+
+    vol = vtk.vtkMassProperties()
+    vol.SetInputData(new_mesh2)
+    vol2 = vol.GetVolume()
+
+    return vol0,vol1,vol2
 
 # ----------------------------------------------------------------------
 #   Functions for point querying
@@ -846,7 +908,7 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
                    constraints = None):
-    """
+    """delaunay2D (np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, constraints = None):
     Creates a triangulated Surface
 
 
@@ -966,7 +1028,7 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
     f = np.ones(shape=(len(x)), dtype=bool)
 
     if remove_duplicates:
-      ktree = KDTree(np.stack((x, y), axis=-1))
+      ktree = cKDTree(np.stack((x, y), axis=-1))
       duplicates = ktree.query_pairs(r=tol)
 
       if len(duplicates)>0:

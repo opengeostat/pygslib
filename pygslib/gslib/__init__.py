@@ -111,6 +111,46 @@ def set_nan_value(value=np.nan):
 #
 #-----------------------------------------------------------------------------------------------------------------
 
+# save drillhole data as gslib file
+def df2gslib(data, fname, comment = 'gslib file', decimals = 4):
+    '''df2gslib(data, filename, comment = 'gslib file', decimals = 4)
+
+    Save pandas DataFrame to gslib format.
+
+    Parameters
+    ----------
+    fname : pandas DataFrame
+        Dataframe to output
+    fname : str
+        output file name/path (absolute or relative)
+
+    comment : str dafault ('gslib file')
+        commnet line
+
+    decimals : int dafault (4)
+        number of decimals
+
+    Warning
+    -------
+    Non numerical data may produce unexpected results
+    The dataframe index is not saved
+
+    '''
+
+    nvar = len(data.columns)
+    varnames = ''
+
+    for c in data.columns[0:-1]:
+        varnames = varnames + c + '\n'
+    varnames = varnames + data.columns[-1]
+    tex_data= data.to_string(float_format='%.{}f'.format(decimals), header=False, index = False)
+
+    gslib_data = '{}\n{}\n{}\n{}\n'.format(comment,nvar,varnames,tex_data)
+
+    with open(fname, 'w') as the_file:
+        the_file.write(gslib_data)
+
+
 #read GSLIB file
 def read_gslib_file(fname, maxnvar=500):
     """ Reads a gslib file
@@ -1080,69 +1120,79 @@ def kt3d(parameters):
         kt3d_parameters = {
             # Input Data
             # ----------
-            'x' : ,   # rank-1 array('f') with bounds (nd)
-            'y' : ,   # (optional) rank-1 array('f') with bounds (nd)
-            'z' : ,   # (optional) rank-1 array('f') with bounds (nd)
-            'vr' : ,   # (optional) rank-1 array('f') with bounds (nd)
-            've' : ,   # (optional) rank-1 array('f') with bounds (nd)
-            'bhidint': , #  (optional) rank-1 array('i') with bounds (nd)
-            # Output (Target)
+            'x' : ,   # 1D array('f'), x coordinates of input data
+            'y' : ,   # 1D array('f'), y coordinates of input data
+            'z' : ,   # 1D array('f'), z coordinates of input data
+            'vr' : ,   # 1D array('f'), primary variable
+            've' : ,   # (optional) 1D array('f'), extra variable, external drift
+            'bhidint': , #  (optional) 1D array('i'), drillhole ID, or fault zone ID
+            # Output grid definition (only used for superblock search, can use dummy values)
             # ----------
-            'nx' : ,   # int
-            'ny' : ,   # int
-            'nz' : ,   # int
-            'xmn' : ,   # float
-            'ymn' : ,   # float
-            'zmn' : ,   # float
-            'xsiz' : ,   # float
-            'ysiz' : ,   # float
-            'zsiz' : ,   # float
-            'nxdis' : ,   # int
-            'nydis' : ,   # int
-            'nzdis' : ,   # int
-            'outx' : ,   # rank-1 array('f') with bounds (nout)
-            'outy' : ,   # (optional) rank-1 array('f') with bounds (nout)
-            'outz' : ,   # (optional) rank-1 array('f') with bounds (nout)
-            'outextve' : ,   # (optional) rank-1 array('f') with bounds (nout)
+            'nx' : ,   # int, size of the grid
+            'ny' : ,   # int,
+            'nz' : ,   # int,
+            'xmn' : ,   # float, origing of coordinate
+            'ymn' : ,   # float,
+            'zmn' : ,   # float,
+            # Output data
+            # ----------
+            'xsiz' : ,   # float, block size in x
+            'ysiz' : ,   # float, block size in x
+            'zsiz' : ,   # float, block size in x
+            'nxdis' : ,   # int, number of discretization points in x
+            'nydis' : ,   # int, number of discretization points in y
+            'nzdis' : ,   # int, number of discretization points in z
+            'outx' : ,   # 1D array('f'), x coordinates of output data
+            'outy' : ,   # 1D array('f'), y coordinates of output data
+            'outz' : ,   # 1D array('f'), z coordinates of output data
+            'outextve' : ,   # 1D array('f') external drift in output data
             # Search parameters
             # ----------
-            'radius'     : ,   # float
-            'radius1'    : ,   # float
-            'radius2'    : ,   # float
-            'ndmax'      : ,   # int
-            'ndmin'      : ,   # int
-            'noct'       : ,   # (optional) int
-            'nbhid'       : ,   # (optional) int
-            'sang1'      : ,   # (optional) float
-            'sang2'      : ,   # (optional) float
-            'sang3'      : ,   # (optional) float
+            'radius'     : ,   # float, search distance in direction 1
+            'radius1'    : ,   # float, search distance in direction 2
+            'radius2'    : ,   # float, search distance in direction 3
+            'ndmax'      : ,   # int, maximum number of points
+            'ndmin'      : ,   # int, minimum number of points
+            'noct'       : ,   # (optional) int, use octant, default False == 0
+            'nbhid'      : ,   # (optional) int, maximum number of samples in a drillhole, default not used == 0
+            'sang1'      : ,   # (optional) float, rotation angle 1
+            'sang2'      : ,   # (optional) float, rotation angle 1
+            'sang3'      : ,   # (optional) float, rotation angle 1
             # Kriging parameters and options
             # ----------
-            'idrif'      : ,   # (optional) rank-1 array('i') with bounds (9)
-            'itrend'     : ,   # (optional) int
-            'ktype'      : ,   # (optional) int
-            'skmean'     : ,   # (optional) float
+            'idrif'      : ,   # (optional) array('i'), array of 9 indicators to use drift models
+            'itrend'     : ,   # (optional) int, if == 1 the trend will be estimated
+            'ktype'      : ,   # (optional) int, kriging type: 0 skmean, 1 ordinary kriging, 2 simple kriging with local means, 3 kriging with an external drift
+            'skmean'     : ,   # (optional) float, simple kriging mean for ktype = 0
             'koption'    : ,   # (optional) int
-            'iktype'     : ,   # (optional) int
-            'cut'        : ,   # (optional) rank-1 array('f') with bounds (ncut)
-            'idbg'       : ,   # (optional) int
+            'iktype'     : ,   # (optional) int, medean indicator kriging, default False = 0
+            'cut'        : ,   # (optional) 1D array('f'), thresholds for median indicator kriging, default = []
+            'idbg'       : ,   # (optional) int, debug ?, defaul False == 0
             # Inverse of the power of the distance parameter
-            'id2power'   : ,   # (optional, default 2) float
+            'id2power'   : ,   # (optional) float, inverse of the distance powe, defaul 2
             # Variogram parameters
             # ----------
-            'c0'         : ,   # float
-            'it'         : ,   # rank-1 array('i') with bounds (nst)
-            'cc'         : ,   # rank-1 array('f') with bounds (nst)
-            'aa'         : ,   # rank-1 array('f') with bounds (nst)
-            'aa1'        : ,   # rank-1 array('f') with bounds (nst)
-            'aa2'        : ,   # rank-1 array('f') with bounds (nst)
-            'ang1'       : ,   # (optional) rank-1 array('f') with bounds (nst)
-            'ang2'       : ,   # (optional) rank-1 array('f') with bounds (nst)
-            'ang3'       : }   # (optional) rank-1 array('f') with bounds (nst)
+            'c0'         : ,   # float, nugget value
+            'it'         : ,   # array('i'), structures type, on for each structure: 1 Spherical, 2 Exponential, 3 Gaussian, 4 Power, 5 Cosine hole effect
+            'cc'         : ,   # array('f'), structures variance, one for each structure
+            'aa'         : ,   # array('f'), structures range/practical range in direction 1, one for each structure
+            'aa1'        : ,   # array('f'), structures range/practical range in direction 2, one for each structure
+            'aa2'        : ,   # array('f'), structures range/practical range in direction 3, one for each structure
+            'ang1'       : ,   # (optional) array('f'), rotation angle 1, one for each structure, defaul array of zeros
+            'ang2'       : ,   # (optional) array('f'), rotation angle 2, one for each structure, defaul array of zeros
+            'ang3'       : }   # (optional) array('f'), rotation angle 3, one for each structure, defaul array of zeros
 
 
-    The optional input will be internally initialized to zero or to
-    array of zeros unless specified.
+    the nine idrif[1,...,8] indicators terms are
+        idrif[0] linear drift in x
+        idrif[1] linear drift in y
+        idrif[2] linear drift in z
+        idrif[3] quadratic drift in x
+        idrif[4] quadratic drift in y
+        idrif[5] quadratic drift in z
+        idrif[6] cross quadratic drift in xy
+        idrif[7] cross quadratic drift in xz
+        idrif[8] cross quadratic drift in yz
 
 
     Returns
@@ -1163,7 +1213,7 @@ def kt3d(parameters):
 
         all these are rank-1 array('f') with bounds (nout)
 
-    If ktype=1 returns median indicator kriging estimate as::
+    If iktype=1 returns median indicator kriging estimate as::
 
        {'outcdf'     : }  #rank-2 array('f') with bounds (nout,ncut)
 
@@ -1283,11 +1333,10 @@ def kt3d(parameters):
 
 
     if len(error.strip())>0:
-        raise NameError(error.strip())
+        raise NameError(str(error).strip())
 
     if len(fwarnings.strip())>0:
-        warnings.warn(fwarnings.strip())
-
+        warnings.warn(str(fwarnings).strip())
 
     estimate['x']=parameters['outx']
     if 'outy' in parameters:

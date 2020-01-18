@@ -290,7 +290,7 @@ cpdef ijk2ind(np.ndarray [long, ndim=1] ijk,
 #  Drillhole class
 #-------------------------------------------------------------------
 cdef class Blockmodel:
-    """
+    """ Blockmodel(nx,ny,nz,xorg,yorg,zorg,dx,dy,dz)
     Blockmodel object.
 
 
@@ -654,7 +654,7 @@ cdef class Blockmodel:
 
         Returns
         -------
-        block: model instance with model reblocked
+        pandas.DataFrame: block model table reblocked
 
         err: list of variables excluded (ej no numeric)
 
@@ -687,11 +687,8 @@ cdef class Blockmodel:
         #calk IJK
         tmpmod.calc_ijk(overwrite=True)
 
-        #clean model
-        if set(('IX', 'IY', 'IZ')).issubset(tmpmod.bmtable.columns):
-            tmpmod.bmtable.drop(['IX', 'IY', 'IZ'], axis=1,inplace= True)
-        if set(('XC', 'YC', 'ZC')).issubset(tmpmod.bmtable.columns):
-            tmpmod.bmtable.drop(['XC', 'YC', 'ZC'], axis=1, inplace= True)
+        # recalculate  X, Y, Z
+        tmpmod.calc_xyz_fromixyz(overwrite=True)
 
 
         tmpmod.bmtable['NBLK'] = 1
@@ -705,10 +702,12 @@ cdef class Blockmodel:
 
         err = []
         for i in tmpmod.bmtable.columns:
-            if i == 'IJK' or i == 'RD' or i == 'NBLK':
+            if i in ['IJK','RD','NBLK','IX','IY','IZ','XC','YC','ZC']:
                 continue
             try:
                 np[i] = tmpmod.bmtable[[i,'IJK']].groupby('IJK').mean()
+                np[i+'_sum'] = tmpmod.bmtable[[i,'IJK']].groupby('IJK').sum()
+                np[i+'_count'] = tmpmod.bmtable[[i,'IJK']].groupby('IJK').count()
             except:
                 err.append(i)
 
@@ -723,7 +722,7 @@ cdef class Blockmodel:
         tmpmod.bmtable['IJK'] = tmpmod.bmtable['IJK'].values.astype(int)
 
 
-        return tmpmod, err
+        return tmpmod.bmtable, err
 
 
     cpdef create_IJK(self, bint overwrite=False):
