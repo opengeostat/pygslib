@@ -634,19 +634,25 @@ cdef class Blockmodel:
         self.bmtable['IX'],self.bmtable['IY'],self.bmtable['IZ'] =  ijk2ind(self.bmtable['IJK'].values,self.nx,self.ny,self.nz)
 
 
-    cpdef reblock(self, double dx, double dy, double dz):
-        """reblock(double dx, double dy, double dz)
+    cpdef reblock(self, int nx, int ny, int nz, double xorg, double yorg, double zorg, double dx, double dy, double dz):
+        """reblock(int nx, int ny, int nz, double xorg, double yorg, double zorg, double dx, double dy, double dz)
 
-        Reblocks a block model
+        Reblocks a block model to new block model with arbitrary definition
 
-        The model is reblocked using IJK calculated from XC, YC, ZC
-        coordinates and averaging all points with same IJK.
+        The model is reblocked using as index the IJK corresponding
+        to the input model definition, which is calculated from current
+        XC, YC, ZC coordinates. The funtion computes mean and counts of
+        all points with same IJK.
 
         Note that this is like a point to block conversion and subblock
         overlapping are not taken into account.
 
         Parameters
         ----------
+        nx,ny,nz : integer
+            Number of rows columns and levels in the new model
+        xorg,yorg,zorg : float
+            Coordinates of the lower left corner of the new model
         dx,dy,dz: floats
             New block dimensions. Note that new dimentions may be
             greater or equal than old dimensions in all directions.
@@ -654,9 +660,11 @@ cdef class Blockmodel:
 
         Returns
         -------
-        pandas.DataFrame: block model table reblocked
+        block: pygslib.blockmodel.Blockmodel instance
+            model reblocked
 
-        err: list of variables excluded (ej no numeric)
+        err: list
+            list of variables excluded (ej no numeric)
 
         Warning
         -------
@@ -669,28 +677,21 @@ cdef class Blockmodel:
         assert isinstance(self.bmtable, pd.DataFrame), 'Error: No bmtable loaded or created yet'
         assert set(('XC', 'YC', 'ZC')).issubset(self.bmtable.columns), 'Error: No XC,YC,ZC in bmtable'
 
-        tmpmod= pygslib.blockmodel.Blockmodel(self.nx,
-                                              self.ny,
-                                              self.nz,
-                                              self.xorg,
-                                              self.yorg,
-                                              self.zorg,
+        tmpmod= pygslib.blockmodel.Blockmodel(nx, ny, nz,
+                                              xorg,yorg,zorg,
                                               dx,dy,dz)
 
 
         # add tables as a deep copy
         tmpmod.set_blocks(self.bmtable.copy(deep =True))
 
-        # calk ix iy and iz
+        # recalculate ix iy and iz
         tmpmod.calc_ixyz_fromxyz(overwrite=True)
 
-        #calk IJK
+        #recalculate IJK
         tmpmod.calc_ijk(overwrite=True)
 
-        # recalculate  X, Y, Z
-        tmpmod.calc_xyz_fromixyz(overwrite=True)
-
-
+        # this is the count of blocks
         tmpmod.bmtable['NBLK'] = 1
 
 
@@ -719,10 +720,17 @@ cdef class Blockmodel:
         tmpmod.set_blocks(np.reset_index())
 
         # set index as integre 32 bits
-        tmpmod.bmtable['IJK'] = tmpmod.bmtable['IJK'].values.astype(int)
+        #tmpmod.bmtable['IJK'] = tmpmod.bmtable['IJK'].values.astype(int)
+
+        # recalculate ix iy and iz
+        tmpmod.calc_ixyz_fromijk(overwrite=True)
+
+        #recalculate XC,YC,ZC
+        tmpmod.calc_xyz_fromixyz(overwrite=True)
 
 
-        return tmpmod.bmtable, err
+
+        return tmpmod, err
 
 
     cpdef create_IJK(self, bint overwrite=False):
