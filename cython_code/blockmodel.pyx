@@ -720,7 +720,7 @@ cdef class Blockmodel:
         tmpmod.set_blocks(np.reset_index())
 
         # set index as integre 32 bits
-        #tmpmod.bmtable['IJK'] = tmpmod.bmtable['IJK'].values.astype(int)
+        tmpmod.bmtable['IJK'] = tmpmod.bmtable['IJK'].values.astype(int)
 
         # recalculate ix iy and iz
         tmpmod.calc_ixyz_fromijk(overwrite=True)
