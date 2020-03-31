@@ -577,7 +577,7 @@ cpdef partialgrid2vtkfile(
                    object dy = None,
                    object dz = None,
                    str path = None):
-    """partialgrid2vtkfile(str path, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double DX, double DY, double DZ, object var, object varname)
+    """partialgrid2vtkfile(np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double DX, double DY, double DZ, object var, object varname, np.ndarray [double, ndim=1] dx, np.ndarray [double, ndim=1] dy, np.ndarray [double, ndim=1] dz, str path)
 
     Saves data in the cells of a VTK Unstructured Grid file
 
@@ -2292,3 +2292,130 @@ cpdef clip_with_surface( object region, object implicit_surface, str how= 'insid
     clip_surf=calculate_normals(cutTriangles.GetOutput())
 
     return clip_region,clip_surf
+
+# ----------------------------------------------------------------------
+#   Functions for polygon operations (inside/outside test, area, etc.)
+# ----------------------------------------------------------------------
+cpdef inside_polygon(object points, object polygon_pts = None, object polygon = None, object normal = None, object bounds = None):
+    """inside_polygon(object points, object polygon_pts = None, object polygon = None, object normal = None, object bounds = None)
+
+    Test is foints are inside a polygon.
+
+    The polygon can be passed as array of x,y,z coordinates or as vtkpolygon
+    object. The polygons cannot have any internal holes, and cannot
+    self-intersect. Define the polygon with n-points ordered in the
+    counter-clockwise direction; do not repeat the last point.
+
+    The function will calculate the normal and bounding box of the polygon.
+    However, you can pass it by reference to speeds repated calculations with
+    the same polygon. The normal is used to define the direction of the
+    computation in 3D.
+
+
+    Parameters
+    ----------
+    points: array of floats[3]
+        3D points to be tested for inclusion and exclusion inside the polygon
+    polygon_pts: array of floats[3] defining the polygon (optional)
+        if polygon_pts is None, then you may provide polygon
+    polygon: vtkPolygon
+        if polygon is None, then you may provide polygon_pts
+    normal: floats[3]
+        normal of the polygon. If none it will be calculated internally
+    bounds: floats[6]
+        bounding coordinates of the polygon. If none it will be calculated internally
+
+    Returns
+    -------
+    (array of int, vtkPolygon, floats[3], floats[6]) these are the:
+      results with 1 if the point is inside or 0 if outside,
+      polygon as a vtkPolygon object,
+      normal floats[3] with polygon normal,
+      and bounds floats[6]
+
+    you can use polygon, normal, bounds as input parameters in subsequent call
+    to this function.
+
+    See Also
+    ------
+    polygon_area
+
+    """
+    result = np.zeros(len(points), dtype = int)
+
+    if polygon is None:
+        assert polygon_pts is not None
+
+        polygon = vtk.vtkPolygon()
+
+        for i in polygon_pts:
+            polygon.GetPoints().InsertNextPoint(i)
+
+    # compute normal
+    if normal is None:
+        normal=[0.0,0.0,0.0]
+        polygon.ComputeNormal(polygon.GetPoints(), normal)
+    # compute bounds
+    if bounds is None:
+        bounds = [0.,0.,0.,0.,0.,0.];
+        polygon.GetPoints().GetBounds(bounds)
+
+    for i in range(len(points)):
+        result[i] = polygon.PointInPolygon(points[i],
+                       polygon.GetPoints().GetNumberOfPoints(),
+                       vtknumpy.vtk_to_numpy(polygon.GetPoints().GetData()).ravel(),
+                       bounds,
+                       normal)
+
+    return result, polygon, normal, bounds
+
+
+def polygon_area(object polygon_pts = None, object polygon = None):
+    """polygon_area(object polygon_pts = None, object polygon = None)
+
+    Calculates the area of a polygon
+
+    The polygon can be passed as array of x,y,z coordinates or as vtkpolygon
+    object. The polygons cannot have any internal holes, and cannot
+    self-intersect. Define the polygon with n-points ordered in the
+    counter-clockwise direction; do not repeat the last point.
+
+    Parameters
+    ----------
+    polygon_pts: array of floats[3] defining the polygon (optional)
+        if polygon_pts is None, then you may provide polygon
+    polygon: vtkPolygon
+        if polygon is None, then you may provide polygon_pts
+
+    Returns
+    -------
+    floats
+      this is the planar area of the polygon (perpendicular to its normal (?))
+
+    Note
+    ----
+    the polygon normal is calculated internally
+
+    See Also
+    ------
+    inside_polygon
+
+    """
+
+    if polygon is None:
+        assert polygon_pts is not None
+
+        polygon = vtk.vtkPolygon()
+
+        for i in polygon_pts:
+            polygon.GetPoints().InsertNextPoint(i)
+
+    # compute normal
+    normal=[0.0,0.0,0.0]
+    polygon.ComputeNormal(polygon.GetPoints(), normal)
+
+    # compute area
+    return polygon.ComputeArea(polygon.GetPoints(),
+                        polygon.GetPoints().GetNumberOfPoints(),
+                        list(range(polygon.GetPoints().GetNumberOfPoints())),
+                        normal)

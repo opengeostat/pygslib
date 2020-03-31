@@ -1164,8 +1164,8 @@ def kt3d(parameters):
             'itrend'     : ,   # (optional) int, if == 1 the trend will be estimated
             'ktype'      : ,   # (optional) int, kriging type: 0 skmean, 1 ordinary kriging, 2 simple kriging with local means, 3 kriging with an external drift
             'skmean'     : ,   # (optional) float, simple kriging mean for ktype = 0
-            'koption'    : ,   # (optional) int
-            'iktype'     : ,   # (optional) int, medean indicator kriging, default False = 0
+            'koption'    : ,   # (optional) int, set to 0 for kriging a grid of points or blocks, to 1 for cross validation with the data in datafl and to 2 for jackknifing
+            'iktype'     : ,   # (optional) int, median indicator kriging, default False = 0
             'cut'        : ,   # (optional) 1D array('f'), thresholds for median indicator kriging, default = []
             'idbg'       : ,   # (optional) int, debug ?, defaul False == 0
             # Inverse of the power of the distance parameter
