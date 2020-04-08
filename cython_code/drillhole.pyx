@@ -1415,10 +1415,14 @@ cdef class Drillhole:
           errors['Survey with one interval'] = self.survey.groupby(by='BHID').count()['AT'].loc[mask].index # drillholes with one interval
 
         #check survey without collar
-        errors['Survey without collar'] = self.survey.loc[~self.survey['BHID'].isin(self.collar['BHID']), 'BHID'].values
+        error = self.survey.loc[~self.survey['BHID'].isin(self.collar['BHID']), 'BHID'].values
+        if error.shape[0]>0:
+          errors['Survey without collar'] = error
 
         #check collar without survey
-        errors['Collar without survey'] = self.collar.loc[~self.collar['BHID'].isin(self.survey['BHID']), 'BHID'].values
+        error = self.collar.loc[~self.collar['BHID'].isin(self.survey['BHID']), 'BHID'].values
+        if error.shape[0]>0:
+          errors['Collar without survey'] = error
 
 
         return errors
