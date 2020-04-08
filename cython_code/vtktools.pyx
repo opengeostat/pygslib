@@ -980,6 +980,25 @@ cpdef rbfinterpolate(np.ndarray [double, ndim=1] x,
                  bint remove_duplicates = True,
                  bint triangulate = True):
     """
+    rbfinterpolate(  np.ndarray [double, ndim=1] x,
+                     np.ndarray [double, ndim=1] y,
+                     np.ndarray [double, ndim=1] z,
+                     object xg = None,
+                     object yg = None,
+                     object xorg = None,
+                     object yorg = None,
+                     object dx = None,
+                     object dy = None,
+                     object nx = None,
+                     object ny = None,
+                     double tol=0.01,
+                     double tolg = 0.1,
+                     str method = 'linear',
+                     double epsilon=100,
+                     constraints = None,
+                     bint snap = True,
+                     bint remove_duplicates = True,
+                     bint triangulate = True)
     Creates a grid surface interpolated with rbf. Optionaly will include (snap)
     input points.
 

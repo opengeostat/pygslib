@@ -1342,92 +1342,86 @@ cdef class Drillhole:
 
         """
 
-        # Warning:  hasnans() is for pandas 0.16, hasnans for pandas 0.17
+        errors = {}
 
         #check collar
 
         #check repeated collar BHID
         if len(self.collar.loc[self.collar.duplicated(['BHID'])])>0:
-            raise NameError('There are duplicated BHID at collar')
+            errors['collar duplicated'] = self.collar.loc[self.collar.duplicated(['BHID'])]['BHID'].values
 
         #check repeated survey BHID,AT
         if len(self.survey.loc[self.survey.duplicated(['BHID','AT'])])>0:
-            raise NameError('There are duplicated BHID,AT at survey')
+            errors['survey duplicated BHID,AT'] = self.survey.loc[self.survey.duplicated(['BHID','AT']), ['BHID','AT']].values
 
         # null values in collar
         if self.collar['BHID'].hasnans:
-            raise NameError('Non defined BHID in collar table')
+            errors['Non defined BHID in collar table'] = True
         if self.collar['XCOLLAR'].hasnans:
-            raise NameError('Non defined XCOLLAR in collar table')
+            errors['Non defined XCOLLAR in collar table'] = True
         if self.collar['YCOLLAR'].hasnans:
-            raise NameError('Non defined YCOLLAR in collar table')
+            errors['Non defined YCOLLAR in collar table'] = True
         if self.collar['ZCOLLAR'].hasnans:
-            raise NameError('Non defined ZCOLLAR in collar table')
+            errors['Non defined ZCOLLAR in collar table'] = True
         if self.collar['XCOLLAR'].dtypes!='float64':
-            raise NameError('XCOLLAR in collar table != float64')
+            errors['XCOLLAR in collar table != float64'] = True
         if self.collar['YCOLLAR'].dtypes!='float64':
-            raise NameError('YCOLLAR in collar table != float64')
+            errors['YCOLLAR in collar table != float64'] = True
         if self.collar['ZCOLLAR'].dtypes!='float64':
-            raise NameError('ZCOLLAR in collar table != float64')
+            errors['ZCOLLAR in collar table != float64'] = True
 
         if 'LENGTH' in self.collar.columns:
             if self.collar['LENGTH'].dtypes!='float64':
-                raise NameError('LENGTH in collar table != float64')
+                errors['LENGTH in collar table != float64'] = True
             if self.collar['LENGTH'].hasnans:
-                raise NameError('Non defined LENGTH values in collar table')
+                errors['Non defined LENGTH values in collar table'] = True
+        else:
+            errors['No LENGTH column in collar'] = True
 
 
         #check SURVEY
         # null values in survey
 
         if self.survey['BHID'].hasnans:
-            raise NameError('Non defined BHID in survey table')
+            errors['Non defined BHID in survey table']= True
         if self.survey['AT'].hasnans:
-            raise NameError('Non defined AT in survey table')
+            errors['Non defined AT in survey table']= True
         if self.survey['AZ'].hasnans:
-            raise NameError('Non defined AZ in survey table')
+            errors['Non defined AZ in survey table']= True
         if self.survey['DIP'].hasnans:
-            raise NameError('Non defined DIP in survey table')
+            errors['Non defined DIP in survey table']= True
 
         #check dtypes
         if self.survey['AT'].dtypes!='float64':
-            raise NameError('AT in survey table != float64')
+            errors['AT in survey table != float64']= True
         if self.survey['DIP'].dtypes!='float64':
-            raise NameError('DIP in survey table != float64')
+            errors['DIP in survey table != float64']= True
         if self.survey['AZ'].dtypes!='float64':
-            raise NameError('AZ in survey table != float64')
+            errors['AZ in survey table != float64']= True
 
         #Check using same data type for BHID
         if self.survey['BHID'].dtypes!=self.collar['BHID'].dtypes:
-            raise NameError("self.survey['BHID'].dtypes!=self.collar['BHID'].dtypes")
+            errors["self.survey['BHID'].dtypes!=self.collar['BHID'].dtypes"]=True
 
         #check survey without values: at=0
         self.survey.sort_values(by=['BHID','AT'], inplace=True)
         error = self.__checkAt0(self.survey['BHID'].values, self.survey['AT'].values)
         if error>-1:
-            raise NameError('Firts interval AT!=0 at survey table, position %d' %error)
+            errors['Firts interval AT!=0 at survey table, found at'] = error
 
         #check survey with only one survey occurrence per drillholes: this produces error in desurvey
-        for i in self.survey['BHID'].unique():
-            ns=self.survey['BHID'][self.survey['BHID'] == i].count()
-            if ns<2:
-                warnings.warn('! survey with one value at BHID: {}. This will produce error at desurvey'.format(i) )
-
+        mask = self.survey.groupby(by='BHID').count()['AT'] == 1 # surveys with only one interval
+        if mask.sum()>0:
+          errors['Survey with one interval'] = self.survey.groupby(by='BHID').count()['AT'].loc[mask].index # drillholes with one interval
 
         #check survey without collar
-        cID = self.collar['BHID'].values
-        for i in self.survey['BHID'].unique():
-            if i not in cID:
-                warnings.warn('! survey without collar at BHID: {}'.format(i) )
+        errors['Survey without collar'] = self.survey.loc[~self.survey['BHID'].isin(self.collar['BHID']), 'BHID'].values
 
         #check collar without survey
-        sID = self.survey['BHID'].unique()
-        for i in self.collar['BHID'].values:
-            if i not in sID:
-                warnings.warn('! collar without survey at BHID: {}'.format(i) )
+        errors['Collar without survey'] = self.collar.loc[~self.collar['BHID'].isin(self.survey['BHID']), 'BHID'].values
 
 
-        return None
+        return errors
         # TODO: check table relationship
         # TODO: check survey.AT.last > endofhole
 
@@ -1495,28 +1489,14 @@ cdef class Drillhole:
 
         """
 
+        mask = self.survey.groupby(by='BHID').count()['AT'] == 1 # surveys with only one interval
+        surv_erro = self.survey.groupby(by='BHID').count()['AT'].loc[mask].index # drillholes with one interval
+        survey_fix = self.survey.loc[self.survey['BHID'].isin(surv_erro)] # only those with one interval
+        survey_fix['AT'] = dummy_at # dum at for desurvey
+        self.survey = self.survey.append (survey_fix, ignore_index=True)
 
-        #check survey with only one survey occurrence per drillholes:
-        #this produces error in desurvey
-        for i in self.survey['BHID'].unique():
-            ns=self.survey['BHID'][self.survey['BHID'] == i].count()
-            bhid=[]
-            at = []
-            az =[]
-            dip =[]
-            if ns==1:
-                bhid.append(self.survey['BHID'][self.survey['BHID'] == i].iloc[0])
-                az.append(self.survey['AZ'][self.survey['BHID'] == i].iloc[0])
-                dip.append(self.survey['DIP'][self.survey['BHID'] == i].iloc[0])
-                at.append(dummy_at)
-
-            tmp=pd.DataFrame({'BHID':bhid, 'AZ': az, 'DIP': dip, 'AT': at })
-
-            # append this to survey
-            self.survey=self.survey.append(tmp)
-
-            #sort survey
-            self.survey.sort_values(by=['BHID','AT'], inplace=True)
+        #sort survey
+        self.survey.sort_values(by=['BHID','AT'], inplace=True)
 
 
     cpdef validate_table(self,str table_name):
