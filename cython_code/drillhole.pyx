@@ -1315,6 +1315,10 @@ cdef class Drillhole:
         - check that coordinates and direction angles dtypes are float64
         - check survey without collar and collar without survey
 
+        Returns
+        -------
+        dictionary with errors
+
         Examples
         --------
         >>>
@@ -1352,7 +1356,7 @@ cdef class Drillhole:
 
         #check repeated survey BHID,AT
         if len(self.survey.loc[self.survey.duplicated(['BHID','AT'])])>0:
-            errors['survey duplicated BHID,AT'] = self.survey.loc[self.survey.duplicated(['BHID','AT']), ['BHID','AT']].values
+            errors['survey duplicated [BHID,AT]'] = self.survey.loc[self.survey.duplicated(['BHID','AT']), ['BHID','AT']].values
 
         # null values in collar
         if self.collar['BHID'].hasnans:
@@ -1401,7 +1405,7 @@ cdef class Drillhole:
 
         #Check using same data type for BHID
         if self.survey['BHID'].dtypes!=self.collar['BHID'].dtypes:
-            errors["self.survey['BHID'].dtypes!=self.collar['BHID'].dtypes"]=True
+            errors["survey['BHID'].dtypes!=collar['BHID'].dtypes"]=True
 
         #check survey without values: at=0
         self.survey.sort_values(by=['BHID','AT'], inplace=True)
@@ -1424,10 +1428,11 @@ cdef class Drillhole:
         if error.shape[0]>0:
           errors['Collar without survey'] = error
 
+        # TODO: check survey.AT.last > endofhole
 
         return errors
-        # TODO: check table relationship
-        # TODO: check survey.AT.last > endofhole
+
+
 
     cdef __checkAt0(self,np.ndarray BHID, np.ndarray[double, ndim=1] AT):
         """
@@ -1456,7 +1461,7 @@ cdef class Drillhole:
 
         return -1
 
-    # TODO: Optimize this one, it is too slow
+
     cpdef fix_survey_one_interval_err(self, double dummy_at):
         """fix_survey_one_interval_err(self, double dummy_at)
 
@@ -1512,24 +1517,15 @@ cdef class Drillhole:
         - checks null values in table BHID
         - checks null values in From/To
         - checks that FROM and TO dtypes are float64
+        - checks relations between tables and collar
 
-        Note
-        ----
-        - You may run this validation before doing desurvey
-        - Only few minimum validations are implemented for now
-        - No value is returned, it raises an error
-
-        TODO
-        ----
-         - [] Implement check relation between tables, gaps, overlays,
-              missing BHID, missing Survey, Interval longer that max_depth.
-         - [] Collect all errors and return a list of errors.
-         - [] Collect all warnings and return a list of warnings.
-         - [] Fix example section.
+        Returns
+        -------
+        dictionary with errors
 
         See Also
         --------
-        validate
+        validate, add_gaps
 
         Examples
         --------
@@ -1543,47 +1539,47 @@ cdef class Drillhole:
         assert table_name in self.table, '%s not exist in this drillhole database' % table_name
 
         #check table
+        errors = {}
 
         #check repeated BHID,FROM
         if len(self.table[table_name][self.table[table_name].duplicated(['BHID','FROM'])])>0:
-            raise NameError('There are duplicated BHID,FROM at table')
-
+            tmp  =  self.table[table_name].loc[
+                        self.table[table_name].duplicated(['BHID','FROM'], keep=False),
+                        ['BHID','FROM']]
+            errors['Duplicated BHID,FROM'] = tmp
 
         # null values in table bhid
         if self.table[table_name]['BHID'].hasnans:
-            raise NameError('Non defined BHID in %s' % table_name)
+            errors['Non defined BHID'] = True
         # null values in From/To
         if self.table[table_name]['FROM'].hasnans:
-            raise NameError('Non defined FROM in %s' % table_name)
+            errors['Non defined FROM'] = True
         if self.table[table_name]['TO'].hasnans:
-            raise NameError('Non defined TO in %s' % table_name)
+            errors['Non defined TO'] = True
         if self.table[table_name]['FROM'].dtypes!='float64':
-            raise NameError('FROM in table %s != float64' % table_name)
+            errors['FROM in table != float64' ] = True
         if self.table[table_name]['TO'].dtypes!='float64':
-            raise NameError('TO in table %s != float64' % table_name)
+            errors['TO in table != float64' ] = True
 
         #Check using same data type for BHID
         if self.table[table_name]['BHID'].dtypes!=self.collar['BHID'].dtypes:
-            raise NameError("self.table[%s]['BHID'].dtypes!=self.collar['BHID'].dtypes" % table_name)
+            errors["Table['BHID'].dtypes!=Collar['BHID'].dtypes"] = True
 
         #check table without collar
-        cID = self.collar['BHID'].values
-        for i in self.table[table_name]['BHID'].unique():
-            if i not in cID:
-                warnings.warn('Warning on table {}: BHID: {} not in collar'.format(table_name, i) )
+        tmp = self.table[table_name].loc[~self.table[table_name]['BHID'].isin(self.collar['BHID'].unique()), 'BHID'].values
+        if tmp.shape[0]>0:
+          errors['Table BHID not at collar BHID list'] = tmp
 
         #check collar without table
-        tID = self.table[table_name]['BHID'].unique()
-        for i in self.collar['BHID'].values:
-            if i not in tID:
-                warnings.warn('Info : collar BHID {} not at table {}'.format(i,table_name) )
+        tmp = self.collar.loc[~self.collar['BHID'].isin(self.table[table_name]['BHID'].unique()), 'BHID'].values
+        if tmp.shape[0]>0:
+          errors['Collar BHID not at table BHID list'] = tmp
 
 
-
-        # TODO: check overlaps and table relationship
+        # TODO: check overlaps. Done see add gaps
         # TODO: check TO.last > endofhole
 
-
+        return errors
 
     cpdef txt2intID(self, str table_name):
         """txt2intID(str table_name)
@@ -2773,6 +2769,8 @@ cdef class Drillhole:
         TODO
         ----
          - [] Fix example section.
+         - [] Add multiple variables
+         - [] Add domain code
 
         """
 
