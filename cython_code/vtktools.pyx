@@ -667,9 +667,22 @@ cpdef partialgrid2vtkfile(
 
     # asign scalar
     for i in range(nvar):
-        cscalars = vtknumpy.numpy_to_vtk(var[i])
-        cscalars.SetName(varname[i])
-        ug.GetCellData().AddArray(cscalars)
+        # implement string variables here
+        dtype = var[i].dtype
+
+        if  dtype==np.int8 or dtype==np.int16 or dtype==np.int32 or dtype==np.int64 or dtype==np.float16 or dtype==np.float32 or dtype==np.float64:
+            cscalars = vtknumpy.numpy_to_vtk(var[i])
+            cscalars.SetName(varname[i])
+            ug.GetCellData().AddArray(cscalars)
+        else:
+            # this is fos string array. Not optimized...
+            cscalars = vtk.vtkStringArray()
+            cscalars.SetName(varname[i])
+            cscalars.SetNumberOfComponents(1)
+            cscalars.SetNumberOfTuples(nc)
+            for l in range(nc):
+                cscalars.SetValue(l,str(var[i][l]))
+            ug.GetCellData().AddArray(cscalars)
 
     # Clean before saving...
     # this will remove duplicated points
@@ -684,8 +697,6 @@ cpdef partialgrid2vtkfile(
     extractGrid.Update()
 
     if path is not None:
-      # save results
-
       # add extension to path
       if not path.lower().endswith('.vtu'):
           path = path + '.vtu'
