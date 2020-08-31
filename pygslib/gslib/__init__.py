@@ -39,22 +39,22 @@ import vtk
 import sys
 
 #gslib fortran code
-from . import __gslib__kt3d
-from . import __gslib__postik
-from . import __read_gslib
-from . import __addcoord
-from . import __rotscale
-from . import __block_covariance
-from . import __general
-from . import __plot
-from . import __declus
-from . import __variograms
-from . import __dist_transf
-from . import __bigaus
-from . import __bicalib
-from . import __trans
-from . import __draw
-from . import __dm2csv
+from pygslib.gslib import __gslib__kt3d
+from pygslib.gslib import __gslib__postik
+from pygslib.gslib import __read_gslib
+from pygslib.gslib import __addcoord
+from pygslib.gslib import __rotscale
+from pygslib.gslib import __block_covariance
+from pygslib.gslib import __general
+from pygslib.gslib import __plot
+from pygslib.gslib import __declus
+from pygslib.gslib import __variograms
+from pygslib.gslib import __dist_transf
+from pygslib.gslib import __bigaus
+from pygslib.gslib import __bicalib
+from pygslib.gslib import __trans
+from pygslib.gslib import __draw
+from pygslib.gslib import __dm2csv
 
 #pygslib modules
 import pygslib.vtktools as vtktools

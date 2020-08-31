@@ -1,7 +1,7 @@
 """
 pygslib: GSLIB in python
 
-Copyright 2018, Adrian Martinez Vargas.
+Copyright 2020, Adrian Martinez Vargas.
 Licensed under MIT.
 
 """
@@ -17,7 +17,7 @@ description = 'Python module for mineral resource estimation and geostatistics'
 name='pygslib'
 long_description=open("README.md").read()
 classifiers=[
-            'Development Status :: 3 - Alpha',
+            'Development Status :: 5 - Alpha',
             'Programming Language :: Python',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: MIT License and GPL',
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     #-------------------------------------------------------------------
     #make sure you use the setup from numpy
     from numpy.distutils.core import setup # this is numpy's setup
-    from numpy.distutils.extension import Extension
+    from numpy.distutils.core import Extension
     #from numpy import get_include
     from Cython.Build import cythonize
 
@@ -169,12 +169,12 @@ if __name__ == '__main__':
           install_requires = ['ipython',
                               'matplotlib',
                               'jupyter',
-                              'vtk>=7.1',
+                              'vtk>=8.0',
                               'bokeh',
                               'colour',
-                              'numpy',
+                              'numpy>=0.19',
                               'scipy',
-                              'pandas>=0.17'
+                              'pandas'
                               ],
           tests_require=['pytest'],
           packages=['pygslib',

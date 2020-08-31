@@ -1,10 +1,10 @@
 
 package:
   name: pygslib
-  version: "0.0.0.4.0.0"
+  version: "0.0.0.5.0.0"
 
 python:
-  - 2.7
+  - 3.8
 
 requirements:
   build:
@@ -12,17 +12,19 @@ requirements:
     - cython
     - setuptools
     - numpy
-    - libgfortran
+    - vc=14.1
+    - vs2015_runtime
+    - libpython
+    - m2w64-gcc-libgfortran
 
   run:
     - python
     - numpy
-    - pandas >=0.17
+    - pandas >=0.19
     - matplotlib
     - scipy
-    - vtk >=7.1
+    - vtk  >=8.0
     - ipython
-    - libgfortran
     - colour
     - bokeh
     - ezdxf

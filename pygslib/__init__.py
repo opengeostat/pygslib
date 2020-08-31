@@ -23,9 +23,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # import pygslib modules (compatible with python 3x)
-from . import drillhole, blockmodel, vtktools, nonlinear, sandbox, gslib, plothtml, charttable, progress, surpac
+from pygslib import drillhole, blockmodel, vtktools, nonlinear, sandbox, gslib, plothtml, charttable, progress, surpac
 
-from . import version
+from pygslib import version
 
 __version__= version.__version__
 

@@ -16,11 +16,6 @@
 
 #temporary files
 *~
-/develop_tmp
-/cross-check-gslib
-.spyderworkspace
-.spyderproject
-.pytest_cache
 
 #Ipython check points
 /.ipynb_checkpoints
@@ -29,9 +24,3 @@
 .spyderproject
 .spyderworkspace
 
-#geany
-*.geany
-
-#mac files
-.DS_Store
-.DS_Store?
