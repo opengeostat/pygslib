@@ -1332,6 +1332,34 @@ cpdef SavePolydata(object polydata, str path):
     writer.SetInputData(polydata)
     writer.Write()
 
+cpdef SaveSTL(object polydata, str path):
+    """SaveSTL(object polydata, str path)
+
+    Saves polydata into a STL file ('*.stl')
+
+
+    Parameters
+    ----------
+    polydata : VTK polydata
+        vtk object with data, ej. wireframe
+    path : str
+        Extension (*.stl) will be added if not provided
+
+
+    """
+
+    assert polydata.GetClassName()=='vtkPolyData', 'error input vtk object is of type {}, a vtkPolyData was expected'.format(polydata.GetClassName())
+
+
+    # add extension to path
+    if not path.lower().endswith('.stl'):
+        path = path + '.stl'
+
+    writer = vtk.vtkSTLWriter()
+    writer.SetFileName(path)
+    writer.SetInputData(polydata)
+    writer.Write()
+
 cpdef LoadImageData(str path):
     """ReadImageData(object grid, str path)
 
