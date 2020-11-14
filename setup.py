@@ -17,7 +17,7 @@ description = 'Python module for mineral resource estimation and geostatistics'
 name='pygslib'
 long_description=open("README.md").read()
 classifiers=[
-            'Development Status :: 5 - Alpha',
+            'Development Status :: 6 - Alpha',
             'Programming Language :: Python',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: MIT License and GPL',
