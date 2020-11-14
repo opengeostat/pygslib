@@ -1339,6 +1339,7 @@ cdef class Drillhole:
          - [] Collect all errors and return a list of errors.
          - [] Collect all warnings and return a list of warnings.
          - [] Fix example section.
+         - [] Check number range in survey (negative at and angles out of range)
 
         See Also
         --------
@@ -1409,9 +1410,9 @@ cdef class Drillhole:
 
         #check survey without values: at=0
         self.survey.sort_values(by=['BHID','AT'], inplace=True)
-        error = self.__checkAt0(self.survey['BHID'].values, self.survey['AT'].values)
+        error, bhid = self.__checkAt0(self.survey['BHID'].values, self.survey['AT'].values)
         if error>-1:
-            errors['Firts interval AT!=0 at survey table, found at'] = error
+            errors['Firts interval AT!=0 at survey table, found at'] = bhid
 
         #check survey with only one survey occurrence per drillholes: this produces error in desurvey
         mask = self.survey.groupby(by='BHID').count()['AT'] == 1 # surveys with only one interval
@@ -1457,9 +1458,9 @@ cdef class Drillhole:
         for i in range(1,n):
             if BHID[i-1]!=BHID[i]:
                 if  AT[i]>0.00001:
-                   return i
+                   return i, BHID[i]
 
-        return -1
+        return -1, None
 
 
     cpdef fix_survey_one_interval_err(self, double dummy_at):

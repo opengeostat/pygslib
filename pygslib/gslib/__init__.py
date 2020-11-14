@@ -1275,6 +1275,10 @@ def kt3d(parameters):
 
     assert parameters['id2power'] >= 0, 'Error: parameter id2power <0 '
 
+    assert parameters['x'].shape[0]>0, 'Error: input array x with size zero'
+
+    assert parameters['outx'].shape[0]>0, 'Error: output array x with zero size'
+
 
     # check that bhid is provided if nbhid > 0
     if 'nbhid' in parameters:
