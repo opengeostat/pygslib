@@ -66,7 +66,8 @@ if __name__ == '__main__':
     # define extensions here:
     #-----------------------------------------------------
     gslib_rotscale = Extension(name = 'pygslib.gslib.__rotscale',
-                     sources = ['for_code/rotscale.f90'] )
+                     sources = ['for_code/rotscale.f90'],
+								extra_link_args= ['-static'] )
 
     gslib_block_covariance = Extension(name = 'pygslib.gslib.__block_covariance',
                      sources = ['for_code/block_covariance.f90'] )
