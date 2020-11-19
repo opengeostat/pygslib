@@ -22,7 +22,6 @@ requirements:
     - matplotlib
     - scipy
     - vtk  >=8.0
-    - ipython
     - libgfortran
     - colour
     - bokeh
