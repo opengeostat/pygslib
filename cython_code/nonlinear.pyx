@@ -1453,7 +1453,7 @@ def plotgt(cutoff, t, g, label, figsize = [6.4, 4.8]):
     """
     
     # prepare ax and fig
-    fig, ax1 = plt.subplots(figsize)
+    fig, ax1 = plt.subplots(figsize=figsize)
     ax1.set_xlabel('cutoff')
     ax1.set_ylabel('Tonnage')
     ax1.tick_params('y')
