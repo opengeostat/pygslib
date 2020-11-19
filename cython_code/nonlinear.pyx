@@ -1335,8 +1335,46 @@ cpdef get_ro(double Covar_ZvZv,
 # ----------------------------------------------------------------------
 def gtcurve (cutoff, z, p, varred = 1, ivtyp = 0, zmin = None, zmax = None,
              ltail = 1, ltpar = 1, middle = 1, mpar = 1, utail = 1, utpar = 1,maxdis = 1000):
-    """
-    TODO: 
+    """ gtcurve (cutoff, z, p, varred = 1, ivtyp = 0, zmin = None, zmax = None,
+             ltail = 1, ltpar = 1, middle = 1, mpar = 1, utail = 1, utpar = 1,maxdis = 1000)
+    
+    Calculates grade and normalized tonnage (0 to 1) above a given cutoff 
+    from input pairs of variable z, and probability p. The function calls the `pygslib.gslib.postik`
+    to calculate probability and grade. 
+
+    You can pass z and p corrected to block support with DGM, with postik parameter `varred == 1`,
+    to get a DGM global change of support. Alternatively, you can pass z and p in point support
+    and use a variance reduction factor  `varred < 1` and `ivol = 1` to do affine correction (`ivtyp=1`)
+    or indirect lognormal correction (`ivtyp=2`). 
+
+    Parameters
+    ----------
+    cutoff: 1D numeric array
+        1D array with cutoff grades to plot
+    z, p: 1D numeric array 
+        variable (grade) and its probability (CDF). 
+    varred: int, default  1
+        variance reduction factor. If varred!=1 variance reduction will be 
+        applied with affine correction (`ivtyp=1`), or lognormal correction (`ivtyp=2`)
+    ivtyp: int, default  0
+        type of change of support applied if varred!=1. 
+        affine correction (`ivtyp=1`), and lognormal correction (`ivtyp=2`) are the two options. 
+        for DGM global change of support preprocess z, p using `pygslib.nonlinear.anamor_blk`.
+    zmin, zmax: floats, default None
+        minimum and maximum of the z in the CDF. It can be outside the data interval. 
+        If None will be set to input z minimum and maximum.
+    ltail, ltpar, middle, mpar , utail, utpar: numeric
+        lower, middle, and upper tail type and parameter
+        ltail,mtail,utail=1 is linear interpolation.
+        ltail,mtail,utail=2 is power model 
+        ltail=3 is not implemented in this fuction, but availiable in `pygslib.gslib.postik`
+    maxdis: integer, default 1000
+        maximum discretization parameter
+
+    Notes:
+    ----
+    see http://www.gslib.com/gslib_help/postik.html for postik gslib options
+
     """
     
     t = np.zeros([len(cutoff)])
@@ -1396,13 +1434,26 @@ def gtcurve (cutoff, z, p, varred = 1, ivtyp = 0, zmin = None, zmax = None,
         
     return t,ga,gb    
     
-def plotgt(cutoff, t, g, label):
-    """
-    TODO: 
+def plotgt(cutoff, t, g, label, figsize = [6.4, 4.8]):
+    """ plotgt(cutoff, t, g, label)
+    
+    Plots grade and tonnage above cutoff previously calculated
+
+    Parameters
+    ----------
+    cutoff: 1D numeric array
+        1D array with cutoff grades to plot
+    t, g: 2D numeric array 
+        this is an array of n,m array, where n is the number of tonnage curves
+        and m = len(cutoff). 
+    label: 1D array of strings
+        the names of each grade and tonnage curve
+    figsize: 1D array, default [6.4, 4.8]
+        size of the matplotlib figue
     """
     
     # prepare ax and fig
-    fig, ax1 = plt.subplots()
+    fig, ax1 = plt.subplots(figsize)
     ax1.set_xlabel('cutoff')
     ax1.set_ylabel('Tonnage')
     ax1.tick_params('y')
@@ -1426,9 +1477,7 @@ def plotgt(cutoff, t, g, label):
     return fig    
     
     
-    
-    
- 
+
 
 # ----------------------------------------------------------------------
 #   Uniform conditioning functions
