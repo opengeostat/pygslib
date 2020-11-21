@@ -1452,7 +1452,7 @@ cdef class Drillhole:
 
         # first interval is zero
         if  AT[0]>0.00001:
-            return 0
+            return 0, BHID[0]
 
         # the first dhole intervals (where BHID[i-1]!=BHID[i]) are zero?
         for i in range(1,n):
