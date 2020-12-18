@@ -1153,8 +1153,8 @@ def kt3d(parameters):
             'radius2'    : ,   # float, search distance in direction 3
             'ndmax'      : ,   # int, maximum number of points
             'ndmin'      : ,   # int, minimum number of points
-            'noct'       : ,   # (optional) int, use octant, default False == 0
-            'nbhid'      : ,   # (optional) int, maximum number of samples in a drillhole, default not used == 0
+            'noct'       : ,   # (optional) int, maximum number of samples per octant, if zero octans not used, default == 0
+            'nbhid'      : ,   # (optional) int, maximum number of samples from each drillhole, default not used == 0
             'sang1'      : ,   # (optional) float, rotation angle 1
             'sang2'      : ,   # (optional) float, rotation angle 1
             'sang3'      : ,   # (optional) float, rotation angle 1

@@ -48,6 +48,7 @@ from libc.math cimport exp
 import pygslib
 import matplotlib.pyplot as plt 
 
+
 # is nan test for cython 
 #from libc.math cimport isnan
 
@@ -763,8 +764,8 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
         - create an arbitrary secuence of Y ndisc values in interval [ymin, ymax] 
         - backtransform Y to obtain pairs Z, Y. You can define arbitrary 
           maximum and minimum practical values beyond data limits and extrapolation functions
-        - calculate gaussian anamorphosis with hermite polynomials and hermite coeficients
-        - calculate variance from hermite coeficients
+        - calculate gaussian anamorphosis with hermite polynomials and hermite coefficients
+        - calculate variance from hermite coefficients
         - asign or calculate the authorized and practical intervals of the gaussian anamorphosis
        
         You may change the parameters ltail, utail, ltpar, utpar, K, zmin, zmax, ymin, 
@@ -1483,44 +1484,99 @@ def plotgt(cutoff, t, g, label, figsize = [6.4, 4.8]):
 #   Uniform conditioning functions
 # ----------------------------------------------------------------------
 
-#cpdef recurrentU(np.ndarray [double, ndim=2] H, float yc):
-    
-#    U =  H 
-"""
-cpdef ucondit(np.ndarray [double, ndim=1] ZV,
-              np.ndarray [double, ndim=1] PCI, 
-              float zc,
+cpdef ucondit(float YV, 
+              float yc,
+              np.ndarray [double, ndim=1] PCI,
               float r=1., 
               float R=1., 
               float ro=1.): 
     
+    """ ucondit(YV, yc, PCI, r=1., R=1., ro=1.)
     
-    # r block support, R panel support, ro info effect  
+    Computes uniform conditioning estimation in a panel with krided gaussian value YV,
+    at cutoff yc, given support effect coefficients r, R, and information 
+    effect coefficient ro
+
+    Parameters
+    ----------
+    YV: numeric
+        Kriged gaussian grade in a panel 
+    PCI: 1D numeric array of double 
+        PCI coefficients 
+    yc: numeric
+        cutoff in gaussian space
+    r,R,ro: numeric
+        point and panel support effect coefficients, and information 
+        effect coefficient
     
+    Returns
+    ----
+    T, Q: 
+        floats with tonnage and metal above cutoff
+
+    Note
+    ----
+    Note that you may use gaussian panel grade (YV), and gaussian cutoff (yc) 
+    as input. 
     
-    cdef float t
+    You can get yc values from tabulated point transformations using the function 
+    `pygslib.nonlinear.Z2Y_linear`. 
+
+    YV can be interpolated directly in panels from y(x) on samples, or it can be 
+    obtained transforming kriged panel values in non-gaussuan space (ZV) into 
+    its gaussian equivalent using tabulated panel anamorphosis and the function 
+    `pygslib.nonlinear.Z2Y_linear`
+
+    """ 
+    cdef float t, qn, qq
     cdef int K
-    cdef np.ndarray [double, ndim=1] T, Q, M
-    cdef np.ndarray [double, ndim=2] H
+    cdef float T 
+    cdef float Q 
+    cdef float M 
+    cdef np.ndarray [double, ndim=1] HYV
+    cdef np.ndarray [double, ndim=1] Hyc
+    cdef np.ndarray [double, ndim=2] U
     
+    # ro not supprted until defined in equation for Q
+    if ro!=1.:
+        ro = 1.
+        from warnings import warn
+        warn('Support effect not implemented ro!=1 will be set ro = 1')
+
     # get general parameters 
     t=R/(r*ro)       # info and support effect (for no info make ro=1)
-    K = PCI.shape[0]
-    yc = Z2Y_linear 
-    YV = Z2Y_linear
+    K = PCI.shape[0]  # number of PCI
     
-    H = recurrentH(YV, K)
+    # calculate tonnage
+    T = 1- norm.cdf((yc-t*YV)/np.sqrt(1-t**2))  # this is ~ P[Zv>=zc] 
     
-    T[:] = 1- norm.pdf((yc-t*YV)/np.sqrt(1-t**2))
+
+    # ERROR from here, the results are not OK
+
+    # calculate metal (equation 3.17 from  C.T. Neufeld, 2015. Guide to Recoverable Reserves with Uniform Conditioning. Centre for Computational Geostatistics (CCG) Guidebook Series Vol. 4)
+    # also C. Neufeld and C.V. Deutsch Calculating Recoverable Reserves with Uniform Conditioning
+    HYV = recurrentH(np.array([YV]), K).ravel() # calculate hermite polynomials of YV
+    Hyc = recurrentH(np.array([yc]), K).ravel() # calculate hermite polynomials of yc
     
-    Q = np.zeros ([ZV.shape[0]])
+    # get U using recurrence
+    U = np.zeros([K,K])
+    U[0,0] = 1-norm.cdf(yc)
+    g = norm.pdf(yc)
+    for k in range(1,K):
+        U[0,k] = U[k,0] = -1/np.sqrt(k)*Hyc[k-1]*g
+
+    for n in range(1,K):
+        for p in range(n,K):
+            U[n,p] = U[p,n]= -1/np.sqrt(n)*Hyc[p]*Hyc[n-1]*g + np.sqrt(p/n)*U[n-1][p-1]
+
+    # Get Q
+    Q = 0
+    for n in range(0,K):
+        qq = (t**n)*HYV[n]
+        for p in range(0,K):
+            qn = PCI[p]*(r**p)*U[p][n]
+            Q = Q + qq * qn                  # verify that Q = Q + PCI[p]*r**p  *(ro**p) *U[n][p]*t**n*H[n]; and enable info effect
+
+    return T, Q
     
-    for i in range(K):
-        for j in range(K): 
-            Q = Q + t**i*H[i][:] * PCI[j]*r**j*ro**j
-    
-    #M = Q / T
-    
-    return T, Q, M
-    
-"""
+
