@@ -3,7 +3,7 @@
 /dist
 
 # Cython debug folder
-
+/cython_debug
 
 #python metadata 
 /*.egg
