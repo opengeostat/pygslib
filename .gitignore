@@ -2,6 +2,9 @@
 /build
 /dist
 
+# Cython debug folder
+
+
 #python metadata 
 /*.egg
 /*.egg-info

@@ -1526,7 +1526,7 @@ def postik(parameters):
         postik_parameters = {
             # output option, output parameter
             'iout'   : ,   # int. 1 E-type,2 P and means outpar,3 p-quantile for outpar=p, and 4 conditional variance
-            'outpar' : ,   # float. Parameter for iout
+            'outpar' : ,   # float. Parameter for iout (ie cutoff to calculate P)
             # the thresholds
             'ccut1'  : ,   # 1D array of floats. Cutoff used in MIK
             # volume support?, type, varred
@@ -1549,7 +1549,7 @@ def postik(parameters):
             'vr'     : ,   # 1D array of floats for table look-up if tabulated quantiles are used as interpolation function
             'wt'     : ,   # 1D array of floats with wights on table look-up
             # 2D array with IK3D output (continuous)
-            'p'      : }   # 2D array of floats. This is the MIK output or any array of local CDFs
+            'p'      : }   # 2D array of floats. input data
 
     Returns
     -------

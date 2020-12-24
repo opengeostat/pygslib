@@ -182,8 +182,9 @@ cpdef pointquering(object surface,
                    np.ndarray [double, ndim=1] x,
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
-                   int test):
-    """pointquering(object surface, double azm, double dip, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, int test)
+                   int test,
+                   object obbTree = None):
+    """pointquering(object surface, double azm, double dip, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, int test, object obbTree = None)
 
     Find points inside, over and below surface/solid
 
@@ -206,6 +207,11 @@ cpdef pointquering(object surface,
            If ``test==4`` it queries point above and below the surface.
            ``test==4`` is similar to ``test==1`` but it works with
            open surfaces.
+    obbTree: vtk.vtkOBBTree()
+           obb tree. If not avaliable wil be generated.
+           Building the tree is time consuming. You can generated a obbtree 
+           with `pygslib.vtktools.vtk_raycasting`,  and then use it as 
+           input if you plan to run multiple iterations of the pointquering function. 
 
     Returns
     -------
@@ -254,9 +260,12 @@ cpdef pointquering(object surface,
 
     # construct obbTree: see oriented bounding box (OBB) trees
     # see http://gamma.cs.unc.edu/SSV/obb.pdf
-    obbTree = vtk.vtkOBBTree()
-    obbTree.SetDataSet(surface)
-    obbTree.BuildLocator()
+
+    if obbTree is None:
+      obbTree = vtk.vtkOBBTree()
+      obbTree.SetDataSet(surface)
+      obbTree.BuildLocator()
+
     pointsVTKintersection = vtk.vtkPoints()
 
     # test each point
@@ -357,7 +366,7 @@ cpdef pointinsolid(object surface,
                    np.ndarray [double, ndim=1] x,
                    np.ndarray [double, ndim=1] y,
                    np.ndarray [double, ndim=1] z,
-                   double tolerance = .000001 ):
+                   double tolerance = .000001):
     """pointinsolid(object surface, np.ndarray [double, ndim=1] x, np.ndarray [double, ndim=1] y, np.ndarray [double, ndim=1] z, double tolerance = .000001)
 
     Finds points inside a closed surface using vtkSelectEnclosedPoints

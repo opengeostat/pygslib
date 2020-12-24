@@ -1537,12 +1537,6 @@ cpdef ucondit(float YV,
     cdef np.ndarray [double, ndim=1] Hyc
     cdef np.ndarray [double, ndim=2] U
     
-    # ro not supprted until defined in equation for Q
-    if ro!=1.:
-        ro = 1.
-        from warnings import warn
-        warn('Support effect not implemented ro!=1 will be set ro = 1')
-
     # get general parameters 
     t=R/(r*ro)       # info and support effect (for no info make ro=1)
     K = PCI.shape[0]  # number of PCI
@@ -1574,7 +1568,7 @@ cpdef ucondit(float YV,
     for n in range(0,K):
         qq = (t**n)*HYV[n]
         for p in range(0,K):
-            qn = PCI[p]*(r**p)*U[p][n]
+            qn = PCI[p]*(r**p)*(ro**p)*U[p][n]
             Q = Q + qq * qn                  # verify that Q = Q + PCI[p]*r**p  *(ro**p) *U[n][p]*t**n*H[n]; and enable info effect
 
     return T, Q
