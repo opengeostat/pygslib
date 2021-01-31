@@ -786,7 +786,7 @@ cdef class Blockmodel:
 
 
         # reusing existing functions
-        self.create_IJK()
+        self.create_IJK(overwrite)
         self.calc_ixyz_fromijk()
         self.calc_xyz_fromixyz()
 
