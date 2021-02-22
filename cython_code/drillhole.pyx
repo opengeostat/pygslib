@@ -1786,39 +1786,39 @@ cdef class Drillhole:
 
         survey = self.survey.set_index('BHID')
 
-        for c in self.survey['BHID'].unique(): #this is BHID
-
+        for c in self.table[table_name]['BHID'].unique(): 
+            
             # get survey
-            AT =  survey.loc[c, 'AT'].values
-            DIP = survey.loc[c, 'DIP'].values
-            AZ =  survey.loc[c, 'AZ'].values
-            xs =  survey.loc[c, 'x'].values
-            ys =  survey.loc[c, 'y'].values
-            zs =  survey.loc[c, 'z'].values
-            
+            AT =  survey.loc[c, ['AT']].values.ravel()  
+            DIP = survey.loc[c, ['DIP']].values.ravel()
+            AZ =  survey.loc[c, ['AZ']].values.ravel()
+            xs =  survey.loc[c, ['x']].values.ravel()
+            ys =  survey.loc[c, ['y']].values.ravel()
+            zs =  survey.loc[c, ['z']].values.ravel()
+
             # get from, to, y mid interval
-            db = table.loc[c, 'FROM'].values
-            de = table.loc[c, 'TO'].values
+            db = table.loc[c, ['FROM']].values.ravel() # [[]].values.ravel() is to prevent getting a scalar if shape is 1
+            de = table.loc[c, ['TO']].values.ravel()
             dm = db + (de-db)/2
-            
+
             # add at the end of the survey if de< AT
-            if de[-1]> AT[-1]+0.01:
+            if de[-1]>= AT[-1]:
                 AZ = np.append(AZ, AZ[-1])
                 DIP = np.append(DIP, DIP[-1])
                 AT = np.append(AT, de[-1] + 0.01)
-            
+
             #get the index where each interval is located
             jb = np.searchsorted(AT, db, side='right')
             je = np.searchsorted(AT, de, side='right')
             jm = np.searchsorted(AT, dm, side='right')
-            
+
             # outputs
             azmt = np.empty(jb.shape)
             dipt = np.empty(jb.shape)           
             x = np.empty(jb.shape)
             y = np.empty(jb.shape)
             z = np.empty(jb.shape)
-            
+
             # the bigining
             for i in range(jb.shape[0]):
                 d1 = db[i] -AT[jb[i]-1]
@@ -1838,14 +1838,13 @@ cdef class Drillhole:
                 x[i] = dx + xs[jb[i]-1]
                 y[i] = dy + ys[jb[i]-1]
                 z[i] = zs[jb[i]-1] - dz
-                
+    
             table.loc[c,'azmb']  = azmt
             table.loc[c,'dipb']  = dipt
             table.loc[c,'xb']  = x
             table.loc[c,'yb']  = y
             table.loc[c,'zb']  = z
-        
-            
+
             # the end
             for i in range(je.shape[0]):
                 d1 = de[i] -AT[je[i]-1]
@@ -1862,14 +1861,13 @@ cdef class Drillhole:
                 x[i] = dx + xs[je[i]-1]
                 y[i] = dy + ys[je[i]-1]
                 z[i] = zs[je[i]-1] - dz
-                
-                
+                 
             table.loc[c,'azme']  = azmt
             table.loc[c,'dipe']  = dipt
             table.loc[c,'xe']  = x
             table.loc[c,'ye']  = y
             table.loc[c,'ze']  = z
-                
+
             # the mean 
             for i in range(jm.shape[0]):
                 d1 = dm[i] -AT[jm[i]-1]
@@ -1888,13 +1886,13 @@ cdef class Drillhole:
                 y[i] = dy + ys[jm[i]-1]
                 z[i] = zs[jm[i]-1] - dz
                 
-                
+               
             table.loc[c,'azme']  = azmt
             table.loc[c,'dipm']  = dipt
             table.loc[c,'xm']  = x
             table.loc[c,'ym']  = y
             table.loc[c,'zm']  = z
-        
+          
         # update
         self.table[table_name] = table.reset_index()
 
