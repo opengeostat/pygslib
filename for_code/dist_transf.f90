@@ -228,7 +228,7 @@ subroutine ns_ttable(va,wt, nd, despike, transin, transout, error)
     twt=0
     do i=1, nd
         if(wt(nd) <= 1.0e-10) then
-               error = 10         ! Wight too small review your data and try again  
+               error = 10         ! Weight too small review your data and try again  
             return 
         end if
         wt_ns(i) = wt(i)

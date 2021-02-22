@@ -86,15 +86,17 @@ ana_options = {
 # ----------------------------------------------------------------------
 #   Transformation table
 # ----------------------------------------------------------------------
-cpdef ttable(z, w):
+cpdef ttable(z, w = None):
     """ttable(z, w)
     
     Creates a transformation table. 
     
     Parameters
     ---------
-    z,w : 1D numpy arrays of floats 
-        Variable and declustering weight.
+    z : 1D numpy arrays of floats 
+        Input variable.
+    w : (Optional, default None) 1D numpy arrays of floats or None
+        Variable and declustering weight. If None w is set internally as array of ones. 
     Returns:
     transin,transout : 1D numpy arrays with pairs of raw and gaussian values
     
@@ -103,6 +105,9 @@ cpdef ttable(z, w):
     """
     cdef int error
     
+    if w is None:
+        w = np.ones([len(z)])
+
     transin,transout, error = pygslib.gslib.__dist_transf.ns_ttable(z,w)
     
     assert error < 1, 'There was an error = {} in the function gslib.__dist_transf.ns_ttable'.format(error)
@@ -125,7 +130,9 @@ cpdef nscore(z, transin, transout, getrank=False):
         Variable to transform.
     transin,transout : 1D numpy arrays of floats
         transformation table as obtained in function ttable
-        
+    getrank: boolean (optional, default False)
+        If false return the gaussian values, if true returns gaussian probability (rank)
+
     Returns
     -------
     y : 1D numpy array of floats
@@ -224,15 +231,15 @@ cpdef stats(z, w, iwt = True, report = True):
     assert error < 1, 'There was an error = {} in the function gslib.__dist_transf.ns_ttable'.format(error)
     
     if report:
-        print  'Stats Summary'
-        print  '-------------'
-        print  'Count          ', len(z)
-        print  'Minimum        ', xmin
-        print  'Maximum        ', xmax
-        print  'CV             ', xcvr
-        print  'Mean           ', xmen
-        print  'Variance       ', xvar
-        print  'Quantiles 2.5-97.5' , [xpt025,xlqt,xmed,xuqt,xpt975]
+        print  ('Stats Summary')
+        print  ('-------------')
+        print  ('Count          ', len(z))
+        print  ('Minimum        ', xmin)
+        print  ('Maximum        ', xmax)
+        print  ('CV             ', xcvr)
+        print  ('Mean           ', xmen)
+        print  ('Variance       ', xvar)
+        print  ('Quantiles 2.5-97.5' , [xpt025,xlqt,xmed,xuqt,xpt975])
         
     return xmin,xmax, xcvr,xmen,xvar 
     
@@ -536,8 +543,8 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
 
     Returns
     -------
-    Z : 1D array of float64
-        raw values corresponding to Y 
+    Y : 1D array of float64
+        gaussian values corresponding to Z 
       
     See Also
     --------
@@ -711,10 +718,10 @@ cpdef findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax):
     cdef int ii
     cdef int jj
     
-    assert zamax < zamin
-    assert zpmax < zpmin
-    assert zamax <= zpmax
-    assert zamin >= zpmin
+    assert zamax > zamin, 'zamax > zamin'
+    assert zpmax > zpmin, 'zpmax > zpmin'
+    assert zamax <= zpmax, 'zamax <= zpmax'
+    assert zamin >= zpmin, 'zamin >= zpmin'
         
     #get index for zpmax
     for jj in range(zraw.shape[0]-1, 0, -1):
@@ -920,18 +927,18 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     
     
-    print 'Raw Variance', raw_var
-    print 'Variance from PCI', PCI_var
+    print ('Raw Variance', raw_var)
+    print ('Variance from PCI', PCI_var)
     
-    print 'zamin', zana[i]
-    print 'zamax', zana[j]
-    print 'yamin', gauss[i]
-    print 'yamax', gauss[j]
+    print ('zamin', zana[i])
+    print ('zamax', zana[j])
+    print ('yamin', gauss[i])
+    print ('yamax', gauss[j])
     
-    print 'zpmin', raw[ii]
-    print 'zpmax', raw[jj]
-    print 'ypmin', gauss[ii]
-    print 'ypmax', gauss[jj]
+    print ('zpmin', raw[ii])
+    print ('zpmax', raw[jj])
+    print ('ypmin', gauss[ii])
+    print ('ypmax', gauss[jj])
     
     
     return PCI, H, raw, zana, gauss,Z , P, raw_var , PCI_var, fig
@@ -954,7 +961,7 @@ def anamor_blk( PCI, H, r, gauss, Z,
     r: float
         support correlation coefficient
     gauss, Z: array of floats
-        pair of gaussian and corrected Z anamorphosis
+        pair of gaussian and Z obtained with anamorphosis
     ltail, utail, ltpar, utpar: floats/integer (optional, default 1)
         extrapolation functions, as used in pygslib.nonlinear.backtr 
         and gslib.__dist_transf.backtr
@@ -966,7 +973,7 @@ def anamor_blk( PCI, H, r, gauss, Z,
     Returns:
 
     ZV: array of float
-        corrected Z values in point support
+        corrected Z values in block support
     PV: array of float
         Probability P{Z<c}
     fig: matplotlib figure
@@ -993,6 +1000,19 @@ def anamor_blk( PCI, H, r, gauss, Z,
                                      gauss=gauss,
                                      zpmin=zpmin, 
                                      zpmax=zpmax)
+
+    
+
+    print ('zamin blk', Z[i])
+    print ('zamax blk', Z[j])
+    print ('yamin blk', gauss[i])
+    print ('yamax blk', gauss[j])
+    
+    print ('zpmin blk', zpmin)
+    print ('zpmax blk', zpmax)
+    print ('ypmin blk', gauss[ii])
+    print ('ypmax blk', gauss[jj])
+
 
     # Now we get the transformation table corrected
     ZV = pygslib.nonlinear.backtr( y = gauss, 
@@ -1105,8 +1125,8 @@ def anamor_raw(z, w, K=30, **kwargs):
     ax.plot(gauss,zana, options['ana_pt_line'], color = options['ana_pt_color'], label = options['ana_pt_label'])
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     
-    print 'Raw Variance', raw_var
-    print 'Variance from PCI', PCI_var
+    print ('Raw Variance', raw_var)
+    print ('Variance from PCI', PCI_var)
     
     return PCI, H, raw, zana, gauss, raw_var , PCI_var, fig
     
@@ -1500,11 +1520,11 @@ cpdef ucondit(float YV,
     Parameters
     ----------
     YV: numeric
-        Kriged gaussian grade in a panel 
+        Kriged gaussian grade in a panel (get it from panel kriged values ZV using panel anamorphosis)
     PCI: 1D numeric array of double 
         PCI coefficients 
     yc: numeric
-        cutoff in gaussian space
+        cutoff in gaussian space (get it from zc using the SMU anamorphosis function)
     r,R,ro: numeric
         point and panel support effect coefficients, and information 
         effect coefficient

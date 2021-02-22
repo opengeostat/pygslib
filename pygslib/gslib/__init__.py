@@ -715,35 +715,37 @@ def gamv3D(parameters):
     Parameters
         ----------
         parameters = {
-            'x' : input rank-1 array('d') with bounds (nd)
-            'y' : input rank-1 array('d') with bounds (nd)
-            'z' : input rank-1 array('d') with bounds (nd)
-            'bhid' : input rank-1 array('i') with bounds (nd)
-            'vr' : input rank-2 array('d') with bounds (nd,nv)
-            'tminv : input float
-            'tmax' : input float
-            'nlag' : input int
-            'xlag' : input float
-            'ndir' : input int
-            'ndip' : input int
-            'isill' : input int
-            'sills' : input rank-1 array('d') with bounds (nv)
-            'ivtail' : input rank-1 array('i') with bounds (nvarg)
-            'ivhead' : input rank-1 array('i') with bounds (nvarg)
-            'ivtype' : input rank-1 array('i') with bounds (nvarg)
+            'x' : x,                   # X coordinates, array('f')
+            'y' : y,                   # Y coordinates, array('f')
+            'z' : z,                   # Z coordinates, array('f')
+            'bhid' : zone,             # bhid or zone for downhole variogram or fault areas, array('i')
+            'vr' :   variables,        # variables, array('f','f') with bounds (x.shape[0], variables.shape[1])
+            'tmin  : -1.0e21,          # trimming limits, float  (optional, default -1.0e21)
+            'tmax' : 1.0e21,           # trimming limits, float  (optional, default  1.0e21)
+            'nlag' : 10,               # number of lags, int
+            'xlag' : 4,                # lag separation distance, float
+            'ndir' : 18,               # number of directions, int
+            'ndip' : 18,               # number of dip directions, int
+            'orgdir' :                 # clockwise rotation added to dir
+            'orgdip' :                 # clockwise rotation added down dip
+            'isill' : 1,               # standardize sills? (0=no, 1=yes), int 
+            'sills' : [100],           # variance used to std the sills, array('f') with bounds (variables.shape[1])
+            'ivtail' : [1,1,1,1,1,1,1],# tail varariable for each variogram, array('i') 
+            'ivhead' : [1,1,1,1,1,1,1],# head varariable for each variogram, array('i') 
+            'ivtype' : [1,3,4,5,6,7,8],# variogram type for each variogram, array('i')
         }
-
 
         Returns
         -------
-        np : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
-        dis : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
-        gam : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
-        hm : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
-        tm : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
-        hv : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
-        tv : rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        npair : number of pair, rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        dis   : average distance, rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        gam   : variogram value, rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        hm    : head mean, rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        tm    : tail mean, rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        hv    : head variance, rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
+        tv    : tail variance, rank-4 array('d') with bounds (nlag,ndir,ndip,nvarg)
 
+        these are 4D arrays with index (lag,dir,dip,variogram). It may fit in a i,j,k structured vtk grid with 7*nvariograms data fields
 
     Note
     -----
@@ -751,8 +753,14 @@ def gamv3D(parameters):
 
     """
 
+    if 'tmin' not in parameters.keys():
+        parameters['tmin'] = -1.0e21
+
+    if 'tmax' not in parameters.keys():
+        parameters['tmin'] =  1.0e21
+
     #get 4D arrays with dimesions (nlag,ndir,ndip,nvarg)
-    np,dis,gam,hm,tm,hv,tv = __variograms.gamv3d(**parameters)
+    npair,dis,gam,hm,tm,hv,tv = __variograms.gamv3d(**parameters)
 
 
 
@@ -1734,7 +1742,7 @@ def histgplt(parameters, fig = None, ax = None, title = 'Bin probability', label
         fig, ax = plt.subplots(1,1)
         ax.set_title(title)
         if parameters['ilog']>0:
-            ax.set_xscale('log', nonposy='clip')
+            ax.set_xscale('log')
     else:
         if ax is not None and fig is not None:
             pass
