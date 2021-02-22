@@ -1715,7 +1715,196 @@ cdef class Drillhole:
                 
             self.survey.loc[self.survey['BHID']==c,'x'] = x
             self.survey.loc[self.survey['BHID']==c,'y'] = y
-            self.survey.loc[self.survey['BHID']==c,'z'] = z        
+            self.survey.loc[self.survey['BHID']==c,'z'] = z     
+
+    cpdef desurvey_table2(self, str table_name, int method=1):
+        """desurvey_table(str table_name, int method=1)
+
+        Desurvey a drillhole table.
+
+        Create coordinates and direction angles at table midpoint
+        intervals. If ``endpoints=True`` it also creates coordinate fields
+        at end point intervals. The existing coordinate fields will be
+        overwritten.
+
+        Parameters
+        ----------
+        table_name : str
+            a table name existing in drillhole object
+        method : int, optional, default 1 (minimum curvature)
+            the desurvey method: 1 is minimum curvature and 2 is tangential
+
+
+        Examples
+        --------
+        >>> mydrillhole.desurvey('assay', method=1)
+        >>>
+
+        Note
+        ----
+        This function calls __dsmincurb() or
+        __dstangential() functions to calculate the desurvey value.
+        
+        If the last survey interval is shallower than the deepest point in 
+        the table, then the las survey interval is reapeated at the depth of
+        the deepest point in the table + 0.001. 
+
+        Both desurvey methods (tangential and minimum curvature) use
+        angles interpolated from two desurvey points at Survey table.
+
+        TODO
+        ----
+         - [] Fix example section.
+         - [] Optimize
+
+        """
+
+        # first desurvey survey
+        if 'x' not in self.survey.columns or \
+           'y' not in self.survey.columns or \
+           'z' not in self.survey.columns:
+
+           self.desurvey_survey(method = method)          
+
+        # prepare output (this is a deep copy of the table (?))
+        table = self.table[table_name].set_index('bhid')
+        table ['xb'] = np.nan
+        table ['yb'] = np.nan
+        table ['zb'] = np.nan
+        table ['xe'] = np.nan
+        table ['ye'] = np.nan
+        table ['ze'] = np.nan
+        table ['xm'] = np.nan
+        table ['ym'] = np.nan
+        table ['zm'] = np.nan
+        table ['azmb'] = np.nan
+        table ['dipb'] = np.nan
+        table ['azme'] = np.nan
+        table ['dipe'] = np.nan
+        table ['azmm'] = np.nan
+        table ['dipm'] = np.nan
+
+        survey = self.survey.set_index('BHID')
+
+        for c in survey.index: #this is BHID
+            
+            # get survey
+            AT =  survey.loc[c, 'AT'].values
+            DIP = survey.loc[c, 'DIP'].values
+            AZ =  survey.loc[c, 'AZ'].values
+            xs =  survey.loc[c, 'x'].values
+            ys =  survey.loc[c, 'y'].values
+            zs =  survey.loc[c, 'z'].values
+            
+            # get from, to, y mid interval
+            db = table.loc[c, 'FROM'].values
+            de = table.loc[c, 'TO'].values
+            dm = db + (de-db)/2
+            
+            # add at the end of the survey if de< AT
+            if de[-1]> AT[-1]+0.01:
+                AZ = np.append(AZ, AZ[-1])
+                DIP = np.append(DIP, DIP[-1])
+                AT = np.append(AT, de[-1] + 0.01)
+            
+            #get the index where each interval is located
+            jb = np.searchsorted(AT, db, side='right')
+            je = np.searchsorted(AT, de, side='right')
+            jm = np.searchsorted(AT, dm, side='right')
+            
+            # outputs
+            azmt = np.empty(jb.shape)
+            dipt = np.empty(jb.shape)           
+            x = np.empty(jb.shape)
+            y = np.empty(jb.shape)
+            z = np.empty(jb.shape)
+            
+            # the bigining
+            for i in range(jb.shape[0]):
+                d1 = db[i] -AT[jb[i]-1]
+                lll1 = AT[jb[i]]
+                lll2 = AT[jb[i]-1]
+                len12 = lll1-lll2
+                azm1 = AZ[jb[i]-1]
+                dip1 = DIP[jb[i]-1]
+                azm2 = AZ[jb[i]]
+                dip2 = DIP[jb[i]]
+                azmt[i],dipt[i] = interp_ang1D(azm1, dip1, azm2, dip2, len12, d1)
+                if method==1:
+                    dz,dy,dx = __dsmincurb(d1, azm1,  dip1, azmt[i], dipt[i])
+                else:
+                    dz,dy,dx = __dstangential(d1, azm1,  dip1)
+                
+                x[i] = dx + xs[jb[i]-1]
+                y[i] = dy + ys[jb[i]-1]
+                z[i] = zs[jb[i]-1] - dz
+                
+            table.loc[c,'azmb']  = azmt
+            table.loc[c,'dipb']  = dipt
+            table.loc[c,'xb']  = x
+            table.loc[c,'yb']  = y
+            table.loc[c,'zb']  = z
+        
+            
+            # the end
+            for i in range(je.shape[0]):
+                d1 = de[i] -AT[je[i]-1]
+                len12 = AT[je[i]]-AT[je[i]-1]
+                azm1 = AZ[je[i]-1]
+                dip1 = DIP[je[i]-1]
+                azm2 = AZ[je[i]]
+                dip2 = DIP[je[i]]
+                azmt[i],dipt[i] = interp_ang1D(azm1, dip1, azm2, dip2, len12, d1)
+                if method==1:
+                    dz,dy,dx = __dsmincurb(d1, azm1,  dip1, azmt[i], dipt[i])
+                else:
+                    dz,dy,dx = __dstangential(d1, azm1,  dip1)
+                x[i] = dx + xs[je[i]-1]
+                y[i] = dy + ys[je[i]-1]
+                z[i] = zs[je[i]-1] - dz
+                
+                
+            table.loc[c,'azme']  = azmt
+            table.loc[c,'dipe']  = dipt
+            table.loc[c,'xe']  = x
+            table.loc[c,'ye']  = y
+            table.loc[c,'ze']  = z
+                
+            # the mean 
+            for i in range(jm.shape[0]):
+                d1 = dm[i] -AT[jm[i]-1]
+                len12 = AT[jm[i]]-AT[jm[i]-1]
+                azm1 = AZ[jm[i]-1]
+                dip1 = DIP[jm[i]-1]
+                azm2 = AZ[jm[i]]
+                dip2 = DIP[jm[i]]
+                azmt[i],dipt[i] = interp_ang1D(azm1, dip1, azm2, dip2, len12, d1)
+                if method==1:
+                    dz,dy,dx = __dsmincurb(d1, azm1,  dip1, azmt[i], dipt[i])
+                else:
+                    dz,dy,dx = __dstangential(d1, azm1,  dip1)
+
+                x[i] = dx + xs[jm[i]-1]
+                y[i] = dy + ys[jm[i]-1]
+                z[i] = zs[jm[i]-1] - dz
+                
+                
+            table.loc[c,'azme']  = azmt
+            table.loc[c,'dipm']  = dipt
+            table.loc[c,'xm']  = x
+            table.loc[c,'ym']  = y
+            table.loc[c,'zm']  = z
+
+        # update
+        self.table[table_name] = table
+
+        # this is to produce a warning if some intervals where not desurvey
+        try:
+            assert  np.isfinite(self.table[table_name]['xm'].values).all()
+            assert  np.isfinite(self.table[table_name]['xb'].values).all()
+            assert  np.isfinite(self.table[table_name]['xe'].values).all()
+        except:
+            warnings.warn('Some intervals where non-desurveyed and NAN coordinates where created, check errors in collar or survey')
 
 
     cpdef desurvey_table(self, str table_name, int method=1):
@@ -1784,6 +1973,8 @@ cdef class Drillhole:
         self.table[table_name]['azmm'] = np.nan
         self.table[table_name]['dipm'] = np.nan
 
+
+        # TODO: optimize, consider setting bhid as index to go faster
         for c in self.survey['BHID']:
             
             # get survey
