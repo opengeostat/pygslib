@@ -1616,7 +1616,7 @@ cpdef dxf2PolyData(str path):
 cpdef dxf2PolyData_line3d(str path):
     """dxf2PolyData_line3d(path)
 
-    Reads 3D lines in dxf format ('*.dxf') and returns a Polydata.
+    Reads 3D lines (POLYLINE) in dxf format ('*.dxf') and returns a Polydata.
 
     Parameters
     ----------
@@ -1640,7 +1640,7 @@ cpdef dxf2PolyData_line3d(str path):
     msp = dwg.modelspace()
 
     # extract lines and points and save it in a dict
-    lines = msp.query('POLYLINE')
+    lines = msp.query('POLYLINE')  # implement also LWPOLYLINE
     lins = {}
     lid = 0
     pid = 0
@@ -1649,6 +1649,72 @@ cpdef dxf2PolyData_line3d(str path):
         lins[l] = []
         for v in lines[l]:
             pnts.append(v.dxf.location)
+            lins[l].append(pid)
+            pid = pid + 1
+
+    # create poinst
+    points = vtk.vtkPoints()
+    for p in pnts:
+        points.InsertNextPoint(p)
+
+    # create lines and cell array
+    cells = vtk.vtkCellArray()
+    for l in range(len(lines)):
+        polyLine = vtk.vtkPolyLine()
+        polyLine.GetPointIds().SetNumberOfIds(len(lins[l]))
+        for i in range(len(lins[l])):
+            polyLine.GetPointIds().SetId(i, lins[l][i])
+        cells.InsertNextCell(polyLine)
+
+    # create polydata
+    polyData = vtk.vtkPolyData()
+    polyData.SetPoints(points)
+    polyData.SetLines(cells)
+
+    # doing a bit of cleanup (remove duplicated points)
+    cleanPolyData = vtk.vtkCleanPolyData()
+    cleanPolyData.SetInputData(polyData)
+    cleanPolyData.Update()
+
+    return cleanPolyData.GetOutput(), pnts
+
+cpdef dxf2PolyData_lwpoly(str path):
+    """dxf2PolyData_lwpoly(path)
+
+    Reads LWPOLYLINE in dxf format ('*.dxf') and returns a Polydata.
+
+    Parameters
+    ----------
+    path : str
+        File name and path of dxf file.
+
+    Returns
+    -------
+    vtkPolyData, points : a vtkPolyData, and list of point coordinates tuples
+
+    Note
+    -----
+    Requires the python modele ezdxf
+
+    """
+
+    # read the dxf
+    dwg = ezdxf.readfile(path)
+
+    # get the dxf model space
+    msp = dwg.modelspace()
+
+    # extract lines and points and save it in a dict
+    lines = msp.query('LWPOLYLINE')  # implement also LWPOLYLINE
+    lins = {}
+    lid = 0
+    pid = 0
+    pnts = []
+    for l in range(len(lines)):
+        zi = lines[l].dxf.elevation
+        lins[l] = []
+        for li in lines[l]:
+            pnts.append([li[0],li[1],zi])
             lins[l].append(pid)
             pid = pid + 1
 
