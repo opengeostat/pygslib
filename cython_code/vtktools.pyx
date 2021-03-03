@@ -155,6 +155,8 @@ cpdef vtk_raycasting(object surface, object pSource, object pTarget, object obbT
       obbTree.BuildLocator()
 
     pointsVTKintersection = vtk.vtkPoints()
+    pointsVTKintersection.SetDataTypeToDouble()
+
 
     #Perform the ray-casting. The IntersectWithLine method returns an int
     #code which if 0 means that no intersection points were found.
@@ -267,6 +269,7 @@ cpdef pointquering(object surface,
       obbTree.BuildLocator()
 
     pointsVTKintersection = vtk.vtkPoints()
+    pointsVTKintersection.SetDataTypeToDouble()
 
     # test each point
     for i in range(x.shape[0]):
@@ -408,7 +411,7 @@ cpdef pointinsolid(object surface,
 
 
     points = vtk.vtkPoints();
-
+    points.SetDataTypeToDouble()
 
     for i in range(x.shape[0]):
         points.InsertNextPoint(x[i],y[i],z[i]);
@@ -494,6 +497,7 @@ cpdef SetPointsInPolydata(object polydata, object points):
     assert points.shape[1]==3, 'Error: Wrong shape[1] in points array'
 
     p = vtk.vtkPoints()
+    p.SetDataTypeToDouble()
     p.SetNumberOfPoints(npoints)
 
 
@@ -634,6 +638,7 @@ cpdef partialgrid2vtkfile(
     pcoords.SetNumberOfTuples(npt)
 
     points = vtk.vtkPoints()
+    points.SetDataTypeToDouble()
     voxelArray = vtk.vtkCellArray()
 
     # create vertex (points)
@@ -884,6 +889,7 @@ cpdef partialgrid2vtkfile_p(str path,
     pcoords.SetNumberOfTuples(np)
 
     points = vtk.vtkPoints()
+    points.SetDataTypeToDouble()
     pointArray = vtk.vtkCellArray()
 
 
@@ -958,6 +964,7 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
         pcoords.SetTuple3(i, x[i], y[i], z[i])
 
     points = vtk.vtkPoints()
+    points.SetDataTypeToDouble()
     points.SetData(pcoords)
 
 
@@ -969,6 +976,36 @@ def delaunay2D (   np.ndarray [double, ndim=1] x,
     # Triangulate
     delaunay = vtk.vtkDelaunay2D()
     delaunay.SetInputData(myPolyData)
+
+    if constraints != None:
+        delaunay.SetSourceData(constraints)
+
+    delaunay.Update()
+
+    return delaunay.GetOutput()
+
+
+def delaunay2D_polylines (object polydata, constraints = None):
+    """delaunay2D (polydata, constraints = None):
+
+    Creates a triangulated Surface from vtkPolyData object
+
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+        polylines or any other vtkPolyData with points
+    constraints: vtkPolydata or None
+        constraint polygons, lines or polylines
+    Returns
+    -------
+    vtkPolyData with wireframe
+
+    """
+
+    # Triangulate
+    delaunay = vtk.vtkDelaunay2D()
+    delaunay.SetInputData(polydata)
 
     if constraints != None:
         delaunay.SetSourceData(constraints)
@@ -1273,8 +1310,8 @@ cpdef dmtable2wireframe(
         pid2 = pid2 - 1
         pid3 = pid3 - 1
 
-    points = vtk.vtkPoints();
-
+    points = vtk.vtkPoints()
+    points.SetDataTypeToDouble()
 
     for i in range(x.shape[0]):
         points.InsertNextPoint(x[i],y[i],z[i]);
@@ -1588,6 +1625,7 @@ cpdef dxf2PolyData(str path):
 
     # Put trisngles in vtkPolydata
     meshpoints = vtk.vtkPoints()
+    meshpoints.SetDataTypeToDouble()
     meshtriangle = vtk.vtkTriangle()
     meshtriangles = vtk.vtkCellArray()
     id = 0
@@ -1613,8 +1651,8 @@ cpdef dxf2PolyData(str path):
 
     return cleanPolyData.GetOutput()
 
-cpdef dxf2PolyData_line3d(str path):
-    """dxf2PolyData_line3d(path)
+cpdef dxf2PolyData_line3d(str path, bint clean = False):
+    """dxf2PolyData_line3d(path, clean = False)
 
     Reads 3D lines (POLYLINE) in dxf format ('*.dxf') and returns a Polydata.
 
@@ -1622,6 +1660,8 @@ cpdef dxf2PolyData_line3d(str path):
     ----------
     path : str
         File name and path of dxf file.
+    clean : boolean, default False
+        Clean duplicted points
 
     Returns
     -------
@@ -1654,6 +1694,7 @@ cpdef dxf2PolyData_line3d(str path):
 
     # create poinst
     points = vtk.vtkPoints()
+    points.SetDataTypeToDouble()
     for p in pnts:
         points.InsertNextPoint(p)
 
@@ -1671,15 +1712,17 @@ cpdef dxf2PolyData_line3d(str path):
     polyData.SetPoints(points)
     polyData.SetLines(cells)
 
-    # doing a bit of cleanup (remove duplicated points)
-    cleanPolyData = vtk.vtkCleanPolyData()
-    cleanPolyData.SetInputData(polyData)
-    cleanPolyData.Update()
+    if clean:
+        # doing a bit of cleanup (remove duplicated points)
+        cleanPolyData = vtk.vtkCleanPolyData()
+        cleanPolyData.SetInputData(polyData)
+        cleanPolyData.Update()
+        return cleanPolyData.GetOutput(), pnts
+    else:
+        return polyData, pnts
 
-    return cleanPolyData.GetOutput(), pnts
-
-cpdef dxf2PolyData_lwpoly(str path):
-    """dxf2PolyData_lwpoly(path)
+cpdef dxf2PolyData_lwpoly(str path, bint clean = False):
+    """dxf2PolyData_lwpoly(path, clean = False)
 
     Reads LWPOLYLINE in dxf format ('*.dxf') and returns a Polydata.
 
@@ -1687,6 +1730,8 @@ cpdef dxf2PolyData_lwpoly(str path):
     ----------
     path : str
         File name and path of dxf file.
+    clean : boolean
+        Clean duplicted points
 
     Returns
     -------
@@ -1714,12 +1759,13 @@ cpdef dxf2PolyData_lwpoly(str path):
         zi = lines[l].dxf.elevation
         lins[l] = []
         for li in lines[l]:
-            pnts.append([li[0],li[1],zi])
+            pnts.append([float(li[0]),float(li[1]),float(zi)])
             lins[l].append(pid)
             pid = pid + 1
 
     # create poinst
     points = vtk.vtkPoints()
+    points.SetDataTypeToDouble()
     for p in pnts:
         points.InsertNextPoint(p)
 
@@ -1737,12 +1783,14 @@ cpdef dxf2PolyData_lwpoly(str path):
     polyData.SetPoints(points)
     polyData.SetLines(cells)
 
-    # doing a bit of cleanup (remove duplicated points)
-    cleanPolyData = vtk.vtkCleanPolyData()
-    cleanPolyData.SetInputData(polyData)
-    cleanPolyData.Update()
-
-    return cleanPolyData.GetOutput(), pnts
+    if clean:
+        # doing a bit of cleanup (remove duplicated points)
+        cleanPolyData = vtk.vtkCleanPolyData()
+        cleanPolyData.SetInputData(polyData)
+        cleanPolyData.Update()
+        return cleanPolyData.GetOutput(), pnts
+    else:
+        return polyData, pnts
 
 cpdef dxf2PolyData_Quad(str path):
     """dxf2PolyData_Quad(path)
@@ -1779,6 +1827,7 @@ cpdef dxf2PolyData_Quad(str path):
 
     # Put quads in vtkPolydata
     meshpoints = vtk.vtkPoints()
+    meshpoints.SetDataTypeToDouble()
     meshquad = vtk.vtkQuad()
     meshquads = vtk.vtkCellArray()
     id = 0
@@ -1831,6 +1880,7 @@ def surpac_TRI2polydata(triangles):
 
     # Put trisngles in vtkPolydata
     meshpoints = vtk.vtkPoints()
+    meshpoints.SetDataTypeToDouble()
     meshtriangle = vtk.vtkTriangle()
     meshtriangles = vtk.vtkCellArray()
 
@@ -1876,6 +1926,7 @@ def line2polydata(line):
     """
 
     points= vtk.vtkPoints()
+    points.SetDataTypeToDouble()
     vline = vtk.vtkLine()
     lines = vtk.vtkCellArray()
 
@@ -1890,6 +1941,42 @@ def line2polydata(line):
     linesPolyData.SetLines(lines)
 
     return linesPolyData
+
+cpdef decimate_polyline(object polyline, float target_reduction = 0.9, float maximum_error=0.01):
+    """decimate_polyline(polyline, target_reduction = 0.9, maximum_error=0.01)
+
+    Reduce the number o pints in polylines
+
+    Parameters
+    ----------
+    polyline : vtkPolyData
+        polylines
+    
+    target_reduction : float, default  0.9
+        Desired reduction in the total number of polygons (e.g., if TargetReduction is set 
+        to 0.9, this filter will try to reduce the data set to 10% of its original size).
+    maximum_error: float, default 0.01
+        largest decimation error that is allowed during the decimation process.
+        This may limit the maximum reduction that may be achieved. The maximum 
+        error is specified as a fraction of the maximum length of the input data bounding box.
+    
+
+    Returns
+    -------
+    vvtkPolyData with decimated polylines
+
+    """
+
+    # decimate 
+    decimate = vtk.vtkDecimatePolylineFilter()
+    decimate.SetInputData(polyline)
+    decimate.SetTargetReduction(target_reduction)
+    decimate.SetMaximumError(maximum_error)
+    decimate.Update()
+    
+    return decimate.GetOutput()
+
+
 
 # ----------------------------------------------------------------------
 #   Functions for imlicit modeling
