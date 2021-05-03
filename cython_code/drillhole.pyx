@@ -698,6 +698,93 @@ cpdef __composite1dh(double[:] ifrom,
 #-------------------------------------------------------------------
 #  General functions for fill gaps and merge
 #-------------------------------------------------------------------
+cdef __intersect(af,at,ai, bf,bt):
+    ''' zf,zt,zi = __intersect(af,at,ai, bf,bt)
+
+    Find intersect of intervals b on intervals a
+
+    This is an auxiliar function to intersect drillhole tables
+    
+    Inputs
+    ------
+    af,at,ai: 1D, 1D numeric arrays, and 1D array 
+        from, to, and id of intervals on table a
+    bf,bt   : 1D, 1D numeric arrays 
+        from, and to of intervals on table b
+    Outputs
+    -------
+    zf,zt,zi arrays intersected
+
+    Notes
+    -----
+    call this function with table a, b, and then b, a to alingn drillhole from to intervals
+
+    Example
+    -------
+    >>>
+    >>> ia, ib, l = __min_int(la, lb, ia, ib, tol=0.01)
+    >>> af = [0,1,3,10,20,50] # from
+    >>> at = [1,3,6,12,30,80] # to
+    >>> ai = [0,1,2, 3, 4, 5] # id
+    >>>
+    >>> bf = [0,1,2,10]
+    >>> bt = [1,2,3,70]
+    >>> bi = [0,1,2, 3]
+    >>> 
+    >>> # intersect b on a
+    >>> zf,zt,zi = intersect(af,at,ai, bf,bt)
+    >>> b2a = pd.DataFrame({'FROM':zf, 'TO':zt, 'ID':zi})
+    >>> 
+    >>> # intersect a on b
+    >>> zf,zt,zi = intersect(bf,bt,bi, af,at)
+    >>> a2b = pd.DataFrame({'FROM':zf, 'TO':zt, 'ID':zi})
+    >>>
+    >>> # merge two tables
+    >>> b2a.merge(a2b, on = ['FROM', 'TO'], how = 'outer').sort_values(by = ['FROM', 'TO'])
+
+        FROM  TO  ID_x  ID_y
+        0     0   1   0.0   0.0
+        1     1   2   1.0   1.0
+        2     2   3   1.0   2.0
+        3     3   6   2.0   NaN
+        4    10  12   3.0   3.0
+        8    12  20   NaN   3.0
+        5    20  30   4.0   3.0
+        9    30  50   NaN   3.0
+        6    50  70   5.0   3.0
+        7    70  80   5.0   NaN
+
+    >>>
+    '''
+    
+    na = len(af)
+    nb = len(bf)
+    
+    intersects = [set() for i in range(na)] # array of empty sets to contain intersects
+    
+    for i in range(na):
+        for j in range(nb):
+            # intersect FROM 
+            if at[i]>bf[j] and af[i]<bf[j]:
+                intersects[i].add(bf[j])
+            # intersect TO 
+            if at[i]>bt[j] and af[i]<bt[j]:
+                intersects[i].add(bt[j])
+    
+    zf = []
+    zt = []
+    zi = []
+    for i in range(na):
+        zf.append(af[i])
+        for j in sorted(intersects[i]):
+            zt.append(j)
+            zi.append(ai[i])
+            zf.append(j)
+        zt.append(at[i])
+        zi.append(ai[i])
+        
+    return zf,zt,zi
+
 cdef __min_int(double la,
              double lb,
              double ia,
@@ -2557,7 +2644,8 @@ cdef class Drillhole:
                      bint overwrite =False,
                      double tol=0.01,
                      bint clean=True):
-        """merge(str table_A, str table_B, str new_table_name, bint overwrite =False, double tol=0.01, bint clean=True)
+        """Deprecated, this function has bugs use merge_table() instead
+        merge(str table_A, str table_B, str new_table_name, bint overwrite =False, double tol=0.01, bint clean=True)
 
         Combines two tables by intersecting intervals.
 
@@ -2790,6 +2878,139 @@ cdef class Drillhole:
 
         #add table to the class
         self.addtable(newtable,new_table_name,overwrite)
+
+
+    cpdef merge_table(self,str table_A,
+                     str table_B,
+                     str new_table_name,
+                     bint overwrite =False,
+                     bint clean=True):
+        """merge_table(str table_A, str table_B, str new_table_name, bint overwrite =False, bint clean=True)
+
+        Combines two tables by intersecting intervals.
+
+
+        Parameters
+        ----------
+        table_A: name of the first table
+            it must be an existing table at drillhole.table.keys()
+        table_B: name of the second table
+            it must be an existing table at drillhole.table.keys()
+        new_table_name: name of the new table
+            it may not exists at drillhole.table.keys()
+        overwrite: default True.
+            If new_table_name exists and overwrite == True the existing
+            table will be overwritten.
+        clean: default True.
+            Delete temporary columns created with suffix __tmp__.
+
+
+        Example
+        -------
+
+        >>> mydrillhole.merge(table_A = 'assay',
+                            table_B = 'litho',
+                            new_table_name = 'tmp',
+                            overwrite =False,
+                            clean=True)
+        >>>
+        """
+
+
+        # check that the table is not in the database
+        if overwrite==False:
+            assert new_table_name not in self.table.keys(), 'The table {} already exist, use overwrite = True to rewrite'.format(new_table_name)
+
+
+        # sort tables
+        self.table[table_A].sort_values(by=['BHID', 'FROM'], inplace=True)
+        self.table[table_B].sort_values(by=['BHID', 'FROM'], inplace=True)
+
+        # add ID to tables
+        self.table[table_A].loc[:,'_ida']= np.arange(self.table[table_A].shape[0])[:]
+        self.table[table_B].loc[:,'_idb']= np.arange(self.table[table_B].shape[0])[:]
+
+        # create a groups to easily iterate
+        groupA=self.table[table_A].groupby('BHID')
+        groupB=self.table[table_B].groupby('BHID')
+
+        keysA= groupA.groups.keys()
+        keysB= groupB.groups.keys()
+
+
+        #merge
+        BHID=self.collar.BHID.values
+        taf=[]
+        tat=[]
+        tai=[]
+        ta_bhid=[]
+        tbf=[]
+        tbt=[]
+        tbi=[]
+        tb_bhid=[]
+
+        for i in BHID:
+            if (i not in keysA) and (i not in keysB):
+                continue
+            #get arrays
+            if i in self.table[table_A]['BHID'].unique():
+                af = groupA.get_group(i)['FROM'].values
+                at = groupA.get_group(i)['TO'].values
+                ai = groupA.get_group(i)['_ida'].values
+            else: 
+                af = []
+                at = []
+                ai = []
+            if i in self.table[table_B]['BHID'].unique():
+                bf = groupB.get_group(i)['FROM'].values
+                bt = groupB.get_group(i)['TO'].values
+                bi = groupB.get_group(i)['_idb'].values
+            else: 
+                bf = []
+                bt = []
+                bi = []
+
+
+            # merge a on b
+            zf,zt,zi = __intersect(af,at,ai, bf,bt)
+            taf = taf + list(zf) # append to list
+            tat = tat + list(zt)
+            tai = tai + list(zi)
+            ta_bhid = ta_bhid + [i for k in range(len(zf))]
+             
+            # merge b on a
+            zf,zt,zi = __intersect(bf,bt,bi, af,at)
+            tbf = tbf + list(zf) # append to list
+            tbt = tbt + list(zt)
+            tbi = tbi + list(zi)
+            tb_bhid = tb_bhid + [i for k in range(len(zf))]
+
+        #create dataframes of the two tables 
+        b2a = pd.DataFrame({'BHID':ta_bhid, 'FROM':taf, 'TO':tat, '_ida':tai, })
+        a2b = pd.DataFrame({'BHID':tb_bhid, 'FROM':tbf, 'TO':tbt, '_idb':tbi, })
+
+        # the skeleton of the two tables with intervals intersected
+        newtable = b2a.merge(a2b, on = ['BHID','FROM', 'TO'], how = 'outer').sort_values(by = ['BHID','FROM', 'TO'])
+
+        # merge with existing data
+        newtable=newtable.join(self.table[table_A], on='_ida', rsuffix='__tmp__')
+        newtable=newtable.join(self.table[table_B], on='_idb', rsuffix='__tmp__')
+
+
+        #clean if necessary
+        if clean:
+            newtable.drop(
+               ['BHID__tmp__', 'FROM__tmp__','TO__tmp__','_ida__tmp__','_idb__tmp__',
+                'xm','ym','zm','xb','yb','zb','xe','ye','ze',
+                'xm__tmp__','ym__tmp__','zm__tmp__',
+                'xb__tmp__','yb__tmp__','zb__tmp__',
+                'xe__tmp__','ye__tmp__','ze__tmp__',
+                ],
+               axis=1,inplace=True, errors='ignore')
+
+        #add table to the class
+        self.addtable(newtable,new_table_name,overwrite)
+
 
 
     cpdef fix_zero_interval(self, str table_name,
