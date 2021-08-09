@@ -1,7 +1,7 @@
 PyGSLIB
 =======
 
-Version:  '0.0.0.6.0.0'  
+Version:  '0.0.0.7.0.0'  
 Documentation: https://opengeostat.github.io/pygslib/   
 Wiki: https://github.com/opengeostat/pygslib/wiki   
 Source code: https://github.com/opengeostat/pygslib   
@@ -57,4 +57,4 @@ Copyright 2018, Adrian Martinez Vargas
 This software may be modified and distributed under the terms of the
 [MIT](https://github.com/opengeostat/pygslib/blob/master/LICENSE.txt) and [GPL](https://www.gnu.org/licenses/gpl-3.0.en.html) licenses.  
 
-Saturday, 11 of November 2020
+Monday, 09 of November 2021

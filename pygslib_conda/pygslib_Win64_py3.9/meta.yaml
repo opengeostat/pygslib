@@ -1,0 +1,38 @@
+
+package:
+  name: pygslib
+  version: "0.0.0.7.0.0"
+
+python:
+  - 3.9
+
+requirements:
+  build:
+    - python
+    - cython
+    - setuptools
+    - numpy
+    - vc=14
+    - vs2015_runtime
+    - libpython
+    - m2w64-gcc-libgfortran
+    - pytest
+
+  run:
+    - python
+    - numpy
+    - pandas
+    - matplotlib
+    - scipy
+    - vtk  >=8.0
+    - colour
+    - bokeh
+    - ezdxf
+    - libpython
+    - m2w64-gcc-libgfortran
+    - vs2015_runtime
+
+about:
+  home: https://github.com/opengeostat/pygslib
+  license: MIT License
+  summary: 'Python wrap of GSLIB modified code and general geostatistical package'

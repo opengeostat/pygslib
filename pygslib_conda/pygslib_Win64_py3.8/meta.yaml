@@ -16,6 +16,7 @@ requirements:
     - vs2015_runtime
     - libpython
     - m2w64-gcc-libgfortran
+    - pytest
 
   run:
     - python

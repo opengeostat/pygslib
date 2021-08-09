@@ -5,15 +5,14 @@ Priority
 ----
 
 - [ ] (conda package) Update conda module
-- [ ] (nonlinear) Implement Uniform conditioning
+- [X] (nonlinear) Implement Uniform conditioning
 - [ ] (nonlinear) Implement localization
-- [ ] (nonlinear) Implement calc cdf function using pygslib.gslib.__plot.probplt
+- [x] (nonlinear) Implement calc cdf function using pygslib.gslib.__plot.probplt
 - [ ] (nonlinear) Add upper and lower tail CDF model fitting tool
 - [ ] (blockmodel) implement grade tonnage report and block cdf
 - [ ] (gslib) complete variogram3d and python interface
 - [ ] (gslib) create an Ipython interface with widgets for friendly variogram modeling 
-- [ ] (blockmodel) implement grade tonnage report and block cdf
-- [ ] Add bokeh to dependencies or remove fuctions using this package  
+- [ ] Remove bokeh and fuctions using this package  
 
 
 Do this later...

@@ -16,6 +16,9 @@
 *.c
 *.dll
 
+#fortran modules
+*.mod
+
 
 #temporary files
 *~
