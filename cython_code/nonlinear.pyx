@@ -588,6 +588,7 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
 # ----------------------------------------------------------------------
 #   Interactive gaussian anamorphosis modeling 
 # ----------------------------------------------------------------------
+# TODO: Hide this fuction
 cpdef calauthorized(zana, zraw, gauss, zpmin=None, zpmax=None):
     """calauthorized(zana, zraw, gauss, zpmin=None, zpmax=None)
     
@@ -643,7 +644,7 @@ cpdef calauthorized(zana, zraw, gauss, zpmin=None, zpmax=None):
         
     return i, j, ii, jj 
 
-    
+# TODO: Hide this fuction
 cpdef calauthorized_blk(zana, gauss, zpmin, zpmax):
     """calauthorized_blk(zana, gauss, zpmin, zpmax)
     
@@ -691,6 +692,7 @@ cpdef calauthorized_blk(zana, gauss, zpmin, zpmax):
         
     return i, j, ii, jj 
 
+# TODO: Hide this fuction
 cpdef findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax):
     """findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax)
     
@@ -754,7 +756,7 @@ cpdef findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax):
     return i, j, ii, jj 
 
 
-    
+# TODO: Return the control points along the transformation list    
 # Interactive anamorphosis modeling, including some plots 
 def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30, 
              zmin=None, zmax=None, ymin=None, ymax=None,
@@ -944,6 +946,7 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     return PCI, H, raw, zana, gauss,Z , P, raw_var , PCI_var, fig
 
 # interactive block anamorphosis transformation
+# TODO: Return the control points along the transformation list
 def anamor_blk( PCI, H, r, gauss, Z,
                   ltail=1, utail=1, ltpar=1, utpar=1,
                   raw=None, zana=None, **kwargs):  
@@ -1504,6 +1507,7 @@ def plotgt(cutoff, t, g, label, figsize = [6.4, 4.8]):
 #   Uniform conditioning functions
 # ----------------------------------------------------------------------
 
+#TODO: Deprecate this function
 cpdef ucondit(float YV, 
               float yc,
               np.ndarray [double, ndim=1] PCI,
@@ -1593,4 +1597,107 @@ cpdef ucondit(float YV,
 
     return T, Q
     
+#TODO: Too slow, optimize/vectorize the code
+#TODO: Validate results using hand calculated example
+#TODO: Verify the formulas for sopport effect  
+cpdef UC(     np.ndarray [double, ndim=1] YV, 
+              np.ndarray [double, ndim=1] yc,
+              np.ndarray [double, ndim=1] PCI,
+              float r=1., 
+              float R=1., 
+              float ro=1.): 
+    
+    """ ucondit(YV, yc, PCI, r=1., R=1., ro=1.)
+    
+    Computes uniform conditioning estimation in a panel with krided gaussian value YV,
+    at cutoff yc, given support effect coefficients r, R, and information 
+    effect coefficient ro
 
+    Parameters
+    ----------
+    YV: 1D numeric array of double
+        Kriged gaussian grade in a panel (get it from panel kriged values ZV using panel anamorphosis)
+    PCI: 1D numeric array of double 
+        PCI coefficients 
+    yc: 1D numeric array of double
+        cutoff in gaussian space (get it from zc using the SMU anamorphosis function)
+    r,R,ro: 1D numeric
+        point and panel support effect coefficients, and information 
+        effect coefficient
+    
+    Returns
+    ----
+    T, Q: 
+        1D numeric array of double with tonnage and metal above cutoff
+
+    Note
+    ----
+    Note that you may use gaussian panel grade (YV), and gaussian cutoff (yc) 
+    as input. 
+    
+    You can get yc values from tabulated point transformations using the function 
+    `pygslib.nonlinear.Z2Y_linear`. 
+
+    YV can be interpolated directly in panels from y(x) on samples, or it can be 
+    obtained transforming kriged panel values in non-gaussuan space (ZV) into 
+    its gaussian equivalent using tabulated panel anamorphosis and the function 
+    `pygslib.nonlinear.Z2Y_linear`
+
+    """ 
+    cdef float t, qn, qq
+    cdef int K
+    cdef float T 
+    cdef float Q 
+    cdef np.ndarray [double, ndim=1] HYV
+    cdef np.ndarray [double, ndim=1] Hyc
+    cdef np.ndarray [double, ndim=2] U
+    
+    cdef np.ndarray [double, ndim=2] T_out , Q_out
+
+    nrows = YV.shape[0]
+    ncut = yc.shape[0]
+
+    T_out = np.empty((nrows,ncut))
+    Q_out = np.empty((nrows,ncut))
+
+    for i in range(nrows):
+        pygslib.progress.progress(i+1,nrows, 'calculating Uniform Conditioning')
+        for j in range(ncut):
+            # get general parameters 
+            t=R/(r*ro)       # info and support effect (for no info make ro=1)
+            K = PCI.shape[0]  # number of PCI
+            
+            # calculate tonnage
+            T = 1- norm.cdf((yc[j]-t*YV[i])/np.sqrt(1-t**2))  # this is ~ P[Zv>=zc] 
+            
+
+            # ERROR from here, the results are not OK
+
+            # calculate metal (equation 3.17 from  C.T. Neufeld, 2015. Guide to Recoverable Reserves with Uniform Conditioning. Centre for Computational Geostatistics (CCG) Guidebook Series Vol. 4)
+            # also C. Neufeld and C.V. Deutsch Calculating Recoverable Reserves with Uniform Conditioning
+            HYV = recurrentH(np.array([YV[i]]), K).ravel() # calculate hermite polynomials of YV[i]
+            Hyc = recurrentH(np.array([yc[j]]), K).ravel() # calculate hermite polynomials of yc[j]
+            
+            # get U using recurrence
+            U = np.zeros([K,K])
+            U[0,0] = 1-norm.cdf(yc[j])
+            g = norm.pdf(yc[j])
+            for k in range(1,K):
+                U[0,k] = U[k,0] = -1/np.sqrt(k)*Hyc[k-1]*g
+
+            for n in range(1,K):
+                for p in range(n,K):
+                    U[n,p] = U[p,n]= -1/np.sqrt(n)*Hyc[p]*Hyc[n-1]*g + np.sqrt(p/n)*U[n-1][p-1]
+
+            # Get Q
+            Q = 0
+            for n in range(0,K):
+                qq = (t**n)*HYV[n]
+                for p in range(0,K):
+                    qn = PCI[p]*(r**p)*(ro**p)*U[p][n]
+                    Q = Q + qq * qn                  # verify that Q = Q + PCI[p]*r**p  *(ro**p) *U[n][p]*t**n*H[n]; and enable info effect
+
+            T_out[i,j] = T
+            Q_out[i,j] = Q
+    
+    return T_out, Q_out
