@@ -80,7 +80,12 @@ ana_options = {
             'ana_blk_label' : 'ana block',
             'ex_ana_blk_color' : 'indigo',
             'ex_ana_blk_line' : '-', 
-            'ex_ana_blk_label' : 'ana block(fixed)', }    
+            'ex_ana_blk_label' : 'ana block(fixed)', 
+            'aut_int_point' : 'or',
+            'aut_int_label' : 'authorized interval',
+            'prt_int_point' : 'ob',
+            'prt_int_label' : 'practical interval',
+            }    
     
     
 # ----------------------------------------------------------------------
@@ -293,7 +298,7 @@ cpdef recurrentH(np.ndarray [double, ndim=1] y, int K=30):
     
     # recurrent formula
     for k in range(1,K):
-        H[k+1,:]= -1/np.sqrt(k+1)*y*H[k,:]-np.sqrt(k/float(k+1))*H[k-1,:]
+        H[k+1,:]= -1/np.sqrt(k+1)*y*H[k,:]-np.sqrt(k/np.double(k+1))*H[k-1,:]
     
     return H   #this is a 2D array of H (ki,yi)
 
@@ -487,23 +492,33 @@ cpdef Y2Z(np.ndarray [double, ndim=1] y,
     cdef int K
     cdef np.ndarray [double, ndim=2] H
     cdef np.ndarray [double, ndim=1] Z
-    cdef np.ndarray [double, ndim=1] zapmin= np.array([zamin,zpmin])
-    cdef np.ndarray [double, ndim=1] yapmin= np.array([yamin,ypmin])
-    cdef np.ndarray [double, ndim=1] zapmax= np.array([zpmax,zamax])
-    cdef np.ndarray [double, ndim=1] yapmax= np.array([ypmax,yamax])
+    cdef np.ndarray [double, ndim=1] zapmin= np.array([zpmin,zamin])
+    cdef np.ndarray [double, ndim=1] yapmin= np.array([ypmin,yamin])
+    cdef np.ndarray [double, ndim=1] zapmax= np.array([zamax,zpmax])
+    cdef np.ndarray [double, ndim=1] yapmax= np.array([yamax,ypmax])
 
-    
+    # check the intervals are ok for interpolation
+    assert np.all(np.diff(zapmin) >= 0), "sequence [zpmin,zamin] is expected to be increasing, or zero distance"
+    assert np.all(np.diff(yapmin) >= 0), "sequence [ypmin,yamin] is expected to be increasing, or zero distance"
+    assert np.all(np.diff(zapmax) >= 0), "sequence [zamax,zpmax] is expected to be increasing, or zero distance"
+    assert np.all(np.diff(yapmax) >= 0), "sequence [yamax,ypmax] is expected to be increasing, or zero distance"
+
+
     K=PCI.shape[0]-1
     H=recurrentH(y,K)
     Z=expand_anamor(PCI,H,r)
     
     # fix some values based on the control points
-    for i in range(y.shape[0]): 
-        if y[i]<=ypmin:  
+    for i in range(y.shape[0]):
+        if y[i]<=ypmin:
+            Z[i]=zpmin
+        if ypmin<y[i]<=yamin:  
             Z[i]=np.interp(y[i], xp=yapmin, fp=zapmin)
             continue 
-            
-        if y[i]>=ypmax:  
+    
+        if y[i]>=ypmax:
+            Z[i]=zpmax
+        if yamax<=y[i]<ypmax:  
             Z[i]=np.interp(y[i], xp=yapmax, fp=zapmax)
             continue 
         
@@ -554,32 +569,39 @@ cpdef Z2Y_linear(np.ndarray [double, ndim=1] z,
     """    
     
     cdef np.ndarray [double, ndim=1] Y=np.zeros(z.shape[0])
-    cdef np.ndarray [double, ndim=1] zapmin= np.array([zamin,zpmin])
-    cdef np.ndarray [double, ndim=1] yapmin= np.array([yamin,ypmin])
-    cdef np.ndarray [double, ndim=1] zapmax= np.array([zpmax,zamax])
-    cdef np.ndarray [double, ndim=1] yapmax= np.array([ypmax,yamax])
+    cdef np.ndarray [double, ndim=1] zapmin= np.array([zpmin,zamin])
+    cdef np.ndarray [double, ndim=1] yapmin= np.array([ypmin,yamin])
+    cdef np.ndarray [double, ndim=1] zapmax= np.array([zamax,zpmax])
+    cdef np.ndarray [double, ndim=1] yapmax= np.array([yamax,ypmax])
 
+    # check the intervals are ok for interpolation
+    assert np.all(np.diff(zapmin) >= 0), "sequence [zpmin,zamin] is expected to be increasing, or zero distance"
+    assert np.all(np.diff(yapmin) >= 0), "sequence [ypmin,yamin] is expected to be increasing, or zero distance"
+    assert np.all(np.diff(zapmax) >= 0), "sequence [zamax,zpmax] is expected to be increasing, or zero distance"
+    assert np.all(np.diff(yapmax) >= 0), "sequence [yamax,ypmax] is expected to be increasing, or zero distance"
+    assert np.all(np.diff(zm) >= 0), "sequence zm is expected to be increasing, or zero distance"
+    assert np.all(np.diff(ym) >= 0), "sequence ym is expected to be increasing, or zero distance"
     
     # fix some values based on the control points
     for i in range(z.shape[0]): 
         
-        if z[i]<=zamin:  
-            Y[i]=yamin
+        if z[i]<=zpmin:  
+            Y[i]=ypmin
             continue 
 
-        if z[i]>=zamax:  
-            Y[i]=yamax
+        if z[i]>=zpmax:  
+            Y[i]=ypmax
             continue 
         
-        if z[i]<=zpmin:  
+        if z[i]<=zamin:  
             Y[i]=np.interp(z[i], xp=zapmin, fp=yapmin)
             continue 
             
-        if z[i]>=zpmax:  
+        if z[i]>=zamax:  
             Y[i]=np.interp(z[i], xp=zapmax, fp=yapmax)
             continue 
         
-        if z[i]<zpmax and z[i]>zpmin:  
+        if z[i]<zamax and z[i]>zamin:  
             Y[i]=np.interp(z[i], xp=zm, fp=ym)
             continue
         
@@ -767,21 +789,21 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
              zamin=None, zamax=None, zpmin=None, zpmax=None,
              ndisc = 1000, **kwargs)
     
-    Funtion to do interactive fitting of gaussian anamorphosis in point support as it follow
+    Function to do the interactive fitting of a gaussian anamorphosis in point support as it follows
 
         - create experimental pairs z,y from input data
-        - create an arbitrary secuence of Y ndisc values in interval [ymin, ymax] 
-        - backtransform Y to obtain pairs Z, Y. You can define arbitrary 
+        - create an arbitrary sequence of Y ndisc values in the interval [ymin, ymax] 
+        - back transform Y to obtain pairs Z, Y. You can define arbitrary 
           maximum and minimum practical values beyond data limits and extrapolation functions
-        - calculate gaussian anamorphosis with hermite polynomials and hermite coefficients
-        - calculate variance from hermite coefficients
-        - asign or calculate the authorized and practical intervals of the gaussian anamorphosis
+        - calculate gaussian anamorphosis with Hermite polynomials and Hermite coefficients
+        - calculate the variance from Hermite coefficients
+        - assign or calculate the authorized and practical intervals of the gaussian anamorphosis
        
         You may change the parameters ltail, utail, ltpar, utpar, K, zmin, zmax, ymin, 
-        ymax, zamin, zamax, zpmin, zpmax until the variance calculated with hermite coefficients 
-        aproximates the declustered experimental variance.
+        ymax, zamin, zamax, zpmin, zpmax until the variance calculated with Hermite coefficients 
+        approximates the declustered experimental variance.
         
-        Note that maximum and minimum values zmin, zmax can be arbitrary and you use 
+        Note that maximum and minimum values zmin, zmax can be arbitrary, and  use 
         zpmin, zpmax to create a transformation table within your desired intervals. 
     
     Parameters
@@ -792,25 +814,26 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
         extrapolation functions, as used in pygslib.nonlinear.backtr 
         and gslib.__dist_transf.backtr
     K: integer (optional, default 30)
-        number of hermite polynomials.
+        the number of Hermite polynomials.
     zmin, zmax: floats (optional, default None)
         minimum and maximum value in the lookup table used to fit the anamorphosis
         if None data limits are used, is these values are beyond data limits 
-        interpolation functions are used to deduce Z values correponding to Y values
+        interpolation functions are used to deduce Z values corresponding to Y values
     ymin, ymax: floats (optional, default None)
-        minimum and maximum gaussian values. If nont defined y equivalent of data 
-        limits is used. Good values are -5 and 5, these are gaussian with low probability
+        minimum and maximum gaussian values. If not defined,  a y value equivalent to 
+        the data limits is used. Good values are -5 and 5. These are gaussian 
+        with low probability
     zamin, zamax, zpmin, zpmax: floats (optional, default None)
-        Authorized and practical z value intervals. Authorized intervals are where 
-        the gaussian anamorphosis do not fluctuate. Beyond authorized interval linear 
-        extrapolation to practical interval are used. 
+        Authorized and practical z value intervals. Authorized intervals are 
+        where the gaussian anamorphosis does not fluctuate. Beyond authorized 
+        intervals, a linear extrapolation to practical intervals is used. 
     ndisc: floats (optional, default 1000) 
-        number of discretization intervals between ymin and ymax.
+        the number of discretization intervals between ymin and ymax.
     **kwargs: more parameters
-        extra parameters with ploting style
+        extra parameters with plotting style (see pygslib.nonlinear.ana_options)
     
     Returns:
-    PCI, H: hermite polynomial coefficients and monomials
+    PCI, H: Hermite polynomial coefficients and monomials
     raw, zana, gauss: array of float
         z experimental extended, calculate with experimental anamorphosis and gaussian values
     Z: array of float
@@ -818,12 +841,15 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     P: array of float
         Probability P{Z<c}
     raw_var , PCI_var: float
-        variance experimental (declustered) and calculated from hermite polynomials 
+        variance experimental (declustered) and calculated from Hermite polynomials 
     fig: matplotlib figure
-        gaussian anamorphosis plot 
+        gaussian anamorphosis plot
+    zamin, zamax, yamin, yamax, zpmin, zpmax, ypmin, ypmax: floats
+        authorized (max and minimum Z and Y values) and 
+        practical intervals (Z and Y value intervals where Hermite polynomials are used)
         
     Note: 
-    The pair [Z,P] defines the CDF in point support    
+    The pair [Z,P] defines the CDF in point support  
     
     """
     # set colors and line type
@@ -922,10 +948,10 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     ax.plot(gauss[1:-1],raw[1:-1], options['ex_pt_line'], color = options['ex_pt_color'], label = options['ex_pt_label'])
     ax.plot(gauss[1:-1],zana[1:-1], options['ana_pt_line'], color = options['ana_pt_color'], label = options['ana_pt_label'])
     ax.plot(gauss,Z, options['ex_ana_pt_line'], color = options['ex_ana_pt_color'], label = options['ex_ana_pt_label'])
-    ax.plot(gauss[i],zana[i], 'or',mfc='none')
-    ax.plot(gauss[j],zana[j], 'or',mfc='none')
-    ax.plot(gauss[ii],raw[ii], 'ob',mfc='none')
-    ax.plot(gauss[jj],raw[jj], 'ob',mfc='none')
+    ax.plot(gauss[i],zana[i], options['aut_int_point'],mfc='none', label = options['aut_int_label'])
+    ax.plot(gauss[j],zana[j], options['aut_int_point'],mfc='none')
+    ax.plot(gauss[ii],raw[ii], options['prt_int_point'],mfc='none', label = options['prt_int_label'])
+    ax.plot(gauss[jj],raw[jj], options['prt_int_point'],mfc='none')
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     
     
@@ -943,7 +969,7 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     print ('ypmax', gauss[jj])
     
     
-    return PCI, H, raw, zana, gauss,Z , P, raw_var , PCI_var, fig
+    return PCI, H, raw, zana, gauss,Z , P, raw_var , PCI_var, fig, zana[i], zana[j], gauss[i], gauss[j], raw[ii], raw[jj], gauss[ii], gauss[jj]
 
 # interactive block anamorphosis transformation
 # TODO: Return the control points along the transformation list
@@ -1065,6 +1091,8 @@ def anamor_blk( PCI, H, r, gauss, Z,
 def anamor_raw(z, w, K=30, **kwargs):
     """anamor_raw(z, w, K=30, **kwargs)
     
+    **Deprecates**
+
     Non-interactive gaussian anamorphosis calculated directly from data 
         
     Parameters
