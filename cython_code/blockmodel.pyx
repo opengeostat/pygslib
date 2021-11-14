@@ -23,6 +23,7 @@ cimport numpy as np
 import numpy as np
 import pandas as pd
 import warnings
+import copy
 import pygslib
 
 #-------------------------------------------------------------------
@@ -480,7 +481,7 @@ cdef class Blockmodel:
 
         assert has_ijk or has_ixyz or has_cxyz , "Fields IJK or IX,IY,IZ or XC,YC,ZC defined in the input bmtable"
 
-        self.bmtable=bmtable
+        self.bmtable=copy.deepcopy(bmtable)
 
     cpdef delete_blocks(self):
         """delete_blocks()
