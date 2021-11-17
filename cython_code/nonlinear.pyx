@@ -1006,7 +1006,11 @@ def anamor_blk( PCI, H, r, gauss, Z,
     PV: array of float
         Probability P{Z<c}
     fig: matplotlib figure
-        gaussian anamorphosis plot     
+        gaussian anamorphosis plot 
+    
+    zamin, zamax, yamin, yamax, zpmin, zpmax, ypmin, ypmax: floats
+        authorized (max and minimum Z and Y values) and 
+        practical intervals (Z and Y value intervals where Hermite polynomials are used)    
     
     Note: 
     The pair [ZV,PV] defines the CDF in block support
@@ -1084,7 +1088,7 @@ def anamor_blk( PCI, H, r, gauss, Z,
     
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
-    return ZV,PV, fig
+    return ZV,PV, fig, Z[i], Z[j], gauss[i], gauss[j], zpmin, zpmax, gauss[ii], gauss[jj]
     
     
 # Direct anamorphosis modeling from raw data

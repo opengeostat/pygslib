@@ -1,7 +1,9 @@
 import pygslib
 import numpy as np
 
-def gcos(table, vardhole, varmodel, cutoff, model, cbb, decwt = None):
+def gcos(table, vardhole, varmodel, cutoff, model, cbb, decwt = None,
+        ltail=1, utail=4, ltpar=1, utpar=1.5, K=30,
+        ymin=None, ymax=None, ndisc = 1000):
     """
     gcos(table, mask, vardhole, varmodel, cutoff, model, cbb, decwt = None)
     
@@ -23,7 +25,14 @@ def gcos(table, vardhole, varmodel, cutoff, model, cbb, decwt = None):
         block variance
     decwt: str default None
         declustering weight variable name
-    
+    ltail, utail, ltpar, utpar: floats
+        lower and upper tail model. The default parameters are ltail=1, utail=4, ltpar=1, utpar=1.5
+    K: integer
+        number of polynomials. Default is 30
+    ymin, ymax: 
+        gaussian values validity interval (default None)
+    ndisc: int 
+        discretization intervals in cdf. Default is 1000
     """
     
     # firt the discrete gausian model 
@@ -37,15 +46,17 @@ def gcos(table, vardhole, varmodel, cutoff, model, cbb, decwt = None):
     zmin = table[vardhole].min(),
     zmax = table[vardhole].max(),  
     
-    PCI, H, raw, zana, gauss, z, P, raw_var, PCI_var, fig1 = pygslib.nonlinear.anamor(
-       zin, w, ltail=1, utail=4, ltpar=1, utpar=1.5, K=30,
-       ymin=-5, ymax=5, ndisc = 1000)
+    PCI, H, raw, zana, gauss, z, P, raw_var, PCI_var, fig1, \
+    _, _, _, _, _, _, _, _ = pygslib.nonlinear.anamor(
+       zin, w, ltail=ltail, utail=utail, ltpar=ltpar, utpar=utpar, K=K,
+       ymin=ymin, ymax=ymax, ndisc = ndisc)
 
 
     r = pygslib.nonlinear.get_r(Var_Zv = cbb, PCI = PCI)
     
-    ZV, PV, fig2 = pygslib.nonlinear.anamor_blk( PCI, H, r = r, gauss = gauss, Z = z,
-                  ltail=1, utail=1, ltpar=1, utpar=1,
+    ZV, PV, fig2, \
+    _, _, _, _, _, _, _, _  = pygslib.nonlinear.anamor_blk( PCI, H, r = r, gauss = gauss, Z = z,
+                  ltail=ltail, utail=utail, ltpar=ltpar, utpar=utpar,
                   raw=raw, zana=zana)
     
     # calculate GTC
@@ -88,8 +99,8 @@ def gcos(table, vardhole, varmodel, cutoff, model, cbb, decwt = None):
         cutoff[cutoff<cl_ok.min()] = cl_ok.min() + 0.000001
         t,ga,gb = pygslib.nonlinear.gtcurve (cutoff = cutoff, z=cl_ok,
                        p=binval_ok, varred = 1, ivtyp = 2, zmin = 0, zmax = None,
-                      ltail = 1, ltpar = 1, middle = 1, mpar = 1, utail = 1,
-                      utpar = 1,maxdis = 1000)
+                      ltail = ltail, ltpar = ltpar, middle = 1, mpar = 1, utail = utail,
+                      utpar =  utpar, maxdis = ndisc)
         
         
         tt.append(t)
