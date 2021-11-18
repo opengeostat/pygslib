@@ -1850,8 +1850,8 @@ def __get_intersect(
         
     return a,b
 
-def get_smu_mean(nsmu, t_panel, m_panel, c_panel): 
-    """def get_smu_mean(nsmu, t_panel, m_panel, c_panel)
+def localization_on_grade(nsmu, t_panel, m_panel, c_panel): 
+    """localization_on_grade(nsmu, t_panel, m_panel, c_panel)
     
     This function calculates the localization of nsmu within a panel with a 
     grade and tonnage curve calculated with UC or MIK. 
@@ -1904,3 +1904,4 @@ def get_smu_mean(nsmu, t_panel, m_panel, c_panel):
         m_smu[i] = m
         
     return m_smu[:-1] # ignore last smu interval (this is a fake to close the loop)
+
