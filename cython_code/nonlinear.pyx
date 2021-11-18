@@ -248,6 +248,118 @@ cpdef stats(z, w, iwt = True, report = True):
         
     return xmin,xmax, xcvr,xmen,xvar 
     
+# ----------------------------------------------------------------------
+#   Functions to correct distributions (CDF), T, M, and Q
+# ----------------------------------------------------------------------
+def order_relation_ascending(dist_list, vmax=None, vmin=None):
+    """order_relation_incremental(dist_list, vmax=None, vmin=None)
+    
+    Fix order relations issues of a supposedly ascending sequence, 
+    for example, a CDF in a pannel at different cutoff grades. 
+    
+    Based on gslib.postik code. 
+    
+    Parameters
+    ---------
+    dist_list: array like
+        list of increasing values
+    vmax, vmin: float (default None)
+        values min and maximum of the ascending list
+        if both are not None all the values beyons these
+        limits are set to max(min(vmax,dist[i]),vmin). 
+    
+    Returns
+    ------
+    numpy array with order relation issues fixed. 
+    
+    Notes
+    ----
+    Non-finite values are not allowed. You may filter the 
+    list before running this function.  
+    """
+        
+    n = len(dist_list)
+
+    dist = np.zeros((n,))
+    dist1 = np.zeros((n,))
+    dist2 = np.zeros((n,))
+
+    dist[:] = dist_list[:]
+
+    assert all(np.isfinite(dist_list)), 'error, there are non finite values in the input list' 
+
+    if vmax is not None and vmin is not None:
+        for i in range(n):
+            dist[i]=max(min(vmax,dist[i]),vmin)
+
+    dist1[0] = dist[0]
+    for i in range(1,n):
+        dist1[i] = max(dist1[i-1],dist[i])
+
+    dist2[n-1] = dist[n-1]
+    for i in range(n-2,0, -1):
+        dist2[i] = min(dist2[i+1],dist[i])
+
+    for i in range(n):
+        dist[i] = 0.5*(dist1[i]+dist2[i])
+
+    return dist
+    
+    
+def order_relation_descending(dist_list, vmax=None, vmin=None):
+    """order_relation_descending(dist_list, vmax=None, vmin=None)
+    
+    Fix order relations issues of a supposedly descending sequence, 
+    for example, the metal content in a pannel at different cutoff grades. 
+    
+    Based on gslib.postik code. 
+    
+    Parameters
+    ---------
+    dist_list: array like 
+        list of increasing values
+    vmax, vmin: float (default None)
+        values min and maximum of the ascending list
+        if both are not None all the values beyons these
+        limits are set to max(min(vmax,dist[i]),vmin). 
+        
+    Returns
+    ------
+    numpy array with order relation issues fixed. 
+    
+    Notes
+    ----
+    Non-finite values are not allowed. You may filter the 
+    list before running this function.  
+    """
+    n = len(dist_list)
+
+    dist = np.zeros((n,))
+    dist1 = np.zeros((n,))
+    dist2 = np.zeros((n,))
+
+    dist[:] = dist_list[:]
+
+    assert all(np.isfinite(dist_list)), 'error, there are non finite values in the input list'
+
+
+    if vmax is not None and vmin is not None:
+        for i in range(n):
+            dist[i]=max(min(vmax,dist[i]),vmin)            
+
+    dist1[0] = dist[0]
+    for i in range(1,n):
+        dist1[i] = min(dist1[i-1],dist[i])
+
+    dist2[n-1] = dist[n-1]
+
+    for i in range(n-2,-1, -1):
+        dist2[i] = max(dist2[i+1],dist[i])
+
+    for i in range(n):
+        dist[i] = 0.5*(dist1[i]+dist2[i])
+
+    return dist
     
     
 # ----------------------------------------------------------------------
@@ -778,7 +890,6 @@ cpdef findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax):
     return i, j, ii, jj 
 
 
-# TODO: Return the control points along the transformation list    
 # Interactive anamorphosis modeling, including some plots 
 def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30, 
              zmin=None, zmax=None, ymin=None, ymax=None,
@@ -972,7 +1083,6 @@ def anamor(z, w, ltail=1, utail=1, ltpar=1, utpar=1, K=30,
     return PCI, H, raw, zana, gauss,Z , P, raw_var , PCI_var, fig, zana[i], zana[j], gauss[i], gauss[j], raw[ii], raw[jj], gauss[ii], gauss[jj]
 
 # interactive block anamorphosis transformation
-# TODO: Return the control points along the transformation list
 def anamor_blk( PCI, H, r, gauss, Z,
                   ltail=1, utail=1, ltpar=1, utpar=1,
                   raw=None, zana=None, **kwargs):  
@@ -1532,103 +1642,10 @@ def plotgt(cutoff, t, g, label, figsize = [6.4, 4.8]):
     
     return fig    
     
-    
-
 
 # ----------------------------------------------------------------------
-#   Uniform conditioning functions
+#   Uniform conditioning and localization functions
 # ----------------------------------------------------------------------
-
-#TODO: Deprecate this function
-cpdef ucondit(float YV, 
-              float yc,
-              np.ndarray [double, ndim=1] PCI,
-              float r=1., 
-              float R=1., 
-              float ro=1.): 
-    
-    """ ucondit(YV, yc, PCI, r=1., R=1., ro=1.)
-    
-    Computes uniform conditioning estimation in a panel with krided gaussian value YV,
-    at cutoff yc, given support effect coefficients r, R, and information 
-    effect coefficient ro
-
-    Parameters
-    ----------
-    YV: numeric
-        Kriged gaussian grade in a panel (get it from panel kriged values ZV using panel anamorphosis)
-    PCI: 1D numeric array of double 
-        PCI coefficients 
-    yc: numeric
-        cutoff in gaussian space (get it from zc using the SMU anamorphosis function)
-    r,R,ro: numeric
-        point and panel support effect coefficients, and information 
-        effect coefficient
-    
-    Returns
-    ----
-    T, Q: 
-        floats with tonnage and metal above cutoff
-
-    Note
-    ----
-    Note that you may use gaussian panel grade (YV), and gaussian cutoff (yc) 
-    as input. 
-    
-    You can get yc values from tabulated point transformations using the function 
-    `pygslib.nonlinear.Z2Y_linear`. 
-
-    YV can be interpolated directly in panels from y(x) on samples, or it can be 
-    obtained transforming kriged panel values in non-gaussuan space (ZV) into 
-    its gaussian equivalent using tabulated panel anamorphosis and the function 
-    `pygslib.nonlinear.Z2Y_linear`
-
-    """ 
-    cdef float t, qn, qq
-    cdef int K
-    cdef float T 
-    cdef float Q 
-    cdef float M 
-    cdef np.ndarray [double, ndim=1] HYV
-    cdef np.ndarray [double, ndim=1] Hyc
-    cdef np.ndarray [double, ndim=2] U
-    
-    # get general parameters 
-    t=R/(r*ro)       # info and support effect (for no info make ro=1)
-    K = PCI.shape[0]  # number of PCI
-    
-    # calculate tonnage
-    T = 1- norm.cdf((yc-t*YV)/np.sqrt(1-t**2))  # this is ~ P[Zv>=zc] 
-    
-
-    # ERROR from here, the results are not OK
-
-    # calculate metal (equation 3.17 from  C.T. Neufeld, 2015. Guide to Recoverable Reserves with Uniform Conditioning. Centre for Computational Geostatistics (CCG) Guidebook Series Vol. 4)
-    # also C. Neufeld and C.V. Deutsch Calculating Recoverable Reserves with Uniform Conditioning
-    HYV = recurrentH(np.array([YV]), K).ravel() # calculate hermite polynomials of YV
-    Hyc = recurrentH(np.array([yc]), K).ravel() # calculate hermite polynomials of yc
-    
-    # get U using recurrence
-    U = np.zeros([K,K])
-    U[0,0] = 1-norm.cdf(yc)
-    g = norm.pdf(yc)
-    for k in range(1,K):
-        U[0,k] = U[k,0] = -1/np.sqrt(k)*Hyc[k-1]*g
-
-    for n in range(1,K):
-        for p in range(n,K):
-            U[n,p] = U[p,n]= -1/np.sqrt(n)*Hyc[p]*Hyc[n-1]*g + np.sqrt(p/n)*U[n-1][p-1]
-
-    # Get Q
-    Q = 0
-    for n in range(0,K):
-        qq = (t**n)*HYV[n]
-        for p in range(0,K):
-            qn = PCI[p]*(r**p)*(ro**p)*U[p][n]
-            Q = Q + qq * qn                  # verify that Q = Q + PCI[p]*r**p  *(ro**p) *U[n][p]*t**n*H[n]; and enable info effect
-
-    return T, Q
-    
 #TODO: Too slow, optimize/vectorize the code
 #TODO: Validate results using hand calculated example
 #TODO: Verify the formulas for sopport effect  
@@ -1733,3 +1750,157 @@ cpdef UC(     np.ndarray [double, ndim=1] YV,
             Q_out[i,j] = Q
     
     return T_out, Q_out
+
+# localization using tonnage and metal
+def localization_on_metal(T,Q,n):
+    """localization_on_metal(T,Q,n)
+    
+    Applies localization in n SMU of a panel, given its metal (Q) and tonnage (T).
+    Order relations on T and Q are not tested but recommended. 
+    
+    Inputs
+    ------
+    T,Q: 1D array like 
+        tonnage and metal in the panel
+    n: integer
+        number of SMU in the panel
+    
+    Returns
+    -----
+    mm, tt, qq: numpy arrays with SMU grades, tonnage, and metal
+        mm is the mean of the n blocks, tt, and qq are the n+1 metal distrib
+
+    Notes
+    ----
+    Implemented based on Kathleen Marion Hansmann, 2015. APPLICATION OF LOCALISED UNIFORM CONDITIONING 
+    ON TWO HYPOTHETICAL DATASETS. A dissertation submitted to the Faculty of Engineering 
+    and the Built Environment, University of the Witwatersrand, Johannesburg, in partial 
+    fulfilment of the requirements for the degree of Master of Science in Engineering.
+    """ 
+    
+    assert (all(T>=0))
+    assert all(np.isfinite(T)), 'error, there are non finite values in T' 
+    assert all(np.isfinite(Q)), 'error, there are non finite values in Q'
+    
+    if T[-1]>0:
+        TTT = np.array(list(T) + [0.])
+        QQQ = np.array(list(Q) + [0.])
+    else:
+        # T is already zero at the end of the list
+        TTT = np.array(list(T))  
+        QQQ = np.array(list(Q))
+        QQQ[-1] = 0 # no metal if T = 0
+
+    
+    # get intervals
+    tt = np.linspace(0,1, n+1, endpoint=True)[::-1] 
+    
+    # interpolate values
+    qq = np.interp(tt , xp=TTT[::-1] , fp=QQQ[::-1])
+    
+    # calculate grade 
+    mm = (qq[:-1] - qq[1:])/(tt[:-1] - tt[1:])
+    
+    return mm, tt, qq
+
+
+# # localization using tonnage and mean grade
+def __get_intersect(
+                    t_panel_a, # interval panel
+                    t_panel_b, # interval panel   
+                    t_smu_a, # interval panel
+                    t_smu_b ):# interval panel
+    
+    """ 
+    Get intersect interval a*, b* 
+    between two segments. 
+
+    This is a helper function used for localization using grade and tonnage. 
+        
+    """
+    
+    #assert (t_panel_a< t_panel_b)
+    #assert (t_smu_a< t_smu_b)
+    
+    a = b = .0
+
+    # smu interval contains panel interval
+    if t_smu_a <= t_panel_a <= t_smu_b and t_smu_a <= t_panel_b <= t_smu_b:
+        
+        a = t_panel_a
+        b = t_panel_b
+        
+        return a,b
+    
+    # smu head within panel interval
+    if t_panel_a <= t_smu_a <= t_panel_b:
+        
+        a = t_smu_a
+        b = min(t_smu_b, t_panel_b)
+        
+        return a,b
+    
+    # smu tail within panel interval 
+    if t_panel_a <= t_smu_b <= t_panel_b:
+        
+        a = max(t_smu_a, t_panel_a)
+        b = t_smu_b
+        
+        return a,b
+        
+    return a,b
+
+def get_smu_mean(nsmu, t_panel, m_panel, c_panel): 
+    """def get_smu_mean(nsmu, t_panel, m_panel, c_panel)
+    
+    This function calculates the localization of nsmu within a panel with a 
+    grade and tonnage curve calculated with UC or MIK. 
+    
+    Inputs
+    ------
+    nsmu: Integer
+        number of smu in the panel
+    
+    t_panel, m_panel, c_panel: arrays of floats
+        tonnage t , and mean m,  at c cutoffs  
+    
+    
+    Returns
+    ------
+    array with smu mean grades. 
+    
+    Notes
+    -----
+    It is expected that c_panel[0] = 0, and t_panel[0] = 1, but 
+    this is not check in the function. The calculation uses an extra mean, 
+    and tonnage set to t_panel[n] = 0, and m_panel[n] = m_panel[-1] is added, 
+    so no grade is extrapolated in the CDF. 
+    You may use a set of cutoff large enough to cover high grade values.  
+    
+    The mean localized of a smu is 
+    
+    `mean of m_panel(j+1) -  m_panel(j) +  c_panel(j) of the j to j+1 UC/MIK grade 
+     and tonnage intervals within the probability rank of the smu` 
+    
+    We use the function __get_intersect to calculate the UC/MIK Tonnage within the smu ranck interval.
+    
+    """
+    m_smu = np.zeros((nsmu))  # array to store means
+    t_smu = np.arange(nsmu)[::-1]
+    t_smu = t_smu/(nsmu-1) # array of smu prob [1, ..., 1/nsmu]
+    
+    
+    for i in range(nsmu-1):
+        m = 0.
+        for j in range(len(t_panel)-1):
+            a, b = __get_intersect(t_panel[j+1], t_panel[j], t_smu[i+1], t_smu[i])
+            m = m + (m_panel[j+1]-m_panel[j] + c_panel[j])* (b-a)*(nsmu-1)   # this is mean diff + cutoff weighted by prob interval
+            
+        # handle last iteration
+        j = j+1
+        a, b = __get_intersect(0, t_panel[j], t_smu[i+1], t_smu[i])
+        m = m + (m_panel[-1]-m_panel[j] + c_panel[j])* (b-a)*(nsmu-1)
+        
+        m_smu[i] = m
+        
+    return m_smu[:-1] # ignore last smu interval (this is a fake to close the loop)
