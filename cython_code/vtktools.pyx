@@ -1350,6 +1350,73 @@ cpdef dmtable2wireframe(
     return trianglePolyData
 
 
+cpdef read_leapfrog_msh(path):
+    """read_leapfrog_msh(path)
+    
+    Function to read Leapfrog *.msh files
+    
+    Parameters
+    --------
+        path : str
+            Path to msh file, e.g. ``path='mesh.msh'``
+    Returns
+    -------
+        wf
+            wireframe in vtk polyline format 
+        pid1, pid2, pid3 
+            numpy 1d arrays of integers with triangle point id
+        x, y, z
+            numpy 1d arrays of floats64 with triangle point coordinates
+    Notes
+    -----
+    Function modified from Thomas Martin see (https://github.com/ThomasMGeo/leapfrogmshreader/blob/5f14c0c66ea9c075ef7277b4f533b0c105ba6ec8/leapfrogmshreader/reader.py)
+    and Alexander Jüstel, Arthur Endlein Correia, Florian Wellmann (https://github.com/cgre-aachen/gemgis/blob/main/gemgis/raster.py)
+
+    TODO
+    ----
+        find format to read leapfrog colection of mesh files (*.lfm)
+        this is a xml header with binary data (compresed) 
+    """
+
+    dtype_conversion = {"Integer": np.int32,"Double": np.float64}
+
+    # Opening the file
+    with open(path, "rb") as f:
+
+        chunk = f.read(512)
+        header_end = chunk.find(b"[binary]")
+        data = {}
+        f.seek(header_end + 0x14)
+
+        # Extracting data from each line
+        for line in chunk[chunk.find(b"[index]") + 8:header_end].decode("utf-8").strip().split("\n"):
+            name, dtype, *shape = line.strip().rstrip(";").split()
+            shape = list(map(int, reversed(shape)))
+            dtype = dtype_conversion[dtype]
+            data[name] = np.fromfile(
+                f,
+                dtype,
+                np.prod(shape)
+            ).reshape(shape)
+
+    # put things in datamine style, bit pid starting on zero
+    pid1 = data['Tri'][:,0]
+    pid2 = data['Tri'][:,1]
+    pid3 = data['Tri'][:,2]
+
+    x = data['Location'][:,0] 
+    y = data['Location'][:,1]
+    z = data['Location'][:,2] 
+
+    wf = dmtable2wireframe( x = x, 
+                            y = y,
+                            z = z, 
+                            pid1 = pid1, 
+                            pid2 = pid2, 
+                            pid3 = pid3)
+
+    return wf, pid1, pid2, pid3, x, y, z
+
 cpdef SavePolydata(object polydata, str path):
     """SavePolydata(object polydata, str path)
 
