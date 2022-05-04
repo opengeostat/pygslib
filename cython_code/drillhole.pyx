@@ -1974,7 +1974,7 @@ cdef class Drillhole:
                 z[i] = zs[jm[i]-1] - dz
                 
                
-            table.loc[c,'azme']  = azmt
+            table.loc[c,'azmm']  = azmt
             table.loc[c,'dipm']  = dipt
             table.loc[c,'xm']  = x
             table.loc[c,'ym']  = y
