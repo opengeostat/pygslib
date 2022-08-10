@@ -1,0 +1,5 @@
+Use this commands
+
+conda create --name pygslib-build python=3.9
+conda activate pygslib-build
+conda install cython setuptools numpy VC=14 vs2015_runtime libpython pytest m2w64-toolchain numpy pandas matplotlib scipy vtk colour bokeh ezdxf jupyter jupyterlab ipython

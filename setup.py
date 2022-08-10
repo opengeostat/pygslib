@@ -28,6 +28,8 @@ author='Adrian Martinez Vargas'
 author_email='adriangeologo@yahoo.es'
 url='https://github.com/opengeostat/pygslib'
 
+# hard code no worning error
+extra_compile_args = [] #["-Wno-error"]
 
 if __name__ == '__main__':
 
@@ -41,6 +43,7 @@ if __name__ == '__main__':
 
     # these are the almost intact gslib code
     gslib_kt3d = Extension(name = 'pygslib.gslib.__gslib__kt3d',
+                           extra_compile_args=extra_compile_args,
                      sources = ['for_code/kt3d/kt3d.f90',
                                 'for_code/kt3d/gslib/setrot.f90',
                                 'for_code/kt3d/gslib/getindx.f90',
@@ -54,6 +57,7 @@ if __name__ == '__main__':
                                 f2py_options=[ 'only:', 'pykt3d', 'set_unest',  ':'])
 
     gslib_postik = Extension(name = 'pygslib.gslib.__gslib__postik',
+                             extra_compile_args=extra_compile_args,
                      sources = ['for_code/postik/postik.f90',
                                 'for_code/postik/gslib/beyond.f90',
                                 'for_code/postik/gslib/locate.f90',
@@ -66,59 +70,82 @@ if __name__ == '__main__':
     # define extensions here:
     #-----------------------------------------------------
     gslib_rotscale = Extension(name = 'pygslib.gslib.__rotscale',
-                     sources = ['for_code/rotscale.f90'],
-								extra_link_args= ['-static'] )
+                               extra_compile_args=extra_compile_args,
+                               sources = ['for_code/rotscale.f90'])
 
     gslib_block_covariance = Extension(name = 'pygslib.gslib.__block_covariance',
+                             extra_compile_args=extra_compile_args,
                      sources = ['for_code/block_covariance.f90'] )
 
     gslib_read_gslib = Extension(name = 'pygslib.gslib.__read_gslib',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/read_gslib.f90'] )
 
     gslib_addcoord = Extension(name = 'pygslib.gslib.__addcoord',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/addcoord.f90'] )
 
     gslib_general = Extension(name = 'pygslib.gslib.__general',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/general.f90'] )
 
     gslib_plot = Extension(name = 'pygslib.gslib.__plot',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/plot.f90'] )
 
     gslib_declus = Extension(name = 'pygslib.gslib.__declus',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/declus.f90'] )
 
     gslib_dist_transf = Extension(name = 'pygslib.gslib.__dist_transf',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/dist_transf.f90'],
                      f2py_options=[ 'only:', 'backtr', 'anatbl',
                                     'nscore', 'ns_ttable', ':'] )
 
     gslib_variograms = Extension(name = 'pygslib.gslib.__variograms',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/variograms.f90'] ) # extra_link_args=['-fbacktrace', '-fcheck=all']
 
     gslib_bigaus = Extension(name = 'pygslib.gslib.__bigaus',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/bigaus.f90'] )
 
     gslib_bicalib = Extension(name = 'pygslib.gslib.__bicalib',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/bicalib.f90'] )
 
 
     gslib_trans = Extension(name = 'pygslib.gslib.__trans',
+                                   extra_compile_args=extra_compile_args,
                      sources = ['for_code/trans.f90'] )
 
     gslib_draw = Extension(name = 'pygslib.gslib.__draw',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/draw.f90'] )
 
     gslib_dm2csv = Extension(name = 'pygslib.gslib.__dm2csv',
+                               extra_compile_args=extra_compile_args,
                      sources = ['for_code/dm2csv.f90'] )
 
 
     # Cython
 
-    drillhole = Extension(name ='pygslib.drillhole', sources =['cython_code/drillhole.pyx'])
-    blockmodel= Extension(name ='pygslib.blockmodel', sources =['cython_code/blockmodel.pyx'])
-    vtktools= Extension(name ='pygslib.vtktools', sources =['cython_code/vtktools.pyx'])
-    nonlinear= Extension(name ='pygslib.nonlinear',sources =['cython_code/nonlinear.pyx'])
-    sandbox= Extension(name ='pygslib.sandbox',sources =['cython_code/sandbox.pyx'])
+    drillhole = Extension(name ='pygslib.drillhole',
+                               extra_compile_args=extra_compile_args,
+                                sources =['cython_code/drillhole.pyx'])
+    blockmodel= Extension(name ='pygslib.blockmodel',
+                               extra_compile_args=extra_compile_args,
+                               sources =['cython_code/blockmodel.pyx'])
+    vtktools= Extension(name ='pygslib.vtktools',
+                               extra_compile_args=extra_compile_args,
+                               sources =['cython_code/vtktools.pyx'])
+    nonlinear= Extension(name ='pygslib.nonlinear',
+                               extra_compile_args=extra_compile_args,
+                               sources =['cython_code/nonlinear.pyx'])
+    sandbox= Extension(name ='pygslib.sandbox',
+                               extra_compile_args=extra_compile_args,
+                               sources =['cython_code/sandbox.pyx'])
 
     #pure python
     progress= Extension(name ='pygslib.progress',sources =['pygslib/progress.py'])
@@ -150,7 +177,7 @@ if __name__ == '__main__':
                  progress,
 				 surpac]
 
-    extensions = cythonize(extensions, gdb_debug=True)
+    extensions = cythonize(extensions, gdb_debug=False)
 
     setup(name=name,
           version=version,
