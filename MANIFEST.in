@@ -2,5 +2,5 @@ include README.md
 include TODO.md
 include CHANGELOG.txt 
 include LICENSE.txt
-include pygslib/datasets/*.dat
+recursive-include pygslib/data/*.*
 include pygslib/Ipython_templates/*.ipynb
