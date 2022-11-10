@@ -1,32 +1,44 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
 #setuptools distribution folders
-/build
-/dist
+build/
+dist/
 
 # Cython debug folder
 /cython_debug
 
 #python metadata 
-/*.egg
-/*.egg-info
+*.egg
+*.egg-info
 
-#compiled python modules/cython precompiled
-*.pyc
+# Conda wheels
+/pygslib_conda/wheels/*
+
+# cython precompiled
+*.o
 *.so
-*.pyd
 *.c
 *.dll
 
 #fortran modules
 *.mod
 
+# R
+.RData
+.Rhistory
 
 #temporary files
 *~
 
 #Ipython check points
-/.ipynb_checkpoints
+.ipynb_checkpoints
 
 #spyder project
 .spyderproject
 .spyderworkspace
 
+# Misc
+.tags
+*.inv
