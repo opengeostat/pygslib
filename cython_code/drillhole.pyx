@@ -1590,7 +1590,7 @@ cdef class Drillhole:
         surv_erro = self.survey.groupby(by='BHID').count()['AT'].loc[mask].index # drillholes with one interval
         survey_fix = self.survey.loc[self.survey['BHID'].isin(surv_erro)] # only those with one interval
         survey_fix['AT'] = dummy_at # dum at for desurvey
-        self.survey = self.survey.append (survey_fix, ignore_index=True)
+        self.survey = pd.concat ([self.survey, survey_fix], ignore_index=True, axis = 0)
 
         #sort survey
         self.survey.sort_values(by=['BHID','AT'], inplace=True)
@@ -3444,7 +3444,7 @@ cdef class Drillhole:
         """
 
 
-        print 'we are working on that'
+        print ('we are working on that')
 
 
     #-------------------------------------------------------------------

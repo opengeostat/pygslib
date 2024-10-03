@@ -241,9 +241,9 @@ cpdef ijk2ind(np.ndarray [long, ndim=1] ijk,
     >>>
     >>> ijk= np.array([0, 1, 2, 3, 4, 5, 6, 7])
     >>> ix,iy,iz = ijk2ind(ijk,2,2,2)
-    >>> print ix
-    >>> print iy
-    >>> print iz
+    >>> print (ix)
+    >>> print (iy)
+    >>> print (iz)
     [0 1 0 1 0 1 0 1]
     [0 0 1 1 0 0 1 1]
     [0 0 0 0 1 1 1 1]
@@ -492,7 +492,7 @@ cdef class Blockmodel:
         --------
         >>>
         >>> myblockmodel.delete_blocks()
-        >>> print myblockmodel.bmtable
+        >>> print (myblockmodel.bmtable)
         None
         >>>
 
