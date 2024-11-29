@@ -294,7 +294,7 @@ the compulsory fields <code class="docutils literal notranslate"><span class="pr
 </div>
 <p>Pandas provides a large set of functions to modify your data. Lets
 remove some columns and make non-assayed intervals equal to zero.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># droping some columns</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># dropping some columns</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">assay</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;NI&#39;</span><span class="p">,</span><span class="s1">&#39;S&#39;</span><span class="p">,</span><span class="s1">&#39;FE&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># making non-sampled intervals equal to zero</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">assay</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">assay</span><span class="p">[</span><span class="s1">&#39;CU&#39;</span><span class="p">]),</span> <span class="s1">&#39;CU&#39;</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
