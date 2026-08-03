@@ -1,6 +1,9 @@
 include README.md
 include TODO.md
-include CHANGELOG.txt 
+include CHANGELOG.txt
 include LICENSE.txt
+include meson.build
+include pyproject.toml
+recursive-include pygslib *.meson.build
 recursive-include pygslib/data/*.*
 include pygslib/Ipython_templates/*.ipynb

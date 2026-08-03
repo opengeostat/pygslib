@@ -1497,7 +1497,7 @@ cdef class Drillhole:
 
         #check survey without values: at=0
         self.survey.sort_values(by=['BHID','AT'], inplace=True)
-        error, bhid = self.__checkAt0(self.survey['BHID'].values, self.survey['AT'].values)
+        error, bhid = self.__checkAt0(self.survey['BHID'].to_numpy(dtype=object), self.survey['AT'].to_numpy(dtype='float64', copy=False))
         if error>-1:
             errors['Firts interval AT!=0 at survey table, found at'] = bhid
 
@@ -2064,15 +2064,15 @@ cdef class Drillhole:
 
 
         # define arrays
-        cdef idc = self.collar['BHID'].values
+        cdef idc = self.collar['BHID'].to_numpy(dtype=object)
         cdef np.ndarray[double, ndim=1] xc = self.collar['XCOLLAR'].values
         cdef np.ndarray[double, ndim=1] yc = self.collar['YCOLLAR'].values
         cdef np.ndarray[double, ndim=1] zc = self.collar['ZCOLLAR'].values
-        cdef ids = self.survey['BHID'].values
+        cdef ids = self.survey['BHID'].to_numpy(dtype=object)
         cdef np.ndarray[double, ndim=1] ats = self.survey['AT'].values
         cdef np.ndarray[double, ndim=1] azs = self.survey['AZ'].values
         cdef np.ndarray[double, ndim=1] dips = self.survey['DIP'].values
-        cdef idt =self.table[table_name]['BHID'].values
+        cdef idt =self.table[table_name]['BHID'].to_numpy(dtype=object)
         cdef np.ndarray[double, ndim=1] fromt = self.table[table_name]['FROM'].values
         cdef np.ndarray[double, ndim=1] tot = self.table[table_name]['TO'].values
 
@@ -2429,9 +2429,9 @@ cdef class Drillhole:
             else:
                 l_endhole=-1
 
-            nf,nt,nID,gap,overlap=__fillgap1Dhole(in_f = group.get_group(i)['FROM'].values,
-                                          in_t = group.get_group(i)['TO'].values,
-                                          id = group.get_group(i)['_id0'].values,
+            nf,nt,nID,gap,overlap=__fillgap1Dhole(in_f = group.get_group(i)['FROM'].to_numpy(dtype='float64', copy=True),
+                                          in_t = group.get_group(i)['TO'].to_numpy(dtype='float64', copy=True),
+                                          id = group.get_group(i)['_id0'].to_numpy(dtype='float64', copy=True),
                                           tol=tol,
                                           endhole=l_endhole)
 
@@ -2744,7 +2744,7 @@ cdef class Drillhole:
             double endf
 
         #merge
-        BHID=self.collar.BHID.values
+        BHID=self.collar.BHID.to_numpy(dtype=object)
         nnf=[]
         nnt=[]
         nnIDA=[]
@@ -2939,7 +2939,7 @@ cdef class Drillhole:
 
 
         #merge
-        BHID=self.collar.BHID.values
+        BHID=self.collar.BHID.to_numpy(dtype=object)
         taf=[]
         tat=[]
         tai=[]
@@ -3271,9 +3271,9 @@ cdef class Drillhole:
         nnlen = []
         for i in BHID:
 
-            nf, nt, nlen, nvar, nacum= __composite1dh(ifrom= group.get_group(i)['FROM'].values,
-                                                     ito= group.get_group(i)['TO'].values,
-                                                     ivar=group.get_group(i)[variable_name].values,
+            nf, nt, nlen, nvar, nacum= __composite1dh(ifrom= group.get_group(i)['FROM'].to_numpy(dtype='float64', copy=True),
+                                                     ito= group.get_group(i)['TO'].to_numpy(dtype='float64', copy=True),
+                                                     ivar=group.get_group(i)[variable_name].to_numpy(dtype='float64', copy=True),
                                                      cint=cint, minlen=minlen)
 
 
@@ -3355,7 +3355,7 @@ cdef class Drillhole:
 
 
         #create input arrays
-        ibhid =  self.table[table_name]['BHID'].values
+        ibhid =  self.table[table_name]['BHID'].to_numpy(dtype=object)
         ifrom = self.table[table_name]['FROM'].values
         ito =   self.table[table_name]['TO'].values
         ikey =  self.table[table_name][key_name].values

@@ -41,8 +41,7 @@ Windows users may read [this wiki](https://github.com/opengeostat/pygslib/wiki/B
 ```
 $ git clone https://github.com/opengeostat/pygslib.git
 $ cd pygslib
-$ python setup.py build
-$ python setup.py install
+$ pip install -e .
 ```
 
 Usage
