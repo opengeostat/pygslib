@@ -279,7 +279,7 @@ def histgplt(parameters):
                               width=-out1['clwidth'], bottom=0,
                               top=out1['binval'],
                               color=parameters['color'],
-                              legend = parameters['legend'],
+                              legend_label = parameters['legend'],
                               alpha=parameters['alpha'],
                               line_width=parameters['lwidth'])
 
@@ -493,7 +493,7 @@ def probplt(parameters):
 
     plt(x=cl, y=binval,
       color=parameters['color'],
-      legend = parameters['legend'],
+      legend_label = parameters['legend'],
       alpha=parameters['alpha'],
       line_width=parameters['lwidth'])
 
@@ -727,7 +727,7 @@ def qpplt(parameters):
 
     plt(x=vr1a, y=vr2a,
       color=parameters['color'],
-      legend = parameters['legend'],
+      legend_label = parameters['legend'],
       alpha=parameters['alpha'],
       line_width=parameters['lwidth'])
 

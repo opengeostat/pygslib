@@ -765,13 +765,13 @@ cpdef calauthorized(zana, zraw, gauss, zpmin=None, zpmax=None):
             break        
      
     # get index for minimum authorized
-    for i in range(zana.shape[0]/2, 1, -1): 
+    for i in range(zana.shape[0]//2, 1, -1): 
         
         if zana[i-1] < zraw[ii] or zana[i-1] > zana[i] or gauss[i-1]<gauss[ii]:
             break
     
     # get index for maximum authorized
-    for j in range(zana.shape[0]/2, zana.shape[0]-1, +1): 
+    for j in range(zana.shape[0]//2, zana.shape[0]-1, +1): 
         
         if zana[j+1] > zraw[jj] or zana[j+1] < zana[j] or gauss[j+1]>gauss[jj]:
             break 
@@ -813,13 +813,13 @@ cpdef calauthorized_blk(zana, gauss, zpmin, zpmax):
     ii = 0        
      
     # get index for minimum authorized
-    for i in range(zana.shape[0]/2, 1, -1): 
+    for i in range(zana.shape[0]//2, 1, -1): 
         
         if zana[i-1] < zpmin or zana[i-1] > zana[i] or gauss[i-1]<gauss[ii]:
             break
     
     # get index for maximum authorized
-    for j in range(zana.shape[0]/2, zana.shape[0]-1, +1): 
+    for j in range(zana.shape[0]//2, zana.shape[0]-1, +1): 
         
         if zana[j+1] > zpmax or zana[j+1] < zana[j] or gauss[j+1]>gauss[jj]:
             break 
@@ -870,13 +870,13 @@ cpdef findcontrolpoints(zana, zraw, gauss, zpmin, zpmax, zamin, zamax):
             break        
      
     # get index for zamin
-    for i in range(zana.shape[0]/2, 1, -1): 
+    for i in range(zana.shape[0]//2, 1, -1): 
         
         if zana[i-1] <= zamin:
             break
     
     # get index for zamax
-    for j in range(zana.shape[0]/2, zana.shape[0]-1, +1): 
+    for j in range(zana.shape[0]//2, zana.shape[0]-1, +1): 
         
         if zana[j+1] >= zamax :
             break  

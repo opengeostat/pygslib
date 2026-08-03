@@ -154,8 +154,10 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhidint, &                                  
     real*8, intent(out) :: cbb
     integer, intent(out) ::neq ,na
      real, intent(out), dimension(ndmax):: dbgxdat,dbgydat,dbgzdat,dbgvrdat
-    real, intent(out), dimension(ndmax+MAXDT+2):: dbgwt,dbgkvector
-    real, intent(out), dimension((ndmax+MAXDT+2),(ndmax+MAXDT+2)):: dbgkmatrix
+    ! Note: 11 = MAXDT + 2 (MAXDT=9 from Commons); literal used here
+    ! because f2py cannot resolve module parameters in C codegen
+    real, intent(out), dimension(ndmax+11):: dbgwt,dbgkvector
+    real, intent(out), dimension((ndmax+11),(ndmax+11)):: dbgkmatrix
 
     real, intent (out) :: dbgxtg,dbgytg,dbgztg
 
@@ -283,8 +285,8 @@ subroutine pykt3d( nd, x,y,z,vr,ve, bhidint, &                                  
     call   kt3d(   nd, x,y,z,vr,ve, tmpbhid, &                                        ! input data
                    nx,ny,nz,xmn,ymn,zmn, xsiz,ysiz,zsiz, nxdis,nydis,nzdis,& ! block model definition (including  discretization)
                    radius, ndmax,ndmin,noct,nbhid,sang1,sang2,sang3,sanis1,sanis2, &              ! search parameters
-                   idrif,&                                                   ! drift terms
-                   itrend,ktype,skmean,koption, iktype,ncut,cut, &           ! kriging options
+                   idrif_,&                                                  ! drift terms (local copy)
+                   itrend,ktype,skmean_,koption, iktype,ncut,cut, &          ! kriging options (local copy of skmean)
                    nst,it,c0,cc,aa,ang1,ang2,ang3, anis1,anis2, &            ! variogram parameters
                    idbg, &
                    nout, outx, outy, outz, outextve, outest, outkvar, &      ! output variable with the estimate, kvar and an indicator of success for a given block

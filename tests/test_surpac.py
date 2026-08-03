@@ -1,7 +1,7 @@
 from pygslib.surpac import Surpac
 
 def test_surpac():    
-    SURPAC = Surpac('C:/OG_Python/pygslib/tests/test_surpac/surpac_strings.txt')
+    SURPAC = Surpac('tests/test_surpac/surpac_strings.txt')
     assert(SURPAC.location == 'smp')
     assert(SURPAC.date == '8-Feb-94')
     assert(SURPAC.purpose == '')

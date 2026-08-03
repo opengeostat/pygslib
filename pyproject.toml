@@ -1,0 +1,65 @@
+[build-system]
+build-backend = "mesonpy"
+requires = [
+    "meson-python>=0.16.0",
+    "numpy>=2.0",
+    "Cython>=3.0",
+]
+
+[project]
+name = "pygslib"
+dynamic = ["version"]
+description = "Python module for mineral resource estimation and geostatistics"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {file = "LICENSE.txt"}
+authors = [
+    {name = "Adrian Martinez Vargas", email = "adriangeologo@yahoo.es"},
+]
+keywords = [
+    "geostatistics", "kriging", "variogram", "estimation",
+    "simulation", "blockmodel", "drillhole", "wireframe",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "pandas>=2.0",
+    "matplotlib>=3.8",
+    "vtk>=9.0",
+    "colour>=0.1",
+    "bokeh>=3.0",
+    "ipython>=8.0",
+    "jupyter>=1.0",
+    "ezdxf>=1.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/opengeostat/pygslib"
+Repository = "https://github.com/opengeostat/pygslib"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.uv.sources]
+pygslib = {path = ".", editable = true }
+
+[tool.meson-python.args]
+install = ["--skip-subprojects"]
